@@ -47,20 +47,16 @@ import java.io.*;
 
 LineTerminator= \n|\r|\r\n
 WhiteSpace={LineTerminator}|[ \t\f]
-InputCharacter=[^\r\n]
 
 DecIntegerLiteral=0|[1-9][0-9]
 OctIntegerLiteral=0+[0-7]
 HexIntegerLiteral=0[xX][0-9a-fA-F]
 
-Decimal=[+-]?[0-9]*.?[0-9]*[eE][+-]?[0-9]+
-
 Identifier=[_a-zA-Z][_a-zA-Z0-9]*
 
-%state YYCOMMENT
-%state YYLINECOMMENT
-%state YYSTRING
-$state YYCHAR
+%state YYCOMMENT, YYLINECOMMENT, YYSTRING, YYCHAR
+
+%%
 
 <YYINITIAL>
 {
@@ -141,13 +137,16 @@ $state YYCHAR
 	"<<" { return token(SHL); }
 	">>" { return token(SHR); }
 	
+	/*Blank Space*/
+	{WhiteSpace} {}
+	
 	/* ID */
 	{Identifier} {return token(ID,yytext());}
 	
 	/* NUM */
 	{DecIntegerLiteral} {return token(NUM, new Integer(yytext());}
 	{OctIntegerLiteral} {return token(NUM, Integer.valueOf(yytext().substring(1),8));}
-	{DecIntegerLiteral} {return token(NUM, Integer(yytext().substring(2),16));}
+	{HexIntegerLiteral} {return token(NUM, Integer.valueOf(yytext().substring(2),16));}
 }
 
 <YYLINECOMMENT>
