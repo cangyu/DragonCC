@@ -1,4 +1,4 @@
-package syntax;
+package compiler.syntactic;
 import java.io.*;
 
 %%
