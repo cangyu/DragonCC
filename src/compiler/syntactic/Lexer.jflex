@@ -183,12 +183,19 @@ Identifier=[_a-zA-Z][_a-zA-Z0-9]*
 	
 	{LineTerminator} {err("Line Terminator detected! Invalid character representation!");}
 	
-	"\\[0-7]" {charContent=(char)Integer.parseInt(yytext().substring(1,2),8); ++charLen;}
-	"\\[0-7]{2}" {charContent=(char)Integer.parseInt(yytext().substring(1,3),8); ++charLen;}
-	"\\[0-1][0-7]{2}" {charContent=(char)Integer.parseInt(yytext().substring(1,4),8); ++charLen;}
+	"\\[0-7]{1,3}" 
+	{
+		int tmp=Integer.parseInt(yytext().substring(1),8); 
+		if(tmp<256)
+		{
+			charContent=(char)tmp;
+			 ++charLen;
+		}
+		else
+			err("Octal escape sequence out of range!");
+	}
 
-	"\\x[0-9a-fA-F]" {charContent=(char)Integer.parseInt(yytext().substring(3,4),16); ++charLen;}
-	"\\x[0-9a-fA-F]{2}" {charContent=(char)Integer.parseInt(yytext().substring(3,5),16); ++charLen;}
+	"\\x[0-9a-fA-F]{1,2}" {charContent=(char)Integer.parseInt(yytext().substring(2),16); ++charLen;}
 	
 	[^] {charContent=yytext().charAt(0); ++charLen;}
 }
@@ -206,12 +213,16 @@ Identifier=[_a-zA-Z][_a-zA-Z0-9]*
 	
 	{LineTerminator} {err("Line Terminator detected! Invalid string representation!");}
 	
-	"\\[0-7]" {strContent.append((char)Integer.parseInt(yytext().substring(1,2),8));}
-	"\\[0-7]{2}" {strContent.append((char)Integer.parseInt(yytext().substring(1,3),8));}
-	"\\[0-1][0-7]{2}" {strContent.append((char)Integer.parseInt(yytext().substring(1,4),8));}
-
-	"\\x[0-9a-fA-F]" {strContent.append((char)Integer.parseInt(yytext().substring(3,4),16));}
-	"\\x[0-9a-fA-F]{2}" {strContent.append((char)Integer.parseInt(yytext().substring(3,5),16));}
+	"\\[0-7]{1,3}" 
+	{
+		int tmp=Integer.parseInt(yytext().substring(1),8); 
+		if(tmp<256)
+			strContent.append((char)tmp);
+		else
+			err("Octal escape sequence out of range!");
+	}
+	
+	"\\x[0-9a-fA-F]{1,2}" {strContent.append((char)Integer.parseInt(yytext().substring(2),16));}
 	
 	[^] {strContent.append(yytext().charAt(0));}
 }
