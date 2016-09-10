@@ -1,429 +1,358 @@
 package compiler.syntactic;
 
-import java.io.*;
-import java.util.*;
-import java_cup.runtime.*;
-import java_cup.runtime.XMLElement.*;
-import javax.xml.stream.*;
-import javax.xml.transform.*;
-import javax.xml.transform.stream.*;
+import java.io.InputStream;
 
-parser code {:
-    public void syntax_error(Symbol cur_token){
-	System.err.println("Syntax error at "+cur_token);
-    }
-    public static void newScope(){
-	typenames.push(new HashSet<String>());
-    }
-    public static void deleteScope(){
-	typenames.pop();
-    }
-    public static boolean lookupType(String name){
-	for (HashSet<String> scope: typenames)
-	    if (scope.contains(name)) return true;
-	return false;
-    }
-    public static void addType(String name){
-	typenames.peek().add(name);
-    }
-    public static LinkedList<HashSet<String>> typenames = new LinkedList<HashSet<String>>();
-    public Parser(Lexer lex, ComplexSymbolFactory sf) {
-	super(lex,sf);
-    }
+action code 
+{:
 
-    public static void main(String args[]) {
-	try {
-	    ComplexSymbolFactory csf = new ComplexSymbolFactory();
-	    // create a buffering scanner wrapper
-	    ScannerBuffer lexer = new ScannerBuffer(new Lexer(new BufferedReader(new FileReader(args[0])),csf));
-	    // start parsing
-	    Parser p = new Parser(lexer,csf);
-	    System.out.println("Parser runs: ");
-	    newScope();
-	    XMLElement e = (XMLElement)p.parse().value;
-	    // create XML output file 
-	    XMLOutputFactory outFactory = XMLOutputFactory.newInstance();
-	    XMLStreamWriter sw = outFactory.createXMLStreamWriter(new FileOutputStream(args[1]));
-	    // dump XML output to the file
-	    XMLElement.dump(lexer,sw,e); //,"expr","stmt");
-	    // transform the parse tree into an AST and a rendered HTML version
-	    Transformer transformer = TransformerFactory.newInstance()
-		.newTransformer(new StreamSource(new File("tree.xsl")));
-	    Source text = new StreamSource(new File(args[1]));
-	    transformer.transform(text, new StreamResult(new File("output.html")));
+:}
 
-	    System.out.println("Parsing finished!");
-	} catch (Exception e) {
-	    e.printStackTrace();
+parser code
+{:
+	public void report_error(String msg, Object info)
+	{
+		StringBuffer m = new StringBuffer("\tParsing Error!");
+		if(info instanceof java_cup.runtime.symbol)
+		{
+			java_cup.runtime.symbol s= (java_cup.runtime.symbol)info;
+			if(s.left>=0)
+			{
+				m.append(" in line " + (s.left +1 ));
+				if (s.right >= 0)
+				{
+					m.append(", column " + (s.right + 1));
+					if(s.value!=null)
+						m.append(": "+s.value);
+				}
+			}
+		}
+		m.append(" : " + message);
+		System.err.println(m);
+		System.exit(1);
 	}
-    }
-:};
 
-terminal IDENTIFIER, CONSTANT, STRING_LITERAL, SIZEOF, PTR_OP, INC_OP, DEC_OP, LEFT_OP, RIGHT_OP, LE_OP, GE_OP,
-    AND_OP, OR_OP, MUL_ASSIGN, DIV_ASSIGN, MOD_ASSIGN, ADD_ASSIGN, SUB_ASSIGN, LEFT_ASSIGN, RIGHT_ASSIGN,
-    XOR_ASSIGN, OR_ASSIGN, TYPE_NAME, TYPEDEF, EXTERN, STATIC, AUTO, REGISTER, CHAR, SHORT, INT, LONG, SIGNED,
-    UNSIGNED, FLOAT, DOUBLE, CONST, VOLATILE, VOID, STRUCT, UNION, ENUM, ELLIPSIS, CASE, DEFAULT, IF, ELSE,
-    SWITCH, WHILE, DO, FOR, GOTO, CONTINUE, BREAK, RETURN, SEMI, CURLYL, CURLYR, COMMA, COLON, ASSIGN, PARAL,
-    PARAR, SQUAREDL, SQUAREDR, POINT, ADRESS, NOT, TILDE, AND_ASSIGN, EQ_OP, NE_OP, MINUS, PLUS, MUL, DIVIDE,
-    MODULUS, LESS, GREATER, XOR, OR, COND;
+	public Parser(InputStream in)
+	{
+		this(new Lexer(in)); 
+	}
+:}
 
-non terminal translation_unit, primary_expression, postfix_expression, expression, assignment_expression;
-non terminal unary_operator, type_name, cast_expression, multiplicative_expression, additive_expression;
-non terminal shift_expression, equality_expression,  and_expression,  exclusive_or_expression;
-non terminal logical_and_expression,  logical_or_expression,  conditional_expression,  constant_expression;
-non terminal declaration_specifiers, init_declarator_list, storage_class_specifier, type_specifier, type_qualifier;
-non terminal init_declarator, declarator, struct_or_union_specifier, struct_declaration_list, struct_declaration;
-non terminal initializer,  specifier_qualifier_list,  struct_declarator_list,  struct_declarator,  enum_specifier;
-non terminal enumerator_list,  enumerator,  pointer,  direct_declarator,  parameter_type_list,  identifier_list;
-non terminal type_qualifier_list,  parameter_declaration,  abstract_declarator,  direct_abstract_declarator;
-non terminal initializer_list,  statement,  labeled_statement,  compound_statement,  selection_statement;
-non terminal jump_statement, statement_list, expression_statement, external_declaration, function_definition;
-non terminal assignment_operator, parameter_list, unary_expression, iteration_statement, declaration_list;
-non terminal relational_expression,  inclusive_or_expression, declaration;
+/* Terminal */
+terminal 	VOID, CHAR, INT, STRUCT, UNION, IF, ELSE, WHILE, FOR, CONTINUE, BREAK, RETURN, SIZEOF;
+terminal	LPAREN, RPAREN, LBRACE, RBRACE, LMPAREN, RMPAREN;
+terminal 	SEMI, COMMA, PLUS, MINUS, TIMES, DIVIDE, MODULE;
+terminal	INC, DEC;
+terminal	MUL_ASSIGN, DIV_ASSIGN, MOD_ASSIGN, ADD_ASSIGN, SUB_ASSIGN, SHL_ASSIGN, SHR_ASSIGN, AND_ASSIGN, XOR_ASSIGN, OR_ASSIGN;
+terminal 	NOT, OR, AND, DOT, PTR;
+terminal 	EQ, NE, LT, LE, GT, GE, ASSIGN;
+terminal 	BIT_OR, BIT_XOR, BIT_AND, BIT_NOT, SHL, SHR;
 
-precedence nonassoc ELSE;
+terminal String		ID;
+terminal Integer	NUM;
+terminal String		STRINGCONTENT;
+terminal Character	CHARCONTENT;
 
-start with translation_unit;
+/* Non Terminal */
+non terminal Program 				program;
+non terminal DeclOrDef				decl_or_func_def;
+non terminal Declaration			declaration;
+non terminal FuncDef				func_def;
+non terminal TypeSpecifier			type;
+non terminal InitDeclarators		init_declarators;
+non terminal InitDeclarator			init_declarator;
+non terminal Declarator				declarator;
+non terminal Initializer			initializer;
+non terminal InitializerList		initializer_list;
+non terminal PlainDeclaration		plain_declaration;
+non terminal Star					star_list;
+non terminal PlainDeclarator		plain_declarator;
+non terminal Parameters				parameters;
+non terminal TypeDeclaratorsList	type_declarators_list;
+non terminal Declarators			declarators;
+non terminal DeclarationList		declaration_list;
 
-primary_expression ::= IDENTIFIER:ident
-		   | CONSTANT:constant
-		   | STRING_LITERAL:stringliteral
-		   | PARAL expression:e PARAR
-		   ;
+non terminal Stmt			stmt;
+non terminal ExpressionStmt	expression_stmt;
+non terminal CompoundStmt	compound_stmt;
+non terminal StmtList		stmt_list;
+non terminal SelectionStmt	selection_stmt;
+non terminal JumpStmt		jump_stmt;
+non terminal IterationStmt	iteration_stmt;
 
-postfix_expression ::= primary_expression:pe
-		   | postfix_expression:pe SQUAREDL expression:index SQUAREDR
-		   | postfix_expression:pe PARAL PARAR
-		   | postfix_expression:pe PARAL expression:e PARAR
-		   | postfix_expression:pe POINT IDENTIFIER:id
-		   | postfix_expression:pe PTR_OP IDENTIFIER:id
-		   | postfix_expression:pe INC_OP:op
-		   | postfix_expression:pe DEC_OP:op
-		   ;
+non terminal Expr		expression, plain_expr;
+non terminal Expr		assignment_expr;
+non terminal AssignmentExpr.Op	assignment_operator;
+non terminal Expr		constant_expression;
+non terminal Expr		logical_and_expression;
+non terminal Expr		logical_or_expression;
+non terminal Expr		inclusive_or_expression;
+non terminal Expr		exclusive_or_expression;
+non terminal Expr		and_expression;
+non terminal Expr		equality_expression;
+non terminal BinaryExpr.Op	equality_operator;
+non terminal Expr		relational_expression;
+non terminal BinaryExpr.Op	relational_operator;
+non terminal Expr		shift_expression;
+non terminal BinaryExpr.Op	shift_operator;
+non terminal Expr		additive_expression;
+non terminal BinaryExpr.Op	additive_operator;
+non terminal Expr		multiplicative_expression;
+non terminal BinaryExpr.Op	multiplicative_operator;
+non terminal Expr		cast_expression;
+non terminal TypeName		type_name;
+non terminal Expr		unary_expression;
+non terminal UnaryExpr.Op	unary_operator;
+non terminal Expr		postfix_expression;
+non terminal Arguments		arguments, arguments_or_not;
+non terminal Expr		primary_expression;
 
-unary_expression ::= postfix_expression:pe
-		 | INC_OP:op unary_expression:ue
-		 | DEC_OP:op unary_expression:ue
-		 | unary_operator:uo cast_expression:ce
-		 | SIZEOF unary_expression:ue
-		 | SIZEOF PARAL type_name:tn PARAR
+/* precedence */
+precedence right ELSE;
+
+/* Start State*/
+start with program;
+
+/* Top Level */
+program ::= program:p decl_or_func_def:t {: if(t!=null) p.list.add(t); RESULT=p; :}
+		| decl_or_func_def:t {: RESULT=new Program(t); :}
+		;
+
+decl_or_func_def ::= declaration:t {: RESULT=t; :}
+				 | func_def:t {: RESULT=t; :}
+				 ;
+				 
+declaration ::=  type:t init_declarators:i SEMI {: RESULT=new Declaration(t,i); :}
+			| type:t SEMI {: RESULT= new Declaration(t); :}
+			;
+
+func_def ::= type:t plain_declarator:p LPAREN parameters:s RPAREN compound_stmt:c {: RESULT= new FuncDef(t,p,s,c); :}
+		 | type:t plain_declarator:p LPAREN RPAREN compound_stmt:c {: RESULT=new FuncDef(t,p,c); :}
 		 ;
+		 
+type ::= VOID {: RESULT = new TypeSpecifier(TypeSpecifier.Type.VOID); :}
+	 | CHAR	{: RESULT = new TypeSpecifier(TypeSpecifier.Type.CHAR); :}
+	 | INT {: RESULT = new TypeSpecifier(TypeSpecifier.Type.INT); :}
+	 | STRUCT ID:i LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.STRUCT, i, t); :} 
+	 | STRUCT LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.STRUCT, null, t); :}
+	 | STRUCT ID:s {: RESULT = new TypeSpecifier(TypeSpecifier.Type.STRUCT, s, null); :}
+	 | UNION ID:i LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.UNION, i, t); :} 
+	 | UNION LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.UNION, null, t); :} 
+	 | UNION ID:s {: RESULT = new TypeSpecifier(TypeSpecifier.Type.UNION, s, null); :}
+	 ;
 
-unary_operator ::=ADRESS
-	| MUL:op
-	| PLUS:op
-	| MINUS:op
-	| TILDE
-	| NOT:op
-	;
+init_declarators ::= init_declarators:idecls COMMA init_declarator:idecl {: idecls.idecl_list.add(idecl); RESULT= idecls; :}
+	 			 | init_declarator:idecl {: RESULT= new InitDeclarators(idecl); :}
+	 			 ;
+	
+init_declarator ::= declarator:d ASSIGN initializer:v {: RESULT=new InitDeclarator(d,v); :}
+				| declarator:d {: RESULT=new InitDeclarator(d); :}
+	 			;
+	 			
+declarator ::= plain_declarator:pd {: RESULT=new Declarator(1,pd); :}
+		   | declarator:d LMPAREN constant_expression:c RMPAREN {: d.exprs.add(c); RESULT=d;  :}
+		   ;
 
-cast_expression
-	::=unary_expression:ue
-	| PARAL type_name:tn PARAR cast_expression:ce
-	;
+initializer ::= assignment_expr:e {: RESULT=new Initializer(e); :}
+			| LBRACE initializer_list:is RBRACE {: RESULT=new Initializer(is); :}
+			;
+			
+initializer_list ::= initializer:i {: RESULT=new InitializerList(i); :}
+				 | initializer_list:is COMMA initializer:i {: is.initializer_list.add(i); RESULT=is; :}
+				 ;
+				 
+plain_declarator ::= star_list:s ID:i {: RESULT=new PlainDeclarator(s,i); :}
+				 ;
+				 
+star_list ::= 	{: RESULT=new Star(); :}
+		  | TIMES star_list:s {: ++s.total; RESULT=s; :}
+		  ;
+		  
+parameters ::= plain_declaration:pd {: RESULT=new Parameters(pd); :}
+		   | parameters:ps COMMA plain_declaration:pd {: ps.plain_declaration_list.add(pd); RESULT=ps; :}
+		   ;
+		   
+type_declarators_list ::= type:t declarators:s SEMI {: RESULT=new TypeDeclaratorsList(new TypeDeclarators(t,s)); :}
+					  | type_declarators_list:ts type:t declarators: s SEMI {: ts.type_declarators_list.add(new TypeDeclarators(t,s)); RESULT=ts; :}
+					  ;
+					  
+declarators ::= declarator:decl {: RESULT=new Declarators(decl); :}
+			| declarators:decls COMMA declarator:decl {: decls.declarator_list.add(decl); RESULT=decl; :}
+			;
+			
+plain_declaration ::= type:t declarator:d {: RESULT = new PlainDeclaration(t,d); :}
+				  ;
+					  
+/* Statements */
+stmt ::= expression_stmt:e {: RESULT=e; :}
+	 | compound_stmt:c {: RESULT=c; :}
+	 | selection_stmt:s {: RESULT=s; :}
+	 | iteration_stmt:i {: RESULT=i; :}
+	 | jump_stmt:j {: RESULT=j; :}
+	 ;
+	 
+expression_stmt ::= expression:e SEMI {: RESULT=new ExpressionStmt(e); :}
+				;
 
-multiplicative_expression ::= cast_expression:ce
-			  | multiplicative_expression:me MUL:op cast_expression:ce
-			  | multiplicative_expression:me DIVIDE:op cast_expression:ce
-			  | multiplicative_expression:me MODULUS:op cast_expression:ce
+compound_stmt ::= LBRACE declaration_list: dd stmt_list:ss RBRACE {: RESULT=new CompoundStmt(dd,ss); :}
 			  ;
+			 
+declaration_list ::= declaration_list:dd declaration:decl {: dd.declarations.add(decl); RESULT=dd; :}
+				 | 	{: RESULT=new DeclarationList(); :}
+				 ;
+		
+stmt_list ::= stmt_list: ss stmt:s {: ss.stmts.add(s); RESULT=ss; :}
+		  |	 {: RESULT=new StmtList(); :}
+		  ;
+		 
+selection_stmt ::= IF LPAREN expression:ec RPAREN stmt:s ELSE stmt:ee {: RESULT=new SelectionStmt(ec,s,ee); :}
+			   | IF LPAREN expression:ec RPAREN stmt:s {: RESULT=new SelectionStmt(ec,s); :}
+			   ;
+			   
+iteration_stmt ::= WHILE LPAREN expression:e RPAREN stmt:s {: RESULT=new IterationStmt(e,s); :}
+			   | FOR LPAREN plain_expr SEMI plain_expr SEMI plain_expr RPAREN stmt:s {: RESULT=new IterationStmt(a,b,c,s); :}
+			   ;
+			 
+jump_stmt ::= CONTINUE SEMI {: RESULT=new JumpStmt(JumpStmt.JumpType.CONTINUE); :}
+		  | BREAK SEMI {: RESULT=new JumpStmt(JumpStmt.JumpType.BREAK); :}
+		  | RETURN plain_expr SEMI {: RESULT=new JumpStmt(e); :}
+		  ;
 
-additive_expression ::= multiplicative_expression:me
-		    | additive_expression:ae PLUS:op multiplicative_expression:me
-		    | additive_expression:ae MINUS:op multiplicative_expression:me
-		    ;
-
-shift_expression ::= additive_expression:ae
-		 | shift_expression:se LEFT_OP additive_expression:ae
-		 | shift_expression:se RIGHT_OP additive_expression:ae
-		 ;
-
-relational_expression ::= shift_expression:se
-		      | relational_expression:re LESS:op shift_expression:se
-		      | relational_expression:re GREATER:op shift_expression:se
-		      | relational_expression:re LE_OP:op shift_expression:se
-		      | relational_expression:re GE_OP:op shift_expression:se
-		      ;
-
-equality_expression ::= relational_expression:re
-		    | equality_expression:ee EQ_OP:op relational_expression:re
-		    | equality_expression:ee NE_OP:op relational_expression:re
-		    ;
-
-and_expression ::= equality_expression:ee
-	       | and_expression:ae ADRESS equality_expression:ee
-	       ;
-
-exclusive_or_expression	::= and_expression:ae
-			| exclusive_or_expression:eoe XOR and_expression:ae
+/* Expressions */
+plain_expr ::= {: RESULT=null; :}
+		   | expression:e {: RESULT=e; :} 
+		   ;
+		   
+expression ::= assignment_expr:a {: RESULT=a; :}
+			| expression:e COMMA assignment_expr:a {: RESULT=new Expression(e,a); :}
 			;
 
-inclusive_or_expression	::= exclusive_or_expression:eoe
-			| inclusive_or_expression:ioe OR exclusive_or_expression:eoe
+constant_expression ::= logical_or_expression:l {: RESULT=l; :}
+					;
+
+assignment_expr ::= logical_or_expression:l {: RESULT=l; :}
+				| unary_expression:u assignment_operator:a assignment_expr:ae {: RESULT=new AssignmentExpr(u,a,ae); :}
+				;
+				
+assignment_operator	::= ASSIGN		{: RESULT = AssignmentExpr.Op.ASSIGN; :}
+					| MUL_ASSIGN	{: RESULT = AssignmentExpr.Op.MUL_ASSIGN; :}
+					| DIV_ASSIGN	{: RESULT = AssignmentExpr.Op.DIV_ASSIGN; :}
+					| MOD_ASSIGN	{: RESULT = AssignmentExpr.Op.MOD_ASSIGN; :}
+					| ADD_ASSIGN	{: RESULT = AssignmentExpr.Op.ADD_ASSIGN; :}
+					| SUB_ASSIGN	{: RESULT = AssignmentExpr.Op.SUB_ASSIGN; :}
+					| SHL_ASSIGN	{: RESULT = AssignmentExpr.Op.SHL_ASSIGN; :}
+					| SHR_ASSIGN	{: RESULT = AssignmentExpr.Op.SHR_ASSIGN; :}
+					| AND_ASSIGN	{: RESULT = AssignmentExpr.Op.AND_ASSIGN; :}
+					| XOR_ASSIGN	{: RESULT = AssignmentExpr.Op.XOR_ASSIGN; :}
+					| OR_ASSIGN		{: RESULT = AssignmentExpr.Op.OR_ASSIGN; :}	
+					;
+
+logical_or_expression ::= logical_and_expression:l {: RESULT = l; :}
+						| logical_and_expression:l OR logical_or_expression:r {: RESULT=new BinaryExpr(BinaryExpr.Op.OR,l,r); :}
+						;
+					
+logical_and_expression ::= inclusive_or_expression:i {: RESULT = i; :}
+						| inclusive_or_expression:l AND logical_and_expression:i {: RESULT = new BinaryExpr(BinaryExpr.Op.AND, l, i); :}
+						;
+
+inclusive_or_expression	::= exclusive_or_expression:e {: RESULT = e; :}
+						| inclusive_or_expression:i BIT_OR exclusive_or_expression:e {: RESULT = new BinaryExpr(BinaryExpr.Op.BIT_OR, i, e); :}
+						;
+						
+exclusive_or_expression	::= and_expression:a	{: RESULT = a; :}
+						| exclusive_or_expression:e BIT_XOR and_expression:a {: RESULT = new BinaryExpr(BinaryExpr.Op.BIT_XOR, e, a); :}
+						;
+						
+and_expression	::= equality_expression:e	{: RESULT = e; :}
+				| and_expression:a BIT_AND equality_expression:e	{: RESULT = new BinaryExpr(BinaryExpr.Op.BIT_AND, a, e); :}
+				;
+				
+equality_expression	::= relational_expression:r	{: RESULT = r; :}
+					| equality_expression:e equality_operator:op relational_expression:r {: RESULT = new BinaryExpr(op, e, r); :}
+					;
+				
+equality_operator	::= EQ	{: RESULT = BinaryExpr.Op.EQ; :}
+					| NE	{: RESULT = BinaryExpr.Op.NE; :}
+					;
+					
+relational_expression	::= shift_expression:e	{: RESULT = e; :}
+						| relational_expression:r relational_operator:op shift_expression:e	{: RESULT = new BinaryExpr(op, r, e); :}
+						;
+
+relational_operator	::= LT	{: RESULT = BinaryExpr.Op.LT; :}
+					|  GT	{: RESULT = BinaryExpr.Op.GT; :}
+					|  LE	{: RESULT = BinaryExpr.Op.LE; :}
+					|  GE 	{: RESULT = BinaryExpr.Op.GE; :}
+					;
+					
+shift_expression	::= additive_expression:a	{: RESULT = a; :}
+					| shift_expression:s shift_operator:op additive_expression:a	{: RESULT = new BinaryExpr(op, s, a); :}
+					;
+
+shift_operator	::= SHL	{: RESULT = BinaryExpr.Op.SHL; :}
+				| SHR	{: RESULT = BinaryExpr.Op.SHR; :}
+				;
+
+additive_expression	::= multiplicative_expression:m		{: RESULT = m; :}
+					| additive_expression:a additive_operator:op multiplicative_expression:m	{: RESULT = new BinaryExpr(op, a, m); :}
+					;
+
+additive_operator	::= PLUS	{: RESULT = BinaryExpr.Op.PLUS; :}
+					| MINUS		{: RESULT = BinaryExpr.Op.MINUS; :}
+					;
+					
+multiplicative_expression	::= cast_expression:c	{: RESULT = c; :}
+							| multiplicative_expression:m multiplicative_operator:op cast_expression:c	{: RESULT = new BinaryExpr(op, m, c); :}
+							;
+
+multiplicative_operator	::= TIMES	{: RESULT = BinaryExpr.Op.TIMES; :}
+						| DIVIDE	{: RESULT = BinaryExpr.Op.DIVIDE; :}
+						| MODULE	{: RESULT = BinaryExpr.Op.MODULE; :}
+						;
+						
+cast_expression	::= unary_expression:u	{: RESULT = u; :}
+				| LPAREN type_name:t RPAREN cast_expression:c	{: RESULT = new CastExpr(t,c); :}
+				;
+
+type_name	::= type:t star_list:s	{: RESULT = new TypeName(t,s); :}
+			;
+		
+unary_expression	::= postfix_expression:p		{: RESULT = p; :}
+					| INC unary_expression:p		{: RESULT = new UnaryExpr(UnaryExpr.Op.INC, p); :}
+					| DEC unary_expression:p		{: RESULT = new UnaryExpr(UnaryExpr.Op.DEC, p); :}
+					| unary_operator:op cast_expression:c	{: RESULT = new UnaryExpr(op, c); :}
+					| SIZEOF unary_expression:p		{: RESULT = new UnaryExpr(UnaryExpr.Op.SIZEOF, p); :}
+					| SIZEOF LPAREN type_name:t RPAREN	{: RESULT = new UnaryExpr(t); :}
+					;
+
+unary_operator	::= BIT_AND	{: RESULT = UnaryExpr.Op.BIT_AND; :}
+				| TIMES		{: RESULT = UnaryExpr.Op.STAR; :}
+				| PLUS		{: RESULT = UnaryExpr.Op.POSITIVE; :}
+				| MINUS		{: RESULT = UnaryExpr.Op.NEGATIVE; :}
+				| BIT_NOT	{: RESULT = UnaryExpr.Op.BIT_NOT; :}
+				| NOT		{: RESULT = UnaryExpr.Op.NOT; :}
+				;
+				
+postfix_expression	::= primary_expression:p				{: RESULT = p; :}
+					| postfix_expression:e LMPAREN expression:i RMPAREN	{: RESULT = new PostfixExpr(PostfixExpr.Op.MPAREN, i, e); :}
+					| postfix_expression:e LPAREN arguments_or_not:i RPAREN	{: RESULT = new PostfixExpr(PostfixExpr.Op.PAREN, i, e); :}
+					| postfix_expression:e DOT ID:i				{: RESULT = new PostfixExpr(PostfixExpr.Op.DOT, i, e); :}
+					| postfix_expression:e PTR ID:i				{: RESULT = new PostfixExpr(PostfixExpr.Op.PTR, i, e); :}
+					| postfix_expression:e INC				{: RESULT = new PostfixExpr(PostfixExpr.Op.INC, null, e); :}
+					| postfix_expression:e DEC				{: RESULT = new PostfixExpr(PostfixExpr.Op.DEC, null, e); :}
+					;
+
+arguments_or_not	::= /* empty */ 	{: RESULT = new Arguments(); :}
+					| arguments:a		{: RESULT = a; :}
+					;
+
+arguments	::= assignment_expr:e			{: RESULT = new Arguments(e); :}
+			| arguments:a COMMA assignment_expr:e	{: a.exprs.add(e); RESULT = a; :}
 			;
 
-logical_and_expression ::= inclusive_or_expression:ioe
-		       | logical_and_expression:lae AND_OP:op inclusive_or_expression:ioe
-		       ;
-
-logical_or_expression ::= logical_and_expression:lae
-		      | logical_or_expression:loe OR_OP:op logical_and_expression:lae
-		      ;
-
-conditional_expression ::= logical_or_expression:loe
-		       | logical_or_expression:loe COND expression:e COLON conditional_expression:ce
-		       ;
-
-assignment_expression ::= conditional_expression:ce
-		      | unary_expression:ue assignment_operator:aop assignment_expression:ae
-		      ;
-
-assignment_operator ::=ASSIGN
-	| MUL_ASSIGN
-	| DIV_ASSIGN
-	| MOD_ASSIGN
-	| ADD_ASSIGN
-	| SUB_ASSIGN
-	| LEFT_ASSIGN
-	| RIGHT_ASSIGN
- 	| AND_ASSIGN
-	| XOR_ASSIGN
-	| OR_ASSIGN
-	;
-
-expression ::= assignment_expression:ae
-	   | expression:e COMMA assignment_expression:ae
-	   ;
-
-constant_expression ::=conditional_expression:ce
-	;
-
-declaration ::=declaration_specifiers:ds SEMI
-    | declaration_specifiers:ds init_declarator_list:idl {:
-	  if (ds.toString().indexOf(">typedef<")>0) {
-	      for (XMLElement e: ((XMLElement)idl).selectById("identifier"))
-		Parser.addType(((Terminal)e).value().toString());
-	  }
-	  :} SEMI
-        ;
-
-declaration_specifiers ::=storage_class_specifier:scc
-        | storage_class_specifier:scc declaration_specifiers:ds
-	| type_specifier:ts
-	| type_specifier:ts declaration_specifiers:ds
-	| type_qualifier:tq
-	| type_qualifier:tq declaration_specifiers:ds
-	;
-
-init_declarator_list ::=init_declarator:id
-	| init_declarator_list:idl COMMA init_declarator:id
-	;
-
-init_declarator ::=declarator:d
-	| declarator:d ASSIGN initializer:i
-	;
-
-storage_class_specifier ::=  TYPEDEF:id
-	| EXTERN:id
-	| STATIC:id
-	| AUTO:id
-	| REGISTER:id
-	;
-
-type_specifier ::=VOID:type
-	| CHAR:type
-	| SHORT:type
-	| INT:type
-	| LONG:type
-	| FLOAT:type
-	| DOUBLE:type
-	| SIGNED:type
-	| UNSIGNED:type
-	| struct_or_union_specifier:su
-	| enum_specifier:es
-	| TYPE_NAME:type
-	;
-
-struct_or_union_specifier ::= STRUCT:s IDENTIFIER:id CURLYL struct_declaration_list:sdl CURLYR
-	|  STRUCT:s CURLYL struct_declaration_list:sdl CURLYR
-	|  STRUCT:s IDENTIFIER:id
-	|  UNION:u IDENTIFIER:id CURLYL struct_declaration_list:sdl CURLYR
-	|  UNION:u CURLYL struct_declaration_list:sdl CURLYR
-	|  UNION:u IDENTIFIER:id
-	;
-
-struct_declaration_list	::=struct_declaration:s
-	| struct_declaration_list:sl struct_declaration:s
-	;
-
-struct_declaration ::=specifier_qualifier_list:sq struct_declarator_list:sd SEMI
-	;
-
-specifier_qualifier_list ::=type_specifier:ts specifier_qualifier_list:sq
-	| type_specifier:ts
-	| type_qualifier:tq specifier_qualifier_list:sq
-	| type_qualifier:tq
-	;
-
-struct_declarator_list ::=struct_declarator:s
-	| struct_declarator_list:sl COMMA struct_declarator:s
-	;
-
-struct_declarator ::=declarator:d
-	| COLON constant_expression:ce
-	| declarator:d COLON constant_expression:ce
-	;
-
-enum_specifier ::=ENUM CURLYL enumerator_list:el CURLYR
-	| ENUM IDENTIFIER:id CURLYL enumerator_list:el CURLYR
-	| ENUM IDENTIFIER:id
-	;
-
-enumerator_list	::=enumerator:e
-	| enumerator_list:el COMMA enumerator:e
-	;
-
-enumerator ::=IDENTIFIER:id
-	| IDENTIFIER:id ASSIGN constant_expression:ce
-	;
-
-type_qualifier ::=CONST:id
-	| VOLATILE:id
-	;
-
-declarator ::=pointer:p direct_declarator:direct
-	| direct_declarator:direct
-	;
-
-direct_declarator ::=IDENTIFIER:identifier
-	| PARAL declarator:d PARAR
-	| direct_declarator:dd SQUAREDL constant_expression:ce SQUAREDR
-	| direct_declarator:dd SQUAREDL SQUAREDR
-	| direct_declarator:dd PARAL parameter_type_list:ptl PARAR
-	| direct_declarator:dd PARAL identifier_list:il PARAR
-	| direct_declarator:dd PARAL PARAR
-	;
-
-pointer	::=MUL:id
-	| MUL:id type_qualifier_list:tql
-	| MUL:id pointer:p
-	| MUL:id type_qualifier_list:tql pointer:p
-	;
-
-type_qualifier_list ::=type_qualifier:tq
-	| type_qualifier_list:tql type_qualifier:tq
-	;
-
-parameter_type_list ::=parameter_list:pl
-	| parameter_list:pl COMMA ELLIPSIS:id
-	;
-
-parameter_list ::=parameter_declaration:pd
-	| parameter_list:pl COMMA parameter_declaration:pd
-	;
-
-parameter_declaration ::=declaration_specifiers:ds declarator:d
-	| declaration_specifiers:ds abstract_declarator:ad
-	| declaration_specifiers:ds
-	;
-
-identifier_list ::=IDENTIFIER:id
-	| identifier_list:idl COMMA IDENTIFIER:id
-	;
-
-type_name ::=specifier_qualifier_list:sl
-	| specifier_qualifier_list:sl abstract_declarator:ad
-	;
-
-abstract_declarator ::=pointer:p
-	| direct_abstract_declarator:dad
-	| pointer:p direct_abstract_declarator:d
-	;
-
-direct_abstract_declarator ::=PARAL:id abstract_declarator:ad PARAR
-	| SQUAREDL:id SQUAREDR
-	| SQUAREDL:id constant_expression:ce SQUAREDR
-	| direct_abstract_declarator:dad SQUAREDL:id SQUAREDR
-	| direct_abstract_declarator:dad SQUAREDL:id constant_expression:ce SQUAREDR
-	| PARAL:id PARAR
-	| PARAL:id parameter_type_list:ptl PARAR
-	| direct_abstract_declarator:dad PARAL:id PARAR
-	| direct_abstract_declarator:dad PARAL:id parameter_type_list:ptl PARAR
-	;
-
-initializer ::=assignment_expression:ae
-	| CURLYL initializer_list:il CURLYR
-	| CURLYL initializer_list:il COMMA CURLYR
-	;
-
-initializer_list ::=initializer:i
-	| initializer_list:il COMMA initializer:i
-	;
-
-statement ::=labeled_statement:ls
-	| {: Parser.newScope(); :}  compound_statement:cs {: Parser.deleteScope(); :}
-	| expression_statement:es
-	| selection_statement:ss
-	| iteration_statement:is
-	| jump_statement:js
-	;
-
-labeled_statement ::=IDENTIFIER:id COLON statement:s
-	| CASE constant_expression:ce COLON statement:s
-	| DEFAULT COLON statement:s
-	;
-
-compound_statement ::=CURLYL CURLYR
-        | CURLYL statement_list:sl CURLYR
-	| CURLYL declaration_list:dl CURLYR
-	| CURLYL declaration_list:dl statement_list:sl CURLYR
-	;
-
-declaration_list ::=declaration:d
-	| declaration_list:dl declaration:d
-	;
-
-statement_list ::=statement:s
-	| statement_list:sl statement:s
-	;
-
-expression_statement ::=SEMI
-	| expression:e SEMI
-	;
-
-selection_statement ::=IF PARAL expression:e PARAR statement:s
-	| IF PARAL expression:e PARAR statement:s1 ELSE statement:s2
-	| SWITCH PARAL expression:e PARAR statement:s
-	;
-
-iteration_statement ::=WHILE PARAL expression:e PARAR statement:s
-	| DO statement:s WHILE PARAL expression:e PARAR SEMI
-	| FOR PARAL expression_statement:es1 expression_statement:es2 PARAR statement:s
-	| FOR PARAL expression_statement:es1 expression_statement:es2 expression:e PARAR statement:s
-	;
-
-jump_statement ::=GOTO IDENTIFIER:id SEMI
-	| CONTINUE SEMI
-	| BREAK SEMI
-	| RETURN SEMI
-	| RETURN expression:e SEMI
-	;
-
-translation_unit ::=external_declaration:ed
-	| translation_unit:tu external_declaration:ed
-	;
-
-external_declaration ::=function_definition:fd
-	| declaration:d
-	;
-
-function_definition ::=declaration_specifiers:ds declarator:d declaration_list:dl
-		    				             {: Parser.newScope(); :}
-  compound_statement:cs 		                   {: Parser.deleteScope(); :}
-	| declaration_specifiers:ds declarator:d 	  {: Parser.newScope(); :}
-	  compound_statement:cs 	                   {: Parser.deleteScope(); :}
-	| declarator:d declaration_list:dl 	        {: Parser.newScope(); :}
-	  compound_statement:cs 	                   {: Parser.deleteScope(); :}
-	| declarator:d 	                            {: Parser.newScope(); :}
-	  compound_statement:cs 	                   {: Parser.deleteScope(); :}
-	;
+primary_expression	::= ID:i			{: RESULT = new PrimaryExpr(PrimaryExpr.Op.ID, i); :}
+					| STRINGCONTENT:s		{: RESULT = new PrimaryExpr(PrimaryExpr.Op.STRING, s); :}
+					| LPAREN expression:e RPAREN	{: RESULT = e; :}
+					| NUM:i				{: RESULT = new PrimaryExpr(PrimaryExpr.Op.INT, i); :}
+					| CHARCONTENT:c			{: RESULT = new PrimaryExpr(PrimaryExpr.Op.CHAR, c); :}
+					;
+	
