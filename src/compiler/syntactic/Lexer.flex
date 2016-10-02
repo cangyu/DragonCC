@@ -1,5 +1,4 @@
 package compiler.syntactic;
-import java.io.*;
 
 %%
 
@@ -12,45 +11,44 @@ import java.io.*;
 %implements Symbols
 
 %{
-	private int charLen;
-	private char charContent;
-	private StringBuffer strContent;
+private int charLen;
+private char charContent;
+private StringBuffer strContent;
 
-	private void err(String msg)
-	{
-		System.out.println("Scanning error in line " + yyline + ", column " + yycolumn + ": " + msg);
-		System.exit(1);
-	}
-	
-	private java_cup.runtime.Symbol token(int kind)
-	{
-		return new java_cup.runtime.Symbol(kind,yyline,yycolumn);
-	}
-	
-	private java_cup.runtime.Symbol token(int kind, Object val)
-	{
-		return new java_cup.runtime.Symbol(kind, yyline, yycolumn, val);
-	}
+private void err(String msg)
+{
+	System.out.println("Scanning error in line " + yyline + ", column " + yycolumn + ": " + msg);
+	System.exit(1);
+}
+
+private java_cup.runtime.Symbol token(int kind)
+{
+	return new java_cup.runtime.Symbol(kind,yyline,yycolumn);
+}
+
+private java_cup.runtime.Symbol token(int kind, Object val)
+{
+	return new java_cup.runtime.Symbol(kind, yyline, yycolumn, val);
+}
 %}
 
 %eofval{
-	{
-		if(yystate()==YYCOMMENT)
-			err("Comment symbol doesn't match on EOF!");
-		if(yystate()==YYSTRING)
-			err("String symbol doesn't match on EOF!");
-		if(yystate()==YYCHAR)
-			err("Char symbol doesn't match on EOF!");
+	if(yystate()==YYCOMMENT)
+		err("Comment symbol doesn't match on EOF!");
+	else if(yystate()==YYSTRING)
+		err("String symbol doesn't match on EOF!");
+	else if(yystate()==YYCHAR)
+		err("Char symbol doesn't match on EOF!");
+	else
 		return token(EOF, null);
-	}
 %eofval}
 
 LineTerminator= \n|\r|\r\n
 WhiteSpace={LineTerminator}|[ \t\f]
 
-DecIntegerLiteral=0|[1-9][0-9]
-OctIntegerLiteral=0+[0-7]
-HexIntegerLiteral=0[xX][0-9a-fA-F]
+DecIntegerLiteral=0|[1-9][0-9]*
+OctIntegerLiteral=0[0-7]+
+HexIntegerLiteral=0[xX][0-9a-fA-F]*
 
 Identifier=[_a-zA-Z][_a-zA-Z0-9]*
 
@@ -63,10 +61,10 @@ Identifier=[_a-zA-Z][_a-zA-Z0-9]*
 	/* Comment */
 	"//" {yybegin(YYLINECOMMENT);}
 	"/*" {yybegin(YYCOMMENT);}
-	"*/" { error("Comment symbol doesn't match!"); }
+	"*/" { err("Comment symbol doesn't match!"); }
 	
 	/* Char & String */
-	"\‘" {charLen=0; yybegin(YYCHAR);}
+	"\'" {charLen=0; yybegin(YYCHAR);}
 	"\"" {strContent=new StringBuffer(); yybegin(YYSTRING);}
 	
 	/* keyword */
@@ -144,7 +142,7 @@ Identifier=[_a-zA-Z][_a-zA-Z0-9]*
 	{Identifier} {return token(ID,yytext());}
 	
 	/* NUM */
-	{DecIntegerLiteral} {return token(NUM, new Integer(yytext());}
+	{DecIntegerLiteral} {return token(NUM, new Integer(yytext()));}
 	{OctIntegerLiteral} {return token(NUM, Integer.valueOf(yytext().substring(1),8));}
 	{HexIntegerLiteral} {return token(NUM, Integer.valueOf(yytext().substring(2),16));}
 }
@@ -157,7 +155,7 @@ Identifier=[_a-zA-Z][_a-zA-Z0-9]*
 
 <YYCOMMENT>
 {
-	"*/" {yybegin(YYINTIAL);}
+	"*/" {yybegin(YYINITIAL);}
 	[^] {}
 }
 
