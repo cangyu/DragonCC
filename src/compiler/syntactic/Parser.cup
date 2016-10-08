@@ -1,6 +1,7 @@
 package compiler.syntactic;
 
 import java.io.InputStream;
+import compiler.ast.*;
 
 action code {: :}
 
@@ -23,7 +24,7 @@ public void report_error(String msg, Object info)
 			}
 		}
 	}
-	m.append(" : " + message);
+	m.append(" : " + msg);
 	System.err.println(m);
 	System.exit(1);
 }
@@ -50,25 +51,25 @@ terminal String		STRINGCONTENT;
 terminal Character	CHARCONTENT;
 
 /* Non Terminal */
-non terminal Program 			program;
-non terminal DeclOrDef			decl_or_func_def;
-non terminal Declaration		declaration;
-non terminal FuncDef			func_def;
-non terminal TypeSpecifier		type;
-non terminal InitDeclarators		init_declarators;
-non terminal InitDeclarator		init_declarator;
-non terminal Declarator			declarator;
-non terminal Initializer		initializer;
-non terminal InitializerList		initializer_list;
-non terminal PlainDeclaration		plain_declaration;
-non terminal Star			star_list;
-non terminal PlainDeclarator		plain_declarator;
-non terminal Parameters			parameters;
-non terminal TypeDeclaratorsList	type_declarators_list;
-non terminal Declarators		declarators;
-non terminal DeclarationList		declaration_list;
+non terminal Program                program;
+non terminal DeclOrFuncDef          decl_or_func_def;
+non terminal Declaration            declaration;    
+non terminal FuncDef                func_def;
+non terminal TypeSpecifier          type;
+non terminal InitDeclarators        init_declarators;
+non terminal InitDeclarator	        init_declarator;
+non terminal Declarator             declarator;
+non terminal Initializer            initializer;
+non terminal InitializerList        initializer_list;
+non terminal PlainDeclaration       plain_declaration;
+non terminal Star                   star_list;
+non terminal PlainDeclarator        plain_declarator;
+non terminal Parameters             parameters;
+non terminal TypeDeclaratorsList    type_declarators_list;
+non terminal Declarators            declarators;
+non terminal DeclarationList        declaration_list;
 
-non terminal Stmt		stmt;
+non terminal Stmt		    stmt;
 non terminal ExpressionStmt	expression_stmt;
 non terminal CompoundStmt	compound_stmt;
 non terminal StmtList		stmt_list;
@@ -111,108 +112,84 @@ start with program;
 
 /* Top Level */
 program ::= program:p decl_or_func_def:t {: if(t!=null) p.list.add(t); RESULT=p; :}
-	| decl_or_func_def:t {: RESULT=new Program(t); :}
-	;
+		| decl_or_func_def:t {: RESULT=new Program(t); :};
 
 decl_or_func_def ::= declaration:t {: RESULT=t; :}
-		 | func_def:t {: RESULT=t; :}
-		 ;
+				 | func_def:t {: RESULT=t; :};
 				 
 declaration ::=  type:t init_declarators:i SEMI {: RESULT=new Declaration(t,i); :}
-		| type:t SEMI {: RESULT= new Declaration(t); :}
-			;
-
-func_def ::= type:t plain_declarator:p LPAREN parameters:s RPAREN compound_stmt:c {: RESULT= new FuncDef(t,p,s,c); :}
-	 | type:t plain_declarator:p LPAREN RPAREN compound_stmt:c {: RESULT=new FuncDef(t,p,c); :}
-	 ;
-		 
+			| type:t SEMI {: RESULT= new Declaration(t); :};
+			
 type ::= VOID {: RESULT = new TypeSpecifier(TypeSpecifier.Type.VOID); :}
-	| CHAR	{: RESULT = new TypeSpecifier(TypeSpecifier.Type.CHAR); :}
-	| INT {: RESULT = new TypeSpecifier(TypeSpecifier.Type.INT); :}
-	| STRUCT ID:i LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.STRUCT, i, t); :} 
-	| STRUCT LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.STRUCT, null, t); :}
-	| STRUCT ID:s {: RESULT = new TypeSpecifier(TypeSpecifier.Type.STRUCT, s, null); :}
-	| UNION ID:i LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.UNION, i, t); :} 
-	| UNION LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.UNION, null, t); :} 
-	| UNION ID:s {: RESULT = new TypeSpecifier(TypeSpecifier.Type.UNION, s, null); :}
-	;
+    | CHAR  {: RESULT = new TypeSpecifier(TypeSpecifier.Type.CHAR); :}
+    | INT {: RESULT = new TypeSpecifier(TypeSpecifier.Type.INT); :}
+    | STRUCT ID:i LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.STRUCT, i, t); :} 
+    | STRUCT LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.STRUCT, null, t); :}
+    | STRUCT ID:s {: RESULT = new TypeSpecifier(TypeSpecifier.Type.STRUCT, s, null); :}
+    | UNION ID:i LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.UNION, i, t); :} 
+    | UNION LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.UNION, null, t); :} 
+    | UNION ID:s {: RESULT = new TypeSpecifier(TypeSpecifier.Type.UNION, s, null); :};
+    
+type_declarators_list ::= type:t declarators:s SEMI {: RESULT=new TypeDeclaratorsList(new TypeDeclarators(t,s)); :}
+                      | type_declarators_list:ts type:t declarators: s SEMI {: ts.type_declarators_list.add(new TypeDeclarators(t,s)); RESULT=ts; :};
+			
+declarators ::= declarator:decl {: RESULT=new Declarators(decl); :}
+            | declarators:decls COMMA declarator:decl {: decls.declarator_list.add(decl); RESULT=decl; :};
 
-init_declarators ::= init_declarators:idecls COMMA init_declarator:idecl {: idecls.idecl_list.add(idecl); RESULT= idecls; :}
-		 | init_declarator:idecl {: RESULT= new InitDeclarators(idecl); :}
-		 ;
-	
-init_declarator ::= declarator:d ASSIGN initializer:v {: RESULT=new InitDeclarator(d,v); :}
-		| declarator:d {: RESULT=new InitDeclarator(d); :}
-		;
-	 			
+init_declarators ::= init_declarators:idecls COMMA init_declarator:idecl {: idecls.idecl_list.add(idecl); RESULT = idecls; :}
+                 | init_declarator:idecl {: RESULT = new InitDeclarators(idecl); :};
+                 
+init_declarator ::= declarator:d ASSIGN initializer:v {: RESULT = new InitDeclarator(d,v); :}
+                | declarator:d {: RESULT = new InitDeclarator(d); :};                 			
+
 declarator ::= plain_declarator:pd {: RESULT=new Declarator(1,pd); :}
-	   | declarator:d LMPAREN constant_expression:c RMPAREN {: d.exprs.add(c); RESULT=d;  :}
-	   ;
+           | declarator:d LMPAREN constant_expression:c RMPAREN {: d.exprs.add(c); RESULT=d;  :};			
+
+plain_declarator ::= star_list:s ID:i {: RESULT=new PlainDeclarator(s,i); :};
+
+star_list ::=   {: RESULT=new Star(); :}
+          | TIMES star_list:s {: ++s.total; RESULT=s; :};
 
 initializer ::= assignment_expr:e {: RESULT=new Initializer(e); :}
-		| LBRACE initializer_list:is RBRACE {: RESULT=new Initializer(is); :}
-		;
-			
+            | LBRACE initializer_list:is RBRACE {: RESULT=new Initializer(is); :};
+
 initializer_list ::= initializer:i {: RESULT=new InitializerList(i); :}
-		 | initializer_list:is COMMA initializer:i {: is.initializer_list.add(i); RESULT=is; :}
-		 ;
-				 
-plain_declarator ::= star_list:s ID:i {: RESULT=new PlainDeclarator(s,i); :}
-			;
-				 
-star_list ::= 	{: RESULT=new Star(); :}
-	  | TIMES star_list:s {: ++s.total; RESULT=s; :}
-	  ;
-		  
+                 | initializer_list:is COMMA initializer:i {: is.initializer_list.add(i); RESULT=is; :};
+
+func_def ::= type:t plain_declarator:p LPAREN parameters:s RPAREN compound_stmt:c {: RESULT=new FuncDef(t,p,s,c); :}
+		 | type:t plain_declarator:p LPAREN RPAREN compound_stmt:c {: RESULT=new FuncDef(t,p,c); :};
+
 parameters ::= plain_declaration:pd {: RESULT=new Parameters(pd); :}
-	   | parameters:ps COMMA plain_declaration:pd {: ps.plain_declaration_list.add(pd); RESULT=ps; :}
-	   ;
-		   
-type_declarators_list ::= type:t declarators:s SEMI {: RESULT=new TypeDeclaratorsList(new TypeDeclarators(t,s)); :}
-		  | type_declarators_list:ts type:t declarators: s SEMI {: ts.type_declarators_list.add(new TypeDeclarators(t,s)); RESULT=ts; :}
-		  ;
-					  
-declarators ::= declarator:decl {: RESULT=new Declarators(decl); :}
-		| declarators:decls COMMA declarator:decl {: decls.declarator_list.add(decl); RESULT=decl; :}
-		;
-			
-plain_declaration ::= type:t declarator:d {: RESULT = new PlainDeclaration(t,d); :}
-				  ;
-					  
+	       | parameters:ps COMMA plain_declaration:pd {: ps.plain_declaration_list.add(pd); RESULT=ps; :};
+ 
+plain_declaration ::= type:t declarator:d {: RESULT = new PlainDeclaration(t,d); :};
+
 /* Statements */
 stmt ::= expression_stmt:e {: RESULT=e; :}
 	 | compound_stmt:c {: RESULT=c; :}
 	 | selection_stmt:s {: RESULT=s; :}
 	 | iteration_stmt:i {: RESULT=i; :}
-	 | jump_stmt:j {: RESULT=j; :}
-	 ;
+	 | jump_stmt:j {: RESULT=j; :};
 	 
-expression_stmt ::= expression:e SEMI {: RESULT=new ExpressionStmt(e); :}
-				;
+expression_stmt ::= expression:e SEMI {: RESULT=new ExpressionStmt(e); :};
 
-compound_stmt ::= LBRACE declaration_list: dd stmt_list:ss RBRACE {: RESULT=new CompoundStmt(dd,ss); :}
-			  ;
+compound_stmt ::= LBRACE declaration_list: dd stmt_list:ss RBRACE {: RESULT=new CompoundStmt(dd,ss); :};
 			 
 declaration_list ::= declaration_list:dd declaration:decl {: dd.declarations.add(decl); RESULT=dd; :}
-				 | 	{: RESULT=new DeclarationList(); :}
-				 ;
+				 | 	{: RESULT=new DeclarationList(); :};
 		
 stmt_list ::= stmt_list: ss stmt:s {: ss.stmts.add(s); RESULT=ss; :}
-		  |	 {: RESULT=new StmtList(); :}
-		  ;
+		  |	 {: RESULT=new StmtList(); :};
 		 
 selection_stmt ::= IF LPAREN expression:ec RPAREN stmt:s ELSE stmt:ee {: RESULT=new SelectionStmt(ec,s,ee); :}
-			   | IF LPAREN expression:ec RPAREN stmt:s {: RESULT=new SelectionStmt(ec,s); :}
-			   ;
+			   | IF LPAREN expression:ec RPAREN stmt:s {: RESULT=new SelectionStmt(ec,s); :};
 			   
 iteration_stmt ::= WHILE LPAREN expression:e RPAREN stmt:s {: RESULT=new IterationStmt(e,s); :}
-			   | FOR LPAREN plain_expr SEMI plain_expr SEMI plain_expr RPAREN stmt:s {: RESULT=new IterationStmt(a,b,c,s); :}
-			   ;
+			   | FOR LPAREN plain_expr SEMI plain_expr SEMI plain_expr RPAREN stmt:s {: RESULT=new IterationStmt(a,b,c,s); :};
 			 
 jump_stmt ::= CONTINUE SEMI {: RESULT=new JumpStmt(JumpStmt.JumpType.CONTINUE); :}
 		  | BREAK SEMI {: RESULT=new JumpStmt(JumpStmt.JumpType.BREAK); :}
-		  | RETURN plain_expr SEMI {: RESULT=new JumpStmt(e); :}
-		  ;
+		  | RETURN plain_expr SEMI {: RESULT=new JumpStmt(e); :};
 
 /* Expressions */
 plain_expr ::= {: RESULT=null; :}
