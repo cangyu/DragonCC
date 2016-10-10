@@ -53,39 +53,39 @@ terminal Character	CHARCONTENT;
 /* Non Terminal */
 non terminal Program                program;
 non terminal DeclOrFuncDef          decl_or_func_def;
-non terminal Declaration            declaration;    
-non terminal FuncDef                func_def;
+non terminal Decl                   declaration;
 non terminal TypeSpecifier          type;
 non terminal InitDeclarators        init_declarators;
-non terminal InitDeclarator	        init_declarator;
+non terminal InitDeclarator         init_declarator;
 non terminal Declarator             declarator;
-non terminal Initializer            initializer;
-non terminal InitializerList        initializer_list;
-non terminal PlainDeclaration       plain_declaration;
-non terminal Star                   star_list;
 non terminal PlainDeclarator        plain_declarator;
-non terminal Parameters             parameters;
-non terminal TypeDeclaratorsList    type_declarators_list;
+non terminal Star                   star_list;
+non terminal NonInitDecls           type_declarators_list;
 non terminal Declarators            declarators;
+non terminal Initializer            initializer;
+non terminal Initializers           initializer_list;
+non terminal FuncDef                func_def;
+non terminal Parameters             parameters;
+non terminal PlainDeclaration       plain_declaration;
 non terminal DeclarationList        declaration_list;
 
-non terminal Stmt		    stmt;
-non terminal ExpressionStmt	expression_stmt;
-non terminal CompoundStmt	compound_stmt;
-non terminal StmtList		stmt_list;
-non terminal SelectionStmt	selection_stmt;
-non terminal JumpStmt		jump_stmt;
-non terminal IterationStmt	iteration_stmt;
+non terminal Stmt		            stmt;
+non terminal ExpressionStmt	        expression_stmt;
+non terminal CompoundStmt	        compound_stmt;
+non terminal StmtList		        stmt_list;
+non terminal SelectionStmt	        selection_stmt;
+non terminal JumpStmt		        jump_stmt;
+non terminal IterationStmt	        iteration_stmt;
 
-non terminal Expr		expression, plain_expr;
-non terminal Expr		assignment_expr;
-non terminal AssignmentExpr.Op	assignment_operator;
-non terminal Expr		constant_expression;
-non terminal Expr		logical_and_expression;
-non terminal Expr		logical_or_expression;
-non terminal Expr		inclusive_or_expression;
-non terminal Expr		exclusive_or_expression;
-non terminal Expr		and_expression;
+non terminal Expr		         expression, plain_expr;
+non terminal Expr		         assignment_expr;
+non terminal AssignmentExpr.Op	 assignment_operator;
+non terminal Expr		         constant_expression;
+non terminal Expr		         logical_and_expression;
+non terminal Expr		         logical_or_expression;
+non terminal Expr		         inclusive_or_expression;
+non terminal Expr		         exclusive_or_expression;
+non terminal Expr		         and_expression;
 non terminal Expr		equality_expression;
 non terminal BinaryExpr.Op	equality_operator;
 non terminal Expr		relational_expression;
@@ -111,56 +111,89 @@ precedence right ELSE;
 start with program;
 
 /* Top Level */
-program ::= program:p decl_or_func_def:t {: if(t!=null) p.list.add(t); RESULT=p; :}
-		| decl_or_func_def:t {: RESULT=new Program(t); :};
+program ::= program:p decl_or_func_def:t 
+            {: 
+                if(t!=null) 
+                    p.components.add(t); 
+                RESULT=p; 
+            :}
+		  | decl_or_func_def:t {: RESULT=new Program(t); :};
 
 decl_or_func_def ::= declaration:t {: RESULT=t; :}
-				 | func_def:t {: RESULT=t; :};
+				   | func_def:t {: RESULT=t; :};
 				 
-declaration ::=  type:t init_declarators:i SEMI {: RESULT=new Declaration(t,i); :}
-			| type:t SEMI {: RESULT= new Declaration(t); :};
+declaration ::= type:t init_declarators:i SEMI {: RESULT=new Declaration(t,i); :}
+			  | type:t SEMI {: RESULT=new Declaration(t, null); :};
 			
 type ::= VOID {: RESULT = new TypeSpecifier(TypeSpecifier.Type.VOID); :}
-    | CHAR  {: RESULT = new TypeSpecifier(TypeSpecifier.Type.CHAR); :}
-    | INT {: RESULT = new TypeSpecifier(TypeSpecifier.Type.INT); :}
-    | STRUCT ID:i LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.STRUCT, i, t); :} 
-    | STRUCT LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.STRUCT, null, t); :}
-    | STRUCT ID:s {: RESULT = new TypeSpecifier(TypeSpecifier.Type.STRUCT, s, null); :}
-    | UNION ID:i LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.UNION, i, t); :} 
-    | UNION LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.UNION, null, t); :} 
-    | UNION ID:s {: RESULT = new TypeSpecifier(TypeSpecifier.Type.UNION, s, null); :};
-    
-type_declarators_list ::= type:t declarators:s SEMI {: RESULT=new TypeDeclaratorsList(new TypeDeclarators(t,s)); :}
-                      | type_declarators_list:ts type:t declarators: s SEMI {: ts.type_declarators_list.add(new TypeDeclarators(t,s)); RESULT=ts; :};
-			
-declarators ::= declarator:decl {: RESULT=new Declarators(decl); :}
-            | declarators:decls COMMA declarator:decl {: decls.declarator_list.add(decl); RESULT=decl; :};
-
-init_declarators ::= init_declarators:idecls COMMA init_declarator:idecl {: idecls.idecl_list.add(idecl); RESULT = idecls; :}
-                 | init_declarator:idecl {: RESULT = new InitDeclarators(idecl); :};
-                 
+       | CHAR {: RESULT = new TypeSpecifier(TypeSpecifier.Type.CHAR); :}
+       | INT {: RESULT = new TypeSpecifier(TypeSpecifier.Type.INT); :}
+       | STRUCT ID:i LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.STRUCT, i, t); :} 
+       | STRUCT LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.STRUCT, null, t); :}
+       | STRUCT ID:s {: RESULT = new TypeSpecifier(TypeSpecifier.Type.STRUCT, s, null); :}
+       | UNION ID:i LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.UNION, i, t); :}
+       | UNION LBRACE type_declarators_list:t RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.UNION, null, t); :} 
+       | UNION ID:s {: RESULT = new TypeSpecifier(TypeSpecifier.Type.UNION, s, null); :};
+ 
+init_declarators ::= init_declarators:idecls COMMA init_declarator:idecl 
+                     {: 
+                         idecls.idecl_list.add(idecl); 
+                         RESULT = idecls; 
+                     :}
+                   | init_declarator:idecl {: RESULT = new InitDeclarators(idecl); :};
+                      
 init_declarator ::= declarator:d ASSIGN initializer:v {: RESULT = new InitDeclarator(d,v); :}
-                | declarator:d {: RESULT = new InitDeclarator(d); :};                 			
-
-declarator ::= plain_declarator:pd {: RESULT=new Declarator(1,pd); :}
-           | declarator:d LMPAREN constant_expression:c RMPAREN {: d.exprs.add(c); RESULT=d;  :};			
+                  | declarator:d {: RESULT = new InitDeclarator(d, null); :};
+                
+declarator ::= plain_declarator:pd {: RESULT=new Declarator(pd); :}
+             | declarator:d LMPAREN constant_expression:c RMPAREN 
+               {: 
+                    d.shape.add(c); 
+                    RESULT=d;  
+               :};           
 
 plain_declarator ::= star_list:s ID:i {: RESULT=new PlainDeclarator(s,i); :};
 
-star_list ::=   {: RESULT=new Star(); :}
-          | TIMES star_list:s {: ++s.total; RESULT=s; :};
+star_list ::= {: RESULT=new Star(); :}
+            | star_list:s TIMES 
+              {: 
+                    ++s.cnt; 
+                    RESULT=s; 
+              :};
+                 
+type_declarators_list ::= type:t declarators:s SEMI {: RESULT=new TypeDeclaratorsList(new NonInitDecl(t,s)); :}
+                        | type_declarators_list:ts type:t declarators: s SEMI 
+                          {: 
+                                ts.type_declarators_list.add(new NonInitDecl(t,s)); 
+                                RESULT=ts; 
+                          :};
+			
+declarators ::= declarator:decl {: RESULT=new Declarators(decl); :}
+              | declarators:decls COMMA declarator:decl 
+                {: 
+                    decls.declarator_list.add(decl); 
+                    RESULT=decl; 
+                :};
 
 initializer ::= assignment_expr:e {: RESULT=new Initializer(e); :}
-            | LBRACE initializer_list:is RBRACE {: RESULT=new Initializer(is); :};
+              | LBRACE initializer_list:is RBRACE {: RESULT=new Initializer(is); :};
 
 initializer_list ::= initializer:i {: RESULT=new InitializerList(i); :}
-                 | initializer_list:is COMMA initializer:i {: is.initializer_list.add(i); RESULT=is; :};
+                   | initializer_list:is COMMA initializer:i 
+                     {: 
+                         is.initializer_list.add(i); 
+                         RESULT=is; 
+                     :};
 
 func_def ::= type:t plain_declarator:p LPAREN parameters:s RPAREN compound_stmt:c {: RESULT=new FuncDef(t,p,s,c); :}
-		 | type:t plain_declarator:p LPAREN RPAREN compound_stmt:c {: RESULT=new FuncDef(t,p,c); :};
+		   | type:t plain_declarator:p LPAREN RPAREN compound_stmt:c {: RESULT=new FuncDef(t,p,null, c); :};
 
 parameters ::= plain_declaration:pd {: RESULT=new Parameters(pd); :}
-	       | parameters:ps COMMA plain_declaration:pd {: ps.plain_declaration_list.add(pd); RESULT=ps; :};
+	         | parameters:ps COMMA plain_declaration:pd 
+	           {: 
+                    ps.plain_declaration_list.add(pd); 
+                    RESULT=ps; 
+               :};
  
 plain_declaration ::= type:t declarator:d {: RESULT = new PlainDeclaration(t,d); :};
 
@@ -193,19 +226,15 @@ jump_stmt ::= CONTINUE SEMI {: RESULT=new JumpStmt(JumpStmt.JumpType.CONTINUE); 
 
 /* Expressions */
 plain_expr ::= {: RESULT=null; :}
-		   | expression:e {: RESULT=e; :} 
-		   ;
+		   | expression:e {: RESULT=e; :} ;
 		   
 expression ::= assignment_expr:a {: RESULT=a; :}
-			| expression:e COMMA assignment_expr:a {: RESULT=new Expression(e,a); :}
-			;
+			| expression:e COMMA assignment_expr:a {: RESULT=new Expression(e,a); :};
 
-constant_expression ::= logical_or_expression:l {: RESULT=l; :}
-					;
+constant_expression ::= logical_or_expression:l {: RESULT=l; :};
 
 assignment_expr ::= logical_or_expression:l {: RESULT=l; :}
-				| unary_expression:u assignment_operator:a assignment_expr:ae {: RESULT=new AssignmentExpr(u,a,ae); :}
-				;
+				| unary_expression:u assignment_operator:a assignment_expr:ae {: RESULT=new AssignmentExpr(u,a,ae); :};
 				
 assignment_operator	::= ASSIGN		{: RESULT = AssignmentExpr.Op.ASSIGN; :}
 					| MUL_ASSIGN	{: RESULT = AssignmentExpr.Op.MUL_ASSIGN; :}
