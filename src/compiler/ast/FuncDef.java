@@ -2,16 +2,16 @@ package compiler.ast;
 
 public class FuncDef extends DeclOrFuncDef
 {
-	public TypeSpecifier t;
-	public PlainDeclarator name;
+	public TypeSpecifier type;
+	public PlainDeclarator id;
 	public Parameters paras;
-	public CompoundStmt compstmt;
+	public CompoundStmt comp_stmt;
 	
-	public FuncDef(TypeSpecifier _t, PlainDeclarator _name, Parameters _p, CompoundStmt _cs)
+	public FuncDef(TypeSpecifier _t, PlainDeclarator _id, Parameters _p, CompoundStmt _cs)
 	{
-		t=_t;
-		name=_name;
+		type=_t;
+		id=_id;
 		paras=_p;
-		compstmt=_cs;
+		comp_stmt=_cs;
 	}
 }

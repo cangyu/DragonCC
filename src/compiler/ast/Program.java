@@ -4,11 +4,11 @@ import java.util.LinkedList;
 
 public class Program 
 {
-	public LinkedList<DeclOrFuncDef> components;
+	public LinkedList<DeclOrFuncDef> comp;
 	
-	public Program(DeclOrFuncDef dof)
+	public Program(DeclOrFuncDef _df)
 	{
-		components=new LinkedList<DeclOrFuncDef>();
-		components.add(dof);
+		comp=new LinkedList<DeclOrFuncDef>();
+		comp.add(_df);
 	}
 }

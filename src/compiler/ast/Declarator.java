@@ -4,12 +4,12 @@ import java.util.LinkedList;
 
 public class Declarator
 {
-	public PlainDeclarator pd;
-	public LinkedList<Expr> shape;
+	public PlainDeclarator plain_declarator;
+	public LinkedList<Expr> dimension;
 	
 	public Declarator(PlainDeclarator _pd)
 	{
-		pd=_pd;
-		shape=new LinkedList<Expr>();
+		plain_declarator=_pd;
+		dimension=new LinkedList<Expr>();
 	}
 }

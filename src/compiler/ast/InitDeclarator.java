@@ -2,12 +2,17 @@ package compiler.ast;
 
 public class InitDeclarator 
 {
-	public Declarator declr;
-	public Initializer initr;
+	public Declarator declarator;
+	public Initializer initializer;
 	
 	public InitDeclarator(Declarator x, Initializer y)
 	{
-		declr=x;
-		initr=y;
+		declarator=x;
+		initializer=y;
+	}
+	
+	public InitDeclarator(Declarator x)
+	{
+		declarator=x;
 	}
 }

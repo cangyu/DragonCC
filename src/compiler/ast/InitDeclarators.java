@@ -4,11 +4,11 @@ import java.util.LinkedList;
 
 public class InitDeclarators 
 {
-	public LinkedList<InitDeclarator> idecl_list;
+	public LinkedList<InitDeclarator> comp;
 	
 	public InitDeclarators(InitDeclarator _idecl)
 	{
-		idecl_list=new LinkedList<InitDeclarator>();
-		idecl_list.add(_idecl);
+		comp=new LinkedList<InitDeclarator>();
+		comp.add(_idecl);
 	}
 }

@@ -4,11 +4,11 @@ import java.util.LinkedList;
 
 public class Declarators 
 {
-	public LinkedList<Declarator> declarator_list;
+	public LinkedList<Declarator> comp;
 	
 	public Declarators(Declarator _declr)
 	{
-		declarator_list=new LinkedList<Declarator>();
-		declarator_list.add(_declr);
+		comp=new LinkedList<Declarator>();
+		comp.add(_declr);
 	}
 }

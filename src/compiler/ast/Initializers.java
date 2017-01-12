@@ -4,11 +4,11 @@ import java.util.LinkedList;
 
 public class Initializers 
 {
-	public LinkedList<Initializer> initializer_list;
+	public LinkedList<Initializer> comp;
 	
 	public Initializers(Initializer _i)
 	{
-		initializer_list=new LinkedList<Initializer>();
-		initializer_list.add(_i);
+		comp=new LinkedList<Initializer>();
+		comp.add(_i);
 	}
 }
