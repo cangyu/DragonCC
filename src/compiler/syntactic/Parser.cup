@@ -66,7 +66,7 @@ non terminal Decls decls;
 non terminal NonInitDecls non_init_decls;
 
 non terminal Initializer initializer;
-non terminal Initializer initializers;
+non terminal Initializers initializers;
 
 non terminal TypeSpecifier type;
 non terminal Parameters parameters;
@@ -82,32 +82,31 @@ non terminal SelectionStmt selection_stmt;
 non terminal JumpStmt jump_stmt;
 non terminal IterationStmt iteration_stmt;
 
+/* Expressions */
 non terminal Expr expression, plain_expr;
-non terminal Expr		         assignment_expr;
-non terminal Expr		         constant_expression;
-non terminal Expr		         logical_and_expression;
-non terminal Expr		         logical_or_expression;
-non terminal Expr		         inclusive_or_expression;
-non terminal Expr		         exclusive_or_expression;
-non terminal Expr		         and_expression;
-non terminal Expr		         equality_expression;
-non terminal Expr		         relational_expression;
-non terminal Expr		         shift_expression;
-non terminal Expr		         additive_expression;
-non terminal Expr		         multiplicative_expression;
-non terminal Expr		         cast_expression;
-non terminal Expr		         unary_expression;
-non terminal Expr		         postfix_expression;
-non terminal Expr		         primary_expression;
-non terminal AssignmentExpr.Op	 assignment_operator;
-non terminal BinaryExpr.Op	     equality_operator;
-non terminal BinaryExpr.Op	     relational_operator;
-non terminal BinaryExpr.Op	     shift_operator;
-non terminal BinaryExpr.Op	     additive_operator;
-non terminal BinaryExpr.Op	     multiplicative_operator;
-non terminal UnaryExpr.Op	     unary_operator;
-non terminal TypeName		     type_name;
-non terminal Arguments		     arguments, arguments_or_not;
+non terminal Expr assignment_expr;
+non terminal Expr logical_and_expression;
+non terminal Expr logical_or_expression;
+non terminal Expr inclusive_or_expression;
+non terminal Expr exclusive_or_expression;
+non terminal Expr and_expression;
+non terminal Expr equality_expression;
+non terminal Expr relational_expression;
+non terminal Expr shift_expression;
+non terminal Expr additive_expression;
+non terminal Expr multiplicative_expression;
+non terminal Expr cast_expression;
+non terminal Expr unary_expression;
+non terminal Expr postfix_expression;
+non terminal Expr primary_expression;
+non terminal Expr constant_expression;
+
+non terminal AssignmentExpr.Op assignment_operator;
+non terminal BinaryExpr.Op equality_operator, relational_operator, shift_operator, additive_operator, multiplicative_operator;
+non terminal UnaryExpr.Op unary_operator;
+
+non terminal TypeName type_name;
+non terminal Arguments arguments;
 
 /* precedence  */
 precedence right ELSE;
@@ -202,26 +201,26 @@ iteration_stmt ::= WHILE LPAREN expression:cond RPAREN stmt:s {: RESULT=new Iter
 plain_expr ::= expression:e {: RESULT=e; :}
 		     | /* empty */ {: RESULT=null; :};
 		   
-expression ::= assignment_expr:a {: RESULT=a; :}
-			 | expression:e COMMA assignment_expr:a {: RESULT=new Expression(e,a); :};
+expression ::= expression:e COMMA assignment_expr:a {: e.comp.add(a); RESULT=e; :}
+			 | assignment_expr:a {: RESULT=new Expression(a); :};
 
 assignment_expr ::= logical_or_expression:l {: RESULT=l; :}
-				  | unary_expression:u assignment_operator:a assignment_expr:ae {: RESULT=new AssignmentExpr(u,a,ae); :};
+				  | unary_expression:u assignment_operator:a assignment_expr:ae {: RESULT=new AssignmentExpr(a,u,ae); :};
 
 logical_or_expression ::= logical_and_expression:l {: RESULT = l; :}
 						| logical_and_expression:l OR logical_or_expression:r {: RESULT=new BinaryExpr(BinaryExpr.Op.OR,l,r); :};
-					
+
 logical_and_expression ::= inclusive_or_expression:i {: RESULT = i; :}
 						 | inclusive_or_expression:l AND logical_and_expression:i {: RESULT = new BinaryExpr(BinaryExpr.Op.AND, l, i); :};
 
 inclusive_or_expression	::= exclusive_or_expression:e {: RESULT = e; :}
 						  | inclusive_or_expression:i BIT_OR exclusive_or_expression:e {: RESULT = new BinaryExpr(BinaryExpr.Op.BIT_OR, i, e); :};
-						
+
 exclusive_or_expression	::= and_expression:a {: RESULT = a; :}
 						  | exclusive_or_expression:e BIT_XOR and_expression:a {: RESULT = new BinaryExpr(BinaryExpr.Op.BIT_XOR, e, a); :};
-						
+
 and_expression ::= equality_expression:e {: RESULT = e; :}
-				 | and_expression:a BIT_AND equality_expression:e	{: RESULT = new BinaryExpr(BinaryExpr.Op.BIT_AND, a, e); :};
+				 | and_expression:a BIT_AND equality_expression:e {: RESULT = new BinaryExpr(BinaryExpr.Op.BIT_AND, a, e); :};
 				
 equality_expression	::= relational_expression:r	{: RESULT = r; :}
 					  | equality_expression:e equality_operator:op relational_expression:r {: RESULT = new BinaryExpr(op, e, r); :};
@@ -240,7 +239,7 @@ multiplicative_expression ::= cast_expression:c	{: RESULT = c; :}
 						
 cast_expression	::= unary_expression:u	{: RESULT = u; :}
 				  | LPAREN type_name:t RPAREN cast_expression:c	{: RESULT = new CastExpr(t,c); :};
-		
+
 unary_expression ::= postfix_expression:p {: RESULT = p; :}
                    | INC unary_expression:p {: RESULT = new UnaryExpr(UnaryExpr.Op.INC, p); :}
                    | DEC unary_expression:p	{: RESULT = new UnaryExpr(UnaryExpr.Op.DEC, p); :}
@@ -250,17 +249,17 @@ unary_expression ::= postfix_expression:p {: RESULT = p; :}
 				
 postfix_expression ::= primary_expression:p {: RESULT = p; :}
 					 | postfix_expression:e LMPAREN expression:i RMPAREN {: RESULT = new PostfixExpr(PostfixExpr.Op.MPAREN, i, e); :}
-					 | postfix_expression:e LPAREN arguments_or_not:i RPAREN {: RESULT = new PostfixExpr(PostfixExpr.Op.PAREN, i, e); :}
+					 | postfix_expression:e LPAREN arguments:i RPAREN {: RESULT = new PostfixExpr(PostfixExpr.Op.PAREN, i, e); :}
 					 | postfix_expression:e DOT ID:i {: RESULT = new PostfixExpr(PostfixExpr.Op.DOT, i, e); :}
 					 | postfix_expression:e PTR ID:i {: RESULT = new PostfixExpr(PostfixExpr.Op.PTR, i, e); :}
 					 | postfix_expression:e INC {: RESULT = new PostfixExpr(PostfixExpr.Op.INC, null, e); :}
 					 | postfix_expression:e DEC {: RESULT = new PostfixExpr(PostfixExpr.Op.DEC, null, e); :};
 
-primary_expression ::= ID:i {: RESULT = new PrimaryExpr(PrimaryExpr.Op.ID, i); :}
-					 | STRINGCONTENT:s {: RESULT = new PrimaryExpr(PrimaryExpr.Op.STRING, s); :}
+primary_expression ::= ID:i {: RESULT = new PrimaryExpr(PrimaryExpr.Type.ID, i); :}
+					 | STRINGCONTENT:s {: RESULT = new PrimaryExpr(PrimaryExpr.Type.STRING, s); :}
 					 | LPAREN expression:e RPAREN {: RESULT = e; :}
-					 | NUM:i {: RESULT = new PrimaryExpr(PrimaryExpr.Op.INT, i); :}
-					 | CHARCONTENT:c {: RESULT = new PrimaryExpr(PrimaryExpr.Op.CHAR, c); :};
+					 | NUM:i {: RESULT = new PrimaryExpr(PrimaryExpr.Type.INT, i); :}
+					 | CHARCONTENT:c {: RESULT = new PrimaryExpr(PrimaryExpr.Type.CHAR, c); :};
 					
 constant_expression ::= logical_or_expression:l {: RESULT=l; :};
 	
@@ -299,13 +298,11 @@ unary_operator ::= BIT_AND {: RESULT = UnaryExpr.Op.BIT_AND; :}
                  | PLUS {: RESULT = UnaryExpr.Op.POSITIVE; :}
 				 | MINUS {: RESULT = UnaryExpr.Op.NEGATIVE; :}
 				 | BIT_NOT {: RESULT = UnaryExpr.Op.BIT_NOT; :}
-				 | NOT {: RESULT = UnaryExpr.Op.NOT; :};	
+				 | NOT {: RESULT = UnaryExpr.Op.NOT; :};
 				 
 type_name ::= type:t stars:s {: RESULT = new TypeName(t,s); :};	
 
-arguments_or_not ::= /* empty */ {: RESULT = new Arguments(); :}
-				   | arguments:a {: RESULT = a; :};
-
-arguments ::= assignment_expr:e {: RESULT = new Arguments(e); :}
-			| arguments:a COMMA assignment_expr:e {: a.exprs.add(e); RESULT = a; :};
+arguments ::= arguments:a COMMA assignment_expr:e {: a.comp.add(e); RESULT = a; :}
+            | assignment_expr:e {: RESULT = new Arguments(e); :}
+			| /* empty */ {: RESULT = new Arguments(); :};
 			
