@@ -132,7 +132,7 @@ declarator ::= declarator:d LMPAREN constant_expression:c RMPAREN {: d.dimension
 init_declarator ::= declarator:d ASSIGN initializer:v {: RESULT = new InitDeclarator(d,v); :}
                   | declarator:d {: RESULT = new InitDeclarator(d); :};
                   
-plain_decl ::= type:t declarator:d {: RESULT = new PlainDeclaration(t,d); :};
+plain_decl ::= type:t declarator:d {: RESULT = new PlainDecl(t,d); :};
 
 decl ::= type:t init_declarators:i SEMI {: RESULT=new Decl(t,i); :}
        | type:t SEMI {: RESULT=new Decl(t); :};
