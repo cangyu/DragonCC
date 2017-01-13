@@ -2,7 +2,7 @@ package compiler.ast;
 
 public class UnaryExpr extends Expr
 {
-	public static enum Op{BIT_AND, TIMES, PLUS, MINUS, BIT_NOT, NOT, SIZEOF};
+	public static enum Op{BIT_AND, STAR, POSITIVE, NEGATIVE, BIT_NOT, NOT, SIZEOF, INC, DEC};
 	
 	public Op operation_type;
 	public Expr expr;

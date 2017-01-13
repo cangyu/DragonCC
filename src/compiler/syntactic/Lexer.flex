@@ -1,13 +1,13 @@
 package compiler.syntactic;
 
 %%
-
 %class Lexer
 %cup
 %unicode
 %line
 %column
 %public
+
 %implements Symbols
 
 %{
