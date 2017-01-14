@@ -133,12 +133,12 @@ postfix_expression ::= primary_expression:pe {: RESULT = pe; :}
 unary_expression ::= postfix_expression:pe {: RESULT = pe; :}
                    | INC unary_expression:ue {: RESULT = new UnaryExpr(UnaryExpr.Type.INC, ue); :}
                    | DEC unary_expression:ue {: RESULT = new UnaryExpr(UnaryExpr.Type.DEC, ue); :}
-                   | BIT_AND cast_expression:ce {: RESULT = new UnaryExpr(UnaryExpr.Type.BIT_AND, ue); :}
-                   | TIMES cast_expression:ce {: RESULT = new UnaryExpr(UnaryExpr.Type.STAR, ue); :}
-                   | PLUS cast_expression:ce {: RESULT = new UnaryExpr(UnaryExpr.Type.POSITIVE, ue); :}
-                   | MINUS cast_expression:ce {: RESULT = new UnaryExpr(UnaryExpr.Type.NEGATIVE, ue); :}
-                   | BIT_NOT cast_expression:ce {: RESULT = new UnaryExpr(UnaryExpr.Type.BIT_NOT, ue); :}
-                   | NOT cast_expression:ce {: RESULT = new UnaryExpr(UnaryExpr.Type.NOT, ue); :}
+                   | BIT_AND cast_expression:ce {: RESULT = new UnaryExpr(UnaryExpr.Type.BIT_AND, ce); :}
+                   | TIMES cast_expression:ce {: RESULT = new UnaryExpr(UnaryExpr.Type.STAR, ce); :}
+                   | PLUS cast_expression:ce {: RESULT = new UnaryExpr(UnaryExpr.Type.POSITIVE, ce); :}
+                   | MINUS cast_expression:ce {: RESULT = new UnaryExpr(UnaryExpr.Type.NEGATIVE, ce); :}
+                   | BIT_NOT cast_expression:ce {: RESULT = new UnaryExpr(UnaryExpr.Type.BIT_NOT, ce); :}
+                   | NOT cast_expression:ce {: RESULT = new UnaryExpr(UnaryExpr.Type.NOT, ce); :}
                    | SIZEOF unary_expression:ue {: RESULT = new UnaryExpr(UnaryExpr.Type.SIZEOF, ue); :}
                    | SIZEOF LPAREN type_name:t RPAREN {: RESULT = new UnaryExpr(t); :};
 
