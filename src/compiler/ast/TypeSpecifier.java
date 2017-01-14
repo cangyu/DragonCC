@@ -2,6 +2,7 @@ package compiler.ast;
 
 public class TypeSpecifier 
 {
+	public String CN = getClass().getName();
 	public static enum Type{VOID, CHAR, INT, STRUCT, UNION};
 	
 	public Type type;

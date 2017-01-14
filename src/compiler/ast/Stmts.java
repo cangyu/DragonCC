@@ -4,6 +4,7 @@ import java.util.LinkedList;
 
 public class Stmts 
 {
+	public String CN = getClass().getName();
 	public LinkedList<Stmt> comp;
 	
 	public Stmts(Stmt _s)

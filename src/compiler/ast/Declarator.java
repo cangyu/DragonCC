@@ -4,6 +4,8 @@ import java.util.LinkedList;
 
 public class Declarator
 {
+	public String CN = getClass().getName();
+	
 	public PlainDeclarator plain_declarator;
 	public LinkedList<Expr> dimension;
 	

@@ -2,6 +2,8 @@ package compiler.ast;
 
 public class NonInitDecl
 {
+	public String CN = getClass().getName();
+	
 	public TypeSpecifier type_specifier;
 	public Declarators declarators;
 	
