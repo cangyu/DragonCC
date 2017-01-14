@@ -4,11 +4,11 @@ import java.util.LinkedList;
 
 public class Arguments 
 {
-	public LinkedList<AssignmentExpr> comp;
+	public LinkedList<Expr> comp;
 	
-	public Arguments(AssignmentExpr _ae)
+	public Arguments(Expr _ae)
 	{
-		comp = new LinkedList<AssignmentExpr>();
+		comp = new LinkedList<Expr>();
 		comp.add(_ae);
 	}
 }

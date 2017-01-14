@@ -89,8 +89,7 @@ non terminal IterationStmt iteration_stmt;
 
 /* Expressions */
 non terminal Expression expression;
-non terminal AssignmentExpr assignment_expression;
-
+non terminal Expr assignment_expression;
 non terminal Expr logical_and_expression;
 non terminal Expr logical_or_expression;
 non terminal Expr inclusive_or_expression;
