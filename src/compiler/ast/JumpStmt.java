@@ -2,19 +2,14 @@ package compiler.ast;
 
 public class JumpStmt extends Stmt
 {
-	public static enum JumpType{CONTINUE, BREAK, RETURN};
+	public static enum Type{CONTINUE, BREAK, RETURN};
 	
-	public JumpType type;
+	public Type type;
 	public Expr ans;
 	
-	public JumpStmt(JumpType _jt)
+	public JumpStmt(Type _jt, Expr _e)
 	{
-		type=_jt;
-	}
-	
-	public JumpStmt(Expr _ans)
-	{
-		type=JumpType.RETURN;
-		ans=_ans;
+		type = _jt;
+		ans = _e;
 	}
 }

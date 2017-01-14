@@ -8,7 +8,7 @@ public class Initializers
 	
 	public Initializers(Initializer _i)
 	{
-		comp=new LinkedList<Initializer>();
+		comp = new LinkedList<Initializer>();
 		comp.add(_i);
 	}
 }

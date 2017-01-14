@@ -4,12 +4,12 @@ public class PrimaryExpr extends Expr
 {
 	public static enum Type{ID, STRING, CHAR, INT};
 	
-	public Type type;
-	public Object object;
+	public Type elem_type;
+	public Object value;
 	
-	public PrimaryExpr(Type _t, Object _obj)
+	public PrimaryExpr(Type _t, Object _val)
 	{
-		type=_t;
-		object=_obj;
+		elem_type = _t;
+		value = _val;;
 	}
 }

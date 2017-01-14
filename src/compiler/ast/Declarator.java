@@ -9,7 +9,7 @@ public class Declarator
 	
 	public Declarator(PlainDeclarator _pd)
 	{
-		plain_declarator=_pd;
-		dimension=new LinkedList<Expr>();
+		plain_declarator = _pd;
+		dimension = new LinkedList<Expr>();
 	}
 }

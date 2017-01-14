@@ -5,14 +5,9 @@ public class InitDeclarator
 	public Declarator declarator;
 	public Initializer initializer;
 	
-	public InitDeclarator(Declarator x, Initializer y)
+	public InitDeclarator(Declarator _d, Initializer _i)
 	{
-		declarator=x;
-		initializer=y;
-	}
-	
-	public InitDeclarator(Declarator x)
-	{
-		declarator=x;
+		declarator = _d;
+		initializer = _i;
 	}
 }

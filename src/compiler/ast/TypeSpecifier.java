@@ -10,25 +10,13 @@ public class TypeSpecifier
 	
 	public TypeSpecifier(Type _t)
 	{
-		type=_t;
-	}
-	
-	public TypeSpecifier(Type _t, NonInitDecls _nids)
-	{
-		type=_t;
-		non_init_decls=_nids;
-	}
-	
-	public TypeSpecifier(Type _t , String _id)
-	{
-		type=_t;
-		id=_id;
+		type = _t;
 	}
 	
 	public TypeSpecifier(Type _t, String _id, NonInitDecls _nids)
 	{
-		type=_t;
-		id=_id;
-		non_init_decls=_nids;
+		type = _t;
+		id = _id;
+		non_init_decls = _nids;
 	}
 }

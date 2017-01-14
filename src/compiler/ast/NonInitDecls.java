@@ -8,7 +8,7 @@ public class NonInitDecls
 	
 	public NonInitDecls(NonInitDecl _nid)
 	{
-		comp=new LinkedList<NonInitDecl>();
+		comp = new LinkedList<NonInitDecl>();
 		comp.add(_nid);
 	}
 }

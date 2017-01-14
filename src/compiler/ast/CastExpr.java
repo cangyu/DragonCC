@@ -2,12 +2,12 @@ package compiler.ast;
 
 public class CastExpr extends Expr
 {
-	public TypeSpecifier type;
-	public Star stars;
+	public TypeName type_name;
+	public Expr expr;
 	
-	public CastExpr(TypeSpecifier _t, Star _s)
+	public CastExpr(TypeName _t, Expr _e)
 	{
-		type=_t;
-		stars=_s;
+		type_name = _t;
+		expr = _e;
 	}
 }

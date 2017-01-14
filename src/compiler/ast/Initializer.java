@@ -7,11 +7,11 @@ public class Initializer
 	
 	public Initializer(Expr _e)
 	{
-		value=_e;
+		value = _e;
 	}
 	
 	public Initializer(Initializers _is)
 	{
-		initializers=_is;
+		initializers  =_is;
 	}
 }

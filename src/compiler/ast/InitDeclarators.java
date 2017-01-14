@@ -8,7 +8,7 @@ public class InitDeclarators
 	
 	public InitDeclarators(InitDeclarator _idecl)
 	{
-		comp=new LinkedList<InitDeclarator>();
+		comp = new LinkedList<InitDeclarator>();
 		comp.add(_idecl);
 	}
 }

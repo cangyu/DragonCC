@@ -4,8 +4,8 @@ public class Star
 {
 	public Integer cnt;
 	
-	public Star()
+	public Star(int _ic)
 	{
-		cnt=0;
+		cnt = _ic;
 	}
 }

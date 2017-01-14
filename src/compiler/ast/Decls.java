@@ -6,8 +6,9 @@ public class Decls
 {
 	public LinkedList<Decl> comp;
 	
-	public Decls()
+	public Decls(Decl _d)
 	{
-		comp=new LinkedList<Decl>();
+		comp = new LinkedList<Decl>();
+		comp.add(_d);
 	}
 }

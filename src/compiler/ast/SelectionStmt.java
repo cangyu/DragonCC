@@ -5,17 +5,11 @@ public class SelectionStmt extends Stmt
 	public Expr cond;
 	public Stmt if_clause, else_clause;
 	
-	public SelectionStmt(Expr _cond, Stmt _ic)
-	{
-		cond=_cond;
-		if_clause=_ic;
-	}
-	
 	public SelectionStmt(Expr _cond, Stmt _ic, Stmt _ec)
 	{
-		cond=_cond;
-		if_clause=_ic;
-		else_clause=_ec;
+		cond = _cond;
+		if_clause = _ic;
+		else_clause = _ec;
 	}
 	
 }

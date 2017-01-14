@@ -1,7 +1,7 @@
 package compiler.syntactic;
 
 import java.io.*;
-//import compiler.ast.*;
+import compiler.ast.*;
 
 parser code
 {:
@@ -53,258 +53,258 @@ terminal String	STRINGCONTENT;
 terminal Character CHARCONTENT;
 
 /* Non Terminal */
-non terminal program;
-non terminal decl_or_func_def;
+non terminal Program program;
+non terminal DeclOrFuncDef decl_or_func_def;
 
-non terminal stars;
-non terminal plain_declarator;
-non terminal declarator;
-non terminal init_declarator;
+non terminal Star stars;
+non terminal PlainDeclarator plain_declarator;
+non terminal Declarator declarator;
+non terminal InitDeclarator init_declarator;
 
-non terminal plain_decl;
-non terminal decl;
-non terminal non_init_decl;
+non terminal PlainDecl plain_decl;
+non terminal Decl decl;
+non terminal NonInitDecl non_init_decl;
 
-non terminal declarators;
-non terminal init_declarators;
-non terminal decls;
-non terminal non_init_decls;
+non terminal Declarators declarators;
+non terminal InitDeclarators init_declarators;
+non terminal Decls decls;
+non terminal NonInitDecls non_init_decls;
 
-non terminal initializer;
-non terminal initializers;
+non terminal Initializer initializer;
+non terminal Initializers initializers;
 
-non terminal type_specifier;
-non terminal parameters;
-non terminal func_def;
+non terminal TypeSpecifier type_specifier;
+non terminal Parameters parameters;
+non terminal FuncDef func_def;
 
 /* Statements */
-non terminal stmt;
-non terminal stmts;
+non terminal Stmt stmt;
+non terminal Stmts stmts;
 
-non terminal expression_stmt;
-non terminal compound_stmt;
-non terminal selection_stmt;
-non terminal jump_stmt;
-non terminal iteration_stmt;
+non terminal ExpressionStmt expression_stmt;
+non terminal CompoundStmt compound_stmt;
+non terminal SelectionStmt selection_stmt;
+non terminal JumpStmt jump_stmt;
+non terminal IterationStmt iteration_stmt;
 
 /* Expressions */
-non terminal expression;
-non terminal assignment_expression;
-non terminal logical_and_expression;
-non terminal logical_or_expression;
-non terminal inclusive_or_expression;
-non terminal exclusive_or_expression;
-non terminal and_expression;
-non terminal equality_expression;
-non terminal relational_expression;
-non terminal shift_expression;
-non terminal additive_expression;
-non terminal multiplicative_expression;
-non terminal cast_expression;
-non terminal unary_expression;
-non terminal postfix_expression;
-non terminal primary_expression;
-non terminal constant_expression;
+non terminal Expression expression;
+non terminal AssignmentExpr assignment_expression;
 
-non terminal type_name;
-non terminal arguments;
+non terminal Expr logical_and_expression;
+non terminal Expr logical_or_expression;
+non terminal Expr inclusive_or_expression;
+non terminal Expr exclusive_or_expression;
+non terminal Expr and_expression;
+non terminal Expr equality_expression;
+non terminal Expr relational_expression;
+non terminal Expr shift_expression;
+non terminal Expr additive_expression;
+non terminal Expr multiplicative_expression;
+non terminal Expr cast_expression;
+non terminal Expr unary_expression;
+non terminal Expr postfix_expression;
+non terminal Expr primary_expression;
+non terminal Expr constant_expression;
+
+non terminal TypeName type_name;
+non terminal Arguments arguments;
 
 precedence nonassoc ELSE;
  
 start with program;
 
 //the expressions in priority hierarchy
-primary_expression ::= ID:id
-					 | STRINGCONTENT:str
-					 | LPAREN expression:e RPAREN
-					 | NUM:num
-					 | CHARCONTENT:ch;
+primary_expression ::= ID:id {: RESULT = new PrimaryExpr(PrimaryExpr.Type.ID, id); :}
+					 | STRINGCONTENT:str {: RESULT = new PrimaryExpr(PrimaryExpr.Type.STRING, str); :}
+					 | LPAREN expression:e RPAREN {: RESULT = e; :}
+					 | NUM:num {: RESULT = new PrimaryExpr(PrimaryExpr.Type.INT, num); :}
+					 | CHARCONTENT:ch {: RESULT = new PrimaryExpr(PrimaryExpr.Type.CHAR, ch); :};
 
-postfix_expression ::= primary_expression:pe
-					 | postfix_expression:pe LMPAREN expression:index RMPAREN
-					 | postfix_expression:pe LPAREN RPAREN
-					 | postfix_expression:pe LPAREN arguments:arg RPAREN
-					 | postfix_expression:pe DOT ID:id
-					 | postfix_expression:pe PTR ID:id
-					 | postfix_expression:pe INC
-					 | postfix_expression:pe DEC;
+postfix_expression ::= primary_expression:pe {: RESULT = pe; :}
+					 | postfix_expression:pe LMPAREN expression:index RMPAREN {: RESULT = new PostfixExpr(PostfixExpr.Type.MPAREN, index, pe); :}
+					 | postfix_expression:pe LPAREN RPAREN {: RESULT = new PostfixExpr(PostfixExpr.Type.PAREN, null, pe); :}
+					 | postfix_expression:pe LPAREN arguments:arg RPAREN {: RESULT = new PostfixExpr(PostfixExpr.Type.PAREN, arg, pe); :}
+					 | postfix_expression:pe DOT ID:id {: RESULT = new PostfixExpr(PostfixExpr.Type.DOT, id, pe); :}
+					 | postfix_expression:pe PTR ID:id {: RESULT = new PostfixExpr(PostfixExpr.Type.PTR, id, pe); :}
+					 | postfix_expression:pe INC {: RESULT = new PostfixExpr(PostfixExpr.Type.INC, null, pe); :}
+					 | postfix_expression:pe DEC {: RESULT = new PostfixExpr(PostfixExpr.Type.DEC, null, pe); :};
 
-unary_expression ::= postfix_expression:pe
-                   | INC unary_expression:ue
-                   | DEC unary_expression:ue
-                   | BIT_AND cast_expression:ce
-                   | TIMES cast_expression:ce
-                   | PLUS cast_expression:ce
-                   | MINUS cast_expression:ce
-                   | BIT_NOT cast_expression:ce
-                   | NOT cast_expression:ce
-                   | SIZEOF unary_expression:ue
-                   | SIZEOF LPAREN type_name:t RPAREN;
+unary_expression ::= postfix_expression:pe {: RESULT = pe; :}
+                   | INC unary_expression:ue {: RESULT = new UnaryExpr(UnaryExpr.Type.INC, ue); :}
+                   | DEC unary_expression:ue {: RESULT = new UnaryExpr(UnaryExpr.Type.DEC, ue); :}
+                   | BIT_AND cast_expression:ce {: RESULT = new UnaryExpr(UnaryExpr.Type.BIT_AND, ue); :}
+                   | TIMES cast_expression:ce {: RESULT = new UnaryExpr(UnaryExpr.Type.STAR, ue); :}
+                   | PLUS cast_expression:ce {: RESULT = new UnaryExpr(UnaryExpr.Type.POSITIVE, ue); :}
+                   | MINUS cast_expression:ce {: RESULT = new UnaryExpr(UnaryExpr.Type.NEGATIVE, ue); :}
+                   | BIT_NOT cast_expression:ce {: RESULT = new UnaryExpr(UnaryExpr.Type.BIT_NOT, ue); :}
+                   | NOT cast_expression:ce {: RESULT = new UnaryExpr(UnaryExpr.Type.NOT, ue); :}
+                   | SIZEOF unary_expression:ue {: RESULT = new UnaryExpr(UnaryExpr.Type.SIZEOF, ue); :}
+                   | SIZEOF LPAREN type_name:t RPAREN {: RESULT = new UnaryExpr(t); :};
 
-cast_expression	::= unary_expression:ue
-				  | LPAREN type_name:t RPAREN cast_expression:ce;
+cast_expression	::= unary_expression:ue {: RESULT = ue; :}
+				  | LPAREN type_name:t RPAREN cast_expression:ce {: RESULT = new CastExpr(t, ce); :};
 
-multiplicative_expression ::= cast_expression:ce
-							| multiplicative_expression:me TIMES cast_expression:ce
-						    | multiplicative_expression:me DIVIDE cast_expression:ce
-						    | multiplicative_expression:me MODULE cast_expression:ce;
+multiplicative_expression ::= cast_expression:ce {: RESULT = ce; :}
+							| multiplicative_expression:me TIMES cast_expression:ce {: RESULT = new BinaryExpr(BinaryExpr.Type.TIMES, me, ce); :}
+						    | multiplicative_expression:me DIVIDE cast_expression:ce {: RESULT = new BinaryExpr(BinaryExpr.Type.DIVIDE, me, ce); :}
+						    | multiplicative_expression:me MODULE cast_expression:ce {: RESULT = new BinaryExpr(BinaryExpr.Type.MODULE, me, ce); :};
 
-additive_expression	::= multiplicative_expression:me
-                      | additive_expression:ae PLUS multiplicative_expression:me
-                      | additive_expression:ae MINUS multiplicative_expression:me;
+additive_expression	::= multiplicative_expression:me {: RESULT = me; :}
+                      | additive_expression:ae PLUS multiplicative_expression:me {: RESULT = new BinaryExpr(BinaryExpr.Type.PLUS, ae, me); :}
+                      | additive_expression:ae MINUS multiplicative_expression:me {: RESULT = new BinaryExpr(BinaryExpr.Type.MINUS, ae, me); :};
                       
-shift_expression ::= additive_expression:ae
-				   | shift_expression:se SHL additive_expression:ae
-				   | shift_expression:se SHR additive_expression:ae;                      
-                                      
+shift_expression ::= additive_expression:ae {: RESULT = ae; :}
+				   | shift_expression:se SHL additive_expression:ae {: RESULT = new BinaryExpr(BinaryExpr.Type.SHL, se, ae); :}
+				   | shift_expression:se SHR additive_expression:ae {: RESULT = new BinaryExpr(BinaryExpr.Type.SHR, se, ae); :};
 					
-relational_expression ::= shift_expression:se
-					    | relational_expression:re LT shift_expression:se
-	                    | relational_expression:re GT shift_expression:se
-	                    | relational_expression:re LE shift_expression:se
-	                    | relational_expression:re GE shift_expression:se;                  
+relational_expression ::= shift_expression:se {: RESULT = se; :}
+					    | relational_expression:re LT shift_expression:se {: RESULT = new BinaryExpr(BinaryExpr.Type.LT, re, se); :}
+	                    | relational_expression:re GT shift_expression:se {: RESULT = new BinaryExpr(BinaryExpr.Type.GT, re, se); :}
+	                    | relational_expression:re LE shift_expression:se {: RESULT = new BinaryExpr(BinaryExpr.Type.LE, re, se); :}
+	                    | relational_expression:re GE shift_expression:se {: RESULT = new BinaryExpr(BinaryExpr.Type.GE, re, se); :};                
                       
-equality_expression	::= relational_expression:re
-					  | equality_expression:ee EQ relational_expression:re
-					  | equality_expression:ee NE relational_expression:re;	                      
+equality_expression	::= relational_expression:re {: RESULT = re; :}
+					  | equality_expression:ee EQ relational_expression:re {: RESULT = new BinaryExpr(BinaryExpr.Type.EQ, ee, re); :}
+					  | equality_expression:ee NE relational_expression:re {: RESULT = new BinaryExpr(BinaryExpr.Type.NE, ee, re); :};	                      
                       
-and_expression ::= equality_expression:ee
-				 | and_expression:ae BIT_AND equality_expression:ee;
+and_expression ::= equality_expression:ee {: RESULT = ee; :}
+				 | and_expression:ae BIT_AND equality_expression:ee {: RESULT = new BinaryExpr(BinaryExpr.Type.BIT_AND, ae, ee); :};
 				 
-exclusive_or_expression	::= and_expression:ae
-						  | exclusive_or_expression:eoe BIT_XOR and_expression:ae;
+exclusive_or_expression	::= and_expression:ae {: RESULT = ae; :}
+						  | exclusive_or_expression:eoe BIT_XOR and_expression:ae {: RESULT = new BinaryExpr(BinaryExpr.Type.BIT_XOR, eoe, ae); :};
 						  
-inclusive_or_expression	::= exclusive_or_expression:eoe
-						  | inclusive_or_expression:ioe BIT_OR exclusive_or_expression:eoe;
+inclusive_or_expression	::= exclusive_or_expression:eoe {: RESULT = eoe; :}
+						  | inclusive_or_expression:ioe BIT_OR exclusive_or_expression:eoe {: RESULT = new BinaryExpr(BinaryExpr.Type.BIT_OR, ioe, eoe); :};
 						  
-logical_and_expression ::= inclusive_or_expression:ioe
-						 | logical_and_expression:lae AND inclusive_or_expression:ioe;               
+logical_and_expression ::= inclusive_or_expression:ioe {: RESULT = ioe; :}
+						 | logical_and_expression:lae AND inclusive_or_expression:ioe {: RESULT = new BinaryExpr(BinaryExpr.Type.AND, lae, ioe); :};               
                       
-logical_or_expression ::= logical_and_expression:lae
-						| logical_or_expression:loe OR logical_and_expression:lae;
+logical_or_expression ::= logical_and_expression:lae {: RESULT = lae; :}
+						| logical_or_expression:loe OR logical_and_expression:lae {: RESULT = new BinaryExpr(BinaryExpr.Type.OR, loe, lae); :};
 						
-assignment_expression ::= logical_or_expression:loe
-                        | unary_expression:ue ASSIGN assignment_expression:ae
-                        | unary_expression:ue MUL_ASSIGN assignment_expression:ae
-                        | unary_expression:ue DIV_ASSIGN assignment_expression:ae
-                        | unary_expression:ue MOD_ASSIGN assignment_expression:ae
-                        | unary_expression:ue ADD_ASSIGN assignment_expression:ae
-                        | unary_expression:ue SUB_ASSIGN assignment_expression:ae
-                        | unary_expression:ue SHL_ASSIGN assignment_expression:ae
-                        | unary_expression:ue SHR_ASSIGN assignment_expression:ae
-                        | unary_expression:ue AND_ASSIGN assignment_expression:ae
-                        | unary_expression:ue XOR_ASSIGN assignment_expression:ae
-                        | unary_expression:ue OR_ASSIGN assignment_expression:ae;
+assignment_expression ::= logical_or_expression:loe {: RESULT = loe; :}
+                        | unary_expression:ue ASSIGN assignment_expression:ae {: RESULT = new AssignmentExpr(AssignmentExpr.Type.ASSIGN, ue, ae); :}
+                        | unary_expression:ue MUL_ASSIGN assignment_expression:ae {: RESULT = new AssignmentExpr(AssignmentExpr.Type.MUL_ASSIGN, ue, ae); :}
+                        | unary_expression:ue DIV_ASSIGN assignment_expression:ae {: RESULT = new AssignmentExpr(AssignmentExpr.Type.DIV_ASSIGN, ue, ae); :}
+                        | unary_expression:ue MOD_ASSIGN assignment_expression:ae {: RESULT = new AssignmentExpr(AssignmentExpr.Type.MOD_ASSIGN, ue, ae); :}
+                        | unary_expression:ue ADD_ASSIGN assignment_expression:ae {: RESULT = new AssignmentExpr(AssignmentExpr.Type.ADD_ASSIGN, ue, ae); :}
+                        | unary_expression:ue SUB_ASSIGN assignment_expression:ae {: RESULT = new AssignmentExpr(AssignmentExpr.Type.SUB_ASSIGN, ue, ae); :}
+                        | unary_expression:ue SHL_ASSIGN assignment_expression:ae {: RESULT = new AssignmentExpr(AssignmentExpr.Type.SHL_ASSIGN, ue, ae); :}
+                        | unary_expression:ue SHR_ASSIGN assignment_expression:ae {: RESULT = new AssignmentExpr(AssignmentExpr.Type.SHR_ASSIGN, ue, ae); :}
+                        | unary_expression:ue AND_ASSIGN assignment_expression:ae {: RESULT = new AssignmentExpr(AssignmentExpr.Type.AND_ASSIGN, ue, ae); :}
+                        | unary_expression:ue XOR_ASSIGN assignment_expression:ae {: RESULT = new AssignmentExpr(AssignmentExpr.Type.XOR_ASSIGN, ue, ae); :}
+                        | unary_expression:ue OR_ASSIGN assignment_expression:ae {: RESULT = new AssignmentExpr(AssignmentExpr.Type.OR_ASSIGN, ue, ae); :};
 				  
-constant_expression ::= logical_or_expression:loe;
+constant_expression ::= logical_or_expression:loe {: RESULT = loe; :};
 
-expression ::= assignment_expression:ae
-			 | expression COMMA assignment_expression:ae;
+expression ::= assignment_expression:ae {: RESULT = new Expression(ae); :}
+			 | expression:e COMMA assignment_expression:ae {: e.comp.add(ae); RESULT = e; :};
 
 //the declarators, from simple to complex and multiple
-stars ::= TIMES
-        | stars:ss TIMES;
+stars ::= TIMES {: RESULT = new Star(1); :}
+        | stars:ss TIMES {: ++ss.cnt; RESULT = ss; :};
 
-plain_declarator ::= ID:id
-                   | stars:ss ID:id;
+plain_declarator ::= ID:id {: RESULT = new PlainDeclarator(null, id); :}
+                   | stars:ss ID:id {: RESULT = new PlainDeclarator(ss, id); :};
 
-declarator ::= plain_declarator:pd
-             | declarator:d LMPAREN constant_expression:ce RMPAREN;
+declarator ::= plain_declarator:pd {: RESULT = new Declarator(pd); :}
+             | declarator:d LMPAREN constant_expression:ce RMPAREN {: d.dimension.add(ce); RESULT = d; :};
 
-declarators ::= declarator:d
-              | declarators:ds COMMA declarator:d;
+declarators ::= declarator:d {: RESULT = new Declarators(d); :}
+              | declarators:ds COMMA declarator:d {: ds.comp.add(d); RESULT = ds; :};
               
-init_declarator ::= declarator:d
-                  | declarator:d ASSIGN initializer:i;              
+init_declarator ::= declarator:d {: RESULT = new InitDeclarator(d, null); :}
+                  | declarator:d ASSIGN initializer:i {: RESULT = new InitDeclarator(d, i); :};              
               						
-init_declarators ::= init_declarator:id
-                   | init_declarators:ids COMMA init_declarator:id;
+init_declarators ::= init_declarator:id {: RESULT = new InitDeclarators(id); :}
+                   | init_declarators:ids COMMA init_declarator:id {: ids.comp.add(id); RESULT = ids; :};
 
 //the declarations, from simple to complex and multiple
-plain_decl ::= type_specifier:t declarator:d;
+plain_decl ::= type_specifier:t declarator:d {: RESULT = new PlainDecl(t, d); :};
 
-decl ::= type_specifier:t init_declarators:id SEMI
-       | type_specifier:t SEMI;
+decl ::= type_specifier:t init_declarators:id SEMI {: RESULT = new Decl(t, id); :}
+       | type_specifier:t SEMI {: RESULT = new Decl(t, null); :};
        
-decls ::= decl:d
-        | decls:ds decl:d;       
+decls ::= decl:d {: RESULT = new Decls(d); :}
+        | decls:ds decl:d {: ds.comp.add(d); RESULT = ds; :};   
        
-non_init_decl ::= type_specifier:t declarators:ds SEMI;
+non_init_decl ::= type_specifier:t declarators:ds SEMI {: RESULT = new NonInitDecl(t, ds); :};
 
-non_init_decls ::= non_init_decl:nid
-                 | non_init_decls:nids non_init_decl:nid;
+non_init_decls ::= non_init_decl:nid {: RESULT = new NonInitDecls(nid); :}
+                 | non_init_decls:nids non_init_decl:nid {: nids.comp.add(nid); RESULT=nids; :};
                  
 //initializer, mutual inclusive
-initializer ::= assignment_expression:ae
-              | LBRACE initializers:is RBRACE;
+initializer ::= assignment_expression:ae {: RESULT = new Initializer(ae); :}
+              | LBRACE initializers:is RBRACE {: RESULT = new Initializer(is); :};
 
-initializers ::= initializer:i
-               | initializers:is COMMA initializer:i;
+initializers ::= initializer:i {: RESULT = new Initializers(i); :}
+               | initializers:is COMMA initializer:i {: is.comp.add(i); RESULT = is; :};
        
 //types
-type_specifier ::= VOID
-                 | CHAR
-                 | INT
-                 | STRUCT ID:id LBRACE non_init_decls:nids RBRACE
-                 | STRUCT LBRACE non_init_decls:nids RBRACE
-                 | STRUCT ID:id
-                 | UNION ID:id LBRACE non_init_decls:nids RBRACE
-                 | UNION LBRACE non_init_decls:nids RBRACE
-                 | UNION ID:id;
+type_specifier ::= VOID {: RESULT = new TypeSpecifier(TypeSpecifier.Type.VOID); :}
+                 | CHAR {: RESULT = new TypeSpecifier(TypeSpecifier.Type.CHAR); :}
+                 | INT {: RESULT = new TypeSpecifier(TypeSpecifier.Type.INT); :}
+                 | STRUCT ID:id LBRACE non_init_decls:nids RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.STRUCT, id, nids); :}
+                 | STRUCT LBRACE non_init_decls:nids RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.STRUCT, null, nids); :}
+                 | STRUCT ID:id {: RESULT = new TypeSpecifier(TypeSpecifier.Type.STRUCT, id, null); :}
+                 | UNION ID:id LBRACE non_init_decls:nids RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.UNION, id, nids); :}
+                 | UNION LBRACE non_init_decls:nids RBRACE {: RESULT = new TypeSpecifier(TypeSpecifier.Type.UNION, null, nids); :}
+                 | UNION ID:id {: RESULT = new TypeSpecifier(TypeSpecifier.Type.UNION, id, null); :};
                  
-type_name ::= type_specifier:ts
-            | type_specifier:ts stars:ss;
+type_name ::= type_specifier:ts {: RESULT = new TypeName(ts, null); :}
+            | type_specifier:ts stars:ss {: RESULT = new TypeName(ts, ss); :};
                  
 //function
-parameters ::= plain_decl:pd
-             | parameters:p COMMA plain_decl:pd;
+parameters ::= plain_decl:pd {: RESULT = new Parameters(pd); :}
+             | parameters:p COMMA plain_decl:pd {: p.comp.add(pd); RESULT = p; :};
 
-arguments ::= assignment_expression:ae  
-            | arguments:args COMMA assignment_expression:ae;
+arguments ::= assignment_expression:ae {: RESULT = new Arguments(ae); :}  
+            | arguments:args COMMA assignment_expression:ae {: args.comp.add(ae); RESULT = args; :};
 
-func_def ::= type_specifier:t plain_declarator:pd LPAREN RPAREN compound_stmt:cs
-           | type_specifier:t plain_declarator:pd LPAREN parameters:p RPAREN compound_stmt:cs;
+func_def ::= type_specifier:t plain_declarator:pd LPAREN RPAREN compound_stmt:cs {: RESULT = new FuncDef(t, pd, null, cs); :}
+           | type_specifier:t plain_declarator:pd LPAREN parameters:p RPAREN compound_stmt:cs {: RESULT = new FuncDef(t, pd, p, cs); :};
 
 //program
-program ::= program:p decl_or_func_def:df
-		  | decl_or_func_def:df;
+program ::= decl_or_func_def:df {: RESULT = new Program(df); :}
+		  | program:p decl_or_func_def:df {: p.comp.add(df); RESULT = p; :};
 
-decl_or_func_def ::= decl:d
-				   | func_def:fd;
+decl_or_func_def ::= decl:d {: RESULT = d; :}
+				   | func_def:fd {: RESULT = fd; :};
 
 //statements
-stmt ::= expression_stmt:es
-	   | compound_stmt:cs
-	   | selection_stmt:ss
-	   | iteration_stmt:is
-	   | jump_stmt:js;
+stmt ::= expression_stmt:es {: RESULT = es; :}
+	   | compound_stmt:cs {: RESULT = cs; :}
+	   | selection_stmt:ss {: RESULT = ss; :}
+	   | iteration_stmt:is {: RESULT = is; :}
+	   | jump_stmt:js {: RESULT = js; :};
 	   
-stmts ::= stmt:s
-	    | stmts:ss stmt:s;
+stmts ::= stmt:s {: RESULT = new Stmts(s); :}
+	    | stmts:ss stmt:s {: ss.comp.add(s); RESULT = ss; :};
 	 
-expression_stmt ::= SEMI
-                  | expression:e SEMI;
+expression_stmt ::= SEMI {: RESULT = new ExpressionStmt(null); :}
+                  | expression:e SEMI {: RESULT = new ExpressionStmt(e); :};
 
-compound_stmt ::= LBRACE RBRACE
-                | LBRACE stmts:ss RBRACE
-                | LBRACE decls:ds RBRACE
-                | LBRACE decls:ds stmts:ss RBRACE;
+compound_stmt ::= LBRACE RBRACE {: RESULT = new CompoundStmt(null, null); :}
+                | LBRACE stmts:ss RBRACE {: RESULT = new CompoundStmt(null, ss); :}
+                | LBRACE decls:ds RBRACE {: RESULT = new CompoundStmt(ds, null); :}
+                | LBRACE decls:ds stmts:ss RBRACE {: RESULT = new CompoundStmt(ds, ss); :};
 		 
-selection_stmt ::= IF LPAREN expression:cond RPAREN stmt:st1 ELSE stmt:st2
-			     | IF LPAREN expression:cond RPAREN stmt:st;
+selection_stmt ::= IF LPAREN expression:cond RPAREN stmt:st1 ELSE stmt:st2 {: RESULT = new SelectionStmt(cond, st1, st2); :}
+			     | IF LPAREN expression:cond RPAREN stmt:st {: RESULT = new SelectionStmt(cond, st, null); :};
 
-jump_stmt ::= CONTINUE SEMI
-		    | BREAK SEMI
-		    | RETURN SEMI
-		    | RETURN expression:e SEMI;
+jump_stmt ::= CONTINUE SEMI {: RESULT = new JumpStmt(JumpStmt.Type.CONTINUE, null); :}
+		    | BREAK SEMI {: RESULT = new JumpStmt(JumpStmt.Type.BREAK, null); :}
+		    | RETURN SEMI {: RESULT = new JumpStmt(JumpStmt.Type.RETURN, null); :}
+		    | RETURN expression:e SEMI {: RESULT = new JumpStmt(JumpStmt.Type.RETURN, e); :};
 		    
-iteration_stmt ::= WHILE LPAREN expression:cond RPAREN stmt:st
-			     | FOR LPAREN  SEMI  SEMI  RPAREN stmt:st
-			     | FOR LPAREN  SEMI  SEMI expression:e3 RPAREN stmt:st
-			     | FOR LPAREN  SEMI expression:e2 SEMI  RPAREN stmt:st
-			     | FOR LPAREN  SEMI expression:e2 SEMI expression:e3 RPAREN stmt:st
-			     | FOR LPAREN expression:e1 SEMI  SEMI  RPAREN stmt:st
-			     | FOR LPAREN expression:e1 SEMI  SEMI expression:e3 RPAREN stmt:st
-			     | FOR LPAREN expression:e1 SEMI expression:e2 SEMI  RPAREN stmt:st
-			     | FOR LPAREN expression:e1 SEMI expression:e2 SEMI expression:e3 RPAREN stmt:st;	 
+iteration_stmt ::= WHILE LPAREN expression:cond RPAREN stmt:st {: RESULT = new IterationStmt(cond, st); :}
+			     | FOR LPAREN  SEMI  SEMI  RPAREN stmt:st {: RESULT = new IterationStmt(null, null, null, st); :}
+			     | FOR LPAREN  SEMI  SEMI expression:e3 RPAREN stmt:st {: RESULT = new IterationStmt(null, null, e3, st); :}
+			     | FOR LPAREN  SEMI expression:e2 SEMI  RPAREN stmt:st {: RESULT = new IterationStmt(null, e2, null, st); :}
+			     | FOR LPAREN  SEMI expression:e2 SEMI expression:e3 RPAREN stmt:st {: RESULT = new IterationStmt(null, e2, e3, st); :}
+			     | FOR LPAREN expression:e1 SEMI  SEMI  RPAREN stmt:st {: RESULT = new IterationStmt(e1, null, null, st); :}
+			     | FOR LPAREN expression:e1 SEMI  SEMI expression:e3 RPAREN stmt:st {: RESULT = new IterationStmt(e1, null, e3, st); :}
+			     | FOR LPAREN expression:e1 SEMI expression:e2 SEMI  RPAREN stmt:st {: RESULT = new IterationStmt(e1, e2, null, st); :}
+			     | FOR LPAREN expression:e1 SEMI expression:e2 SEMI expression:e3 RPAREN stmt:st {: RESULT = new IterationStmt(e1, e2, e3, st); :};
 			

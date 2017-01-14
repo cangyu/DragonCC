@@ -2,21 +2,21 @@ package compiler.ast;
 
 public class UnaryExpr extends Expr
 {
-	public static enum Op{BIT_AND, STAR, POSITIVE, NEGATIVE, BIT_NOT, NOT, SIZEOF, INC, DEC};
+	public static enum Type{BIT_AND, STAR, POSITIVE, NEGATIVE, BIT_NOT, NOT, SIZEOF, INC, DEC};
 	
-	public Op operation_type;
+	public Type operation_type;
 	public Expr expr;
-	public TypeName type;
+	public TypeName type_name;
 	
-	public UnaryExpr(Op _t, Expr _e)
+	public UnaryExpr(Type _t, Expr _e)
 	{
-		operation_type=_t;
-		expr=_e;
+		operation_type = _t;
+		expr = _e;
 	}
 	
-	public UnaryExpr(TypeName _type)
+	public UnaryExpr(TypeName _t)
 	{
-		operation_type=Op.SIZEOF;
-		type=_type;
+		operation_type = Type.SIZEOF;
+		type_name = _t;
 	}
 }

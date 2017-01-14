@@ -2,17 +2,12 @@ package compiler.ast;
 
 public class Decl extends DeclOrFuncDef
 {
-	public TypeSpecifier type;
+	public TypeSpecifier type_specifier;
 	public InitDeclarators init_declarators;
 	
-	public Decl(TypeSpecifier _t, InitDeclarators _ids)
+	public Decl(TypeSpecifier _ts, InitDeclarators _ids)
 	{
-		type=_t;
-		init_declarators=_ids;
-	}
-	
-	public Decl(TypeSpecifier _t)
-	{
-		type=_t;
+		type_specifier = _ts;
+		init_declarators = _ids;
 	}
 }

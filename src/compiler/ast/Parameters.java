@@ -6,8 +6,9 @@ public class Parameters
 {
 	public LinkedList<PlainDecl> comp;
 	
-	public Parameters()
+	public Parameters(PlainDecl _pd)
 	{
-		comp=new LinkedList<PlainDecl>();
+		comp = new LinkedList<PlainDecl>();
+		comp.add(_pd);
 	}
 }

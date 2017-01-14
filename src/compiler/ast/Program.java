@@ -8,7 +8,7 @@ public class Program
 	
 	public Program(DeclOrFuncDef _df)
 	{
-		comp=new LinkedList<DeclOrFuncDef>();
+		comp = new LinkedList<DeclOrFuncDef>();
 		comp.add(_df);
 	}
 }

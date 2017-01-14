@@ -6,8 +6,9 @@ public class Stmts
 {
 	public LinkedList<Stmt> comp;
 	
-	public Stmts()
+	public Stmts(Stmt _s)
 	{
-		comp=new LinkedList<Stmt>();
+		comp = new LinkedList<Stmt>();
+		comp.add(_s);
 	}
 }

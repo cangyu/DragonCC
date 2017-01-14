@@ -8,7 +8,7 @@ public class Declarators
 	
 	public Declarators(Declarator _declr)
 	{
-		comp=new LinkedList<Declarator>();
+		comp = new LinkedList<Declarator>();
 		comp.add(_declr);
 	}
 }
