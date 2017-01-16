@@ -2,7 +2,6 @@ package compiler.ast;
 
 public class PlainDecl
 {
-	public String CN = getClass().getName();
 	public TypeSpecifier type_specifier;
 	public Declarator declarator;
 	

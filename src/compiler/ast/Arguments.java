@@ -4,7 +4,6 @@ import java.util.LinkedList;
 
 public class Arguments
 {
-	public String CN = getClass().getName();
 	public LinkedList<Expr> comp;
 	
 	public Arguments(Expr _ae)

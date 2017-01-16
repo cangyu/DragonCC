@@ -4,12 +4,11 @@ import java.util.LinkedList;
 
 public class Program 
 {
-	public String CN = getClass().getName();
-	public LinkedList<DeclOrFuncDef> comp;
+	public LinkedList<GeneralDeclaration> comp;
 	
-	public Program(DeclOrFuncDef _df)
+	public Program(GeneralDeclaration _df)
 	{
-		comp = new LinkedList<DeclOrFuncDef>();
+		comp = new LinkedList<GeneralDeclaration>();
 		comp.add(_df);
 	}
 }

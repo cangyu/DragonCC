@@ -1,6 +1,6 @@
 package compiler.ast;
 
-public class FuncDef extends DeclOrFuncDef
+public class FuncDef extends GeneralDeclaration
 {
 	public TypeSpecifier type_specifier;
 	public PlainDeclarator id;

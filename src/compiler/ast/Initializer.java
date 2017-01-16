@@ -2,7 +2,6 @@ package compiler.ast;
 
 public class Initializer 
 {
-	public String CN = getClass().getName();
 	public Expr value;
 	public Initializers initializers;
 	

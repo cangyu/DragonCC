@@ -1,6 +1,6 @@
 package compiler.ast;
 
-public class Decl extends DeclOrFuncDef
+public class Decl extends GeneralDeclaration
 {
 	public TypeSpecifier type_specifier;
 	public InitDeclarators init_declarators;

@@ -5,30 +5,42 @@ import com.google.gson.*;
 import org.json.*;
 
 final public class ParserTest
-{
-	public static void parse(String filename) throws IOException {
+{	
+	public static void parse(String filename) throws IOException 
+	{		
 		InputStream inp = new FileInputStream(filename);
 		Parser parser = new Parser(inp);
 		java_cup.runtime.Symbol parseTree = null;
-		try {
+		
+		try 
+		{
 			parseTree = parser.parse();
-		} catch (Throwable e) {
+		} 
+		catch (Throwable e) 
+		{
 			e.printStackTrace();
 			throw new Error(e.toString());
-		} finally {
+		}
+		finally
+		{
 			inp.close();
 		}
+		
 		Gson gson = new Gson();
 		String uglys = gson.toJson(parseTree.value);
 		JSONTokener tokener = new JSONTokener(uglys); //tokenize the ugly JSON string
-		try {
+		
+		try 
+		{
 			JSONObject finalResult = new JSONObject(tokener); // convert it to JSON object
 			System.out.println(finalResult.toString(4)); // To string method prints it with specified indentation.
-		} catch (Exception e)
+		}
+		catch (Exception e)
 		{
 			e.printStackTrace();
 			System.exit(1);
 		}
+		
 		System.out.println(gson.toJson(parseTree.value));
 	}
 

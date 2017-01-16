@@ -10,4 +10,10 @@ public class CastExpr extends Expr
 		type_name = _t;
 		expr = _e;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return "(" + type_name.toString() + ")" + expr.toString();
+	}
 }

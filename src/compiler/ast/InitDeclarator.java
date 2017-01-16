@@ -2,8 +2,6 @@ package compiler.ast;
 
 public class InitDeclarator 
 {
-	public String CN = getClass().getName();
-	
 	public Declarator declarator;
 	public Initializer initializer;
 	

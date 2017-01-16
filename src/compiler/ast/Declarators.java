@@ -4,8 +4,6 @@ import java.util.LinkedList;
 
 public class Declarators 
 {
-	public String CN = getClass().getName();
-	
 	public LinkedList<Declarator> comp;
 	
 	public Declarators(Declarator _declr)

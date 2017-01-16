@@ -14,5 +14,35 @@ public class AssignmentExpr extends Expr
 		right = _r;
 	}
 	
-	
+	@Override
+	public String toString()
+	{
+		switch(operation_type)
+		{
+		case ASSIGN:
+			return left.toString() + "=" +right.toString();
+		case MUL_ASSIGN:
+			return left.toString() + "*=" +right.toString();
+		case DIV_ASSIGN:
+			return left.toString() + "/=" +right.toString();
+		case MOD_ASSIGN:
+			return left.toString() + "%=" +right.toString();
+		case ADD_ASSIGN:
+			return left.toString() + "+=" +right.toString();
+		case SUB_ASSIGN:
+			return left.toString() + "-=" +right.toString();
+		case SHL_ASSIGN: 
+			return left.toString() + "<<=" +right.toString();
+		case SHR_ASSIGN: 
+			return left.toString() + ">>=" +right.toString();
+		case AND_ASSIGN: 
+			return left.toString() + "&=" +right.toString();
+		case XOR_ASSIGN: 
+			return left.toString() + "^=" +right.toString();
+		case OR_ASSIGN: 
+			return left.toString() + "|=" +right.toString();
+		default:
+			return "";
+		}
+	}
 }

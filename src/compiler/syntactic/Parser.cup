@@ -54,7 +54,7 @@ terminal Character CHARCONTENT;
 
 /* Non Terminal */
 non terminal Program program;
-non terminal DeclOrFuncDef decl_or_func_def;
+non terminal GeneralDeclaration general_decl;
 
 non terminal Star stars;
 non terminal PlainDeclarator plain_declarator;
@@ -265,11 +265,11 @@ func_def ::= type_specifier:t plain_declarator:pd LPAREN RPAREN compound_stmt:cs
            | type_specifier:t plain_declarator:pd LPAREN parameters:p RPAREN compound_stmt:cs {: RESULT = new FuncDef(t, pd, p, cs); :};
 
 //program
-program ::= decl_or_func_def:df {: RESULT = new Program(df); :}
-		  | program:p decl_or_func_def:df {: p.comp.add(df); RESULT = p; :};
+program ::= general_decl:gd {: RESULT = new Program(gd); :}
+		  | program:p general_decl:gd {: p.comp.add(gd); RESULT = p; :};
 
-decl_or_func_def ::= decl:d {: RESULT = d; :}
-				   | func_def:fd {: RESULT = fd; :};
+general_decl ::= decl:d {: RESULT = d; :}
+               | func_def:fd {: RESULT = fd; :};
 
 //statements
 stmt ::= expression_stmt:es {: RESULT = es; :}
