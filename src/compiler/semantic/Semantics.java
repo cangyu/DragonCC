@@ -6,6 +6,7 @@ import compiler.ast.*;
 public class Semantics
 {
 	public Program prog;
+	public Table env;
 	
 	public Semantics(Object _obj) throws Exception
 	{
@@ -17,6 +18,7 @@ public class Semantics
 	
 	public void check()
 	{
+		env = new Table();
 		checkProgram(prog);
 	}
 	
