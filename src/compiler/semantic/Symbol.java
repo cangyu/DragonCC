@@ -4,7 +4,7 @@ public class Symbol
 {
 	private String name;
 
-	private Symbol(String n) 
+	public Symbol(String n) 
 	{
 		name = n;
 	}
