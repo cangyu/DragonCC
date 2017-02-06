@@ -18,8 +18,7 @@ class Binder
  * The Table class is similar to java.util.Dictionary, except that each key must
  * be a Symbol and there is a scope mechanism.
  */
-
-public class Table 
+public class Table
 {
 	private java.util.Dictionary<Symbol, Binder> dict = new java.util.Hashtable<Symbol, Binder>();
 	private Symbol top = null;
@@ -28,7 +27,7 @@ public class Table
 	/**
 	 * Gets the object associated with the specified symbol in the Table.
 	 */
-	public Object get(Symbol key) 
+	public Object get(Symbol key)
 	{
 		Binder e = dict.get(key);
 		if (e == null)

@@ -3,12 +3,12 @@ package compiler.semantic;
 import java.util.*;
 import compiler.ast.*;
 
-public class Semantics
+public class Semantic
 {
 	public Program prog;
 	public Table env;
 	
-	public Semantics(Object _obj) throws Exception
+	public Semantic(Object _obj) throws Exception
 	{
 		if(_obj instanceof Program)
 			prog = (Program)_obj;
@@ -150,6 +150,16 @@ public class Semantics
 	}
 	
 	public void checkFuncDef(FuncDef _func) throws Exception
+	{
+		Type cur_type = checkTypeSpecifier(_func.type_specifier);
+		cur_type = checkPlainDeclarator(_func.id, cur_type);
+		
+		if(cur_type instanceof Name)
+			throw new Exception("Function return type not defined!");
+		
+	}
+	
+	public void checkStmt(Stmt _s) throws Exception
 	{
 		
 	}
