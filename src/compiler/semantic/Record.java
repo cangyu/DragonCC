@@ -3,12 +3,13 @@ package compiler.semantic;
 import java.util.LinkedList;
 
 public abstract class Record extends Type 
-{
-	class RecordField
-	{
-		Type type;
-		String name;
-	}
+{    
+	public String name;
+	public LinkedList<RecordField> fields;
 	
-	LinkedList<RecordField> fields;
+	public Record(String _name, LinkedList<RecordField> _field)
+	{
+		name = _name;
+		fields = _field;
+	}
 }

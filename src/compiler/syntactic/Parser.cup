@@ -59,6 +59,8 @@ non terminal GeneralDeclaration general_decl;
 non terminal Star stars;
 non terminal PlainDeclarator plain_declarator;
 non terminal Declarator declarator;
+non terminal Declarator func_declarator;
+non terminal Declarator var_declarator;
 non terminal InitDeclarator init_declarator;
 
 non terminal PlainDecl plain_decl;
@@ -207,8 +209,14 @@ stars ::= TIMES {: RESULT = new Star(1); :}
 plain_declarator ::= ID:id {: RESULT = new PlainDeclarator(null, id); :}
                    | stars:ss ID:id {: RESULT = new PlainDeclarator(ss, id); :};
 
-declarator ::= plain_declarator:pd {: RESULT = new Declarator(pd); :}
-             | declarator:d LMPAREN constant_expression:ce RMPAREN {: d.dimension.add(ce); RESULT = d; :};
+declarator ::= var_declarator:vd {: RESULT = vd; :}
+             | func_declarator:fd {: RESULT = fd; :};
+
+var_declarator ::= plain_declarator:pd {: RESULT = new Declarator(pd, false, null); :}
+                 | var_declarator:vd LMPAREN constant_expression:ce RMPAREN {: vd.dimension.add(ce); RESULT = vd; :};
+
+func_declarator ::= plain_declarator:pd LPAREN RPAREN {: RESULT = new Declarator(pd, true, null); :}
+                  | plain_declarator:pd LPAREN parameters:para RPAREN {: RESULT = new Declarator(pd, true, para); :};
 
 declarators ::= declarator:d {: RESULT = new Declarators(d); :}
               | declarators:ds COMMA declarator:d {: ds.comp.add(d); RESULT = ds; :};
@@ -253,7 +261,7 @@ type_specifier ::= VOID {: RESULT = new TypeSpecifier(TypeSpecifier.Type.VOID); 
                  
 type_name ::= type_specifier:ts {: RESULT = new TypeName(ts, null); :}
             | type_specifier:ts stars:ss {: RESULT = new TypeName(ts, ss); :};
-                 
+            
 //function
 parameters ::= plain_decl:pd {: RESULT = new Parameters(pd); :}
              | parameters:p COMMA plain_decl:pd {: p.comp.add(pd); RESULT = p; :};

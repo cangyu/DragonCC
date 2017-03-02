@@ -2,11 +2,11 @@ package compiler.semantic;
 
 class Binder 
 {
-	Object value;
+	Entry value;
 	Symbol prevtop;
 	Binder tail;
 
-	Binder(Object v, Symbol p, Binder t) 
+	Binder(Entry v, Symbol p, Binder t) 
 	{
 		value = v;
 		prevtop = p;
@@ -27,7 +27,7 @@ public class Table
 	/**
 	 * Gets the object associated with the specified symbol in the Table.
 	 */
-	public Object get(Symbol key)
+	public Entry get(Symbol key)
 	{
 		Binder e = dict.get(key);
 		if (e == null)
@@ -39,7 +39,7 @@ public class Table
 	/**
 	 * Puts the specified value into the Table, bound to the specified Symbol.
 	 */
-	public void put(Symbol key, Object value) 
+	public void put(Symbol key, Entry value) 
 	{
 		dict.put(key, new Binder(value, top, dict.get(key)));
 		top = key;

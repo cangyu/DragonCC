@@ -11,5 +11,4 @@ public class SelectionStmt extends Stmt
 		if_clause = _ic;
 		else_clause = _ec;
 	}
-	
 }
