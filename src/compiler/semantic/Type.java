@@ -1,10 +1,21 @@
 package compiler.semantic;
 
-public abstract class Type 
+import compiler.ast.BinaryExpr;
+
+public abstract class Type
 {
-	public Type isAssignable(Type _init_type)
-	{
-		
-		return null;
-	}
+    public boolean equals(Type rhs)
+    {
+        return false;
+    }
+
+    public boolean isAssignable(Type rhs)
+    {
+        return false;
+    }
+
+    public boolean canOperateWith(BinaryExpr.Type _op, Type _t)
+    {
+        return false;
+    }
 }
