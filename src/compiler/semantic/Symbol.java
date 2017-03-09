@@ -9,6 +9,7 @@ public class Symbol
 		name = n;
 	}
 
+	@Override
 	public String toString() 
 	{
 		return name;

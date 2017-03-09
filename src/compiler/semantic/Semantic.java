@@ -2,7 +2,6 @@ package compiler.semantic;
 
 import java.util.*;
 import compiler.ast.*;
-import compiler.semantic.Record.RecordField;
 
 public class Semantic
 {
@@ -44,8 +43,7 @@ public class Semantic
         // check each init_declarator
         for (InitDeclarator elem : _decl.init_declarators.comp)
         {
-            // take the stars into consideration, get real type of the
-            // identifier
+            // take the stars into consideration, get real type of the identifier
             Type real_type = checkDeclarator(elem.declarator, def_type);
 
             // get the type of the initializer, array nested in array or plain
@@ -63,7 +61,7 @@ public class Semantic
             else
             {
                 // init_type must be consistent with real_type
-                if(init_type != null && real_type.isAssignable(init_type) == null)
+                if(init_type != null && !real_type.isAssignable(init_type))
                     throw new Exception("Can't initialize variable: " + cd.plain_declarator.id);
             }
         }
@@ -152,14 +150,14 @@ public class Semantic
             env.endScope();
 
             Function func = new Function(_dr.plain_declarator.id, params, real_type);
+            FuncEntry fe = new FuncEntry(func);
 
-            env.put(Symbol.symbol(_dr.plain_declarator.id), new FuncEntry(func));
+            env.put(Symbol.symbol(func.name), fe);
         }
         else
-        {
-
+        {            
             // all the dimension settings must be constants
-            Iterator<Expr> it = _dr.dimension.descendingIterator();
+            Iterator<Expr> it = _dr.dimension.iterator();
             while (it.hasNext())
             {
                 Expr e = it.next();
@@ -207,7 +205,7 @@ public class Semantic
                 Type ct = checkInitializer(it.next());
 
                 if(et.equals(ct) == false)
-                    throw new Exception("Different type in one array!");
+                    throw new Exception("Different types in one array!");
             }
 
             return new Array(_ir.initializers.comp.size(), et);
@@ -288,7 +286,42 @@ public class Semantic
             for(Expr elem : ee.comp)
                 ct = checkExpr(elem);
             
+            ee.entry=new Entry(ct, false);
+            
             return ct;
+        }
+        else if(e instanceof AssignmentExpr)
+        {
+            AssignmentExpr ae = (AssignmentExpr)e;
+            
+            Type lt = checkExpr(ae.left);
+            Type rt = checkExpr(ae.right);
+            
+            if(!lt.isAssignable(rt))
+                throw new Exception("Incompatible Assignment between " + lt.toString() + " and " + rt.toString());
+            else if(!ae.left.entry.isLValue)
+                throw new Exception("Expr: " + ae.left.toString() + " is not LValue!");
+            else if(ae.operation_type!=AssignmentExpr.Type.ASSIGN)
+            {
+                boolean ok=true;
+                if(!(lt instanceof Int) && !(lt instanceof Char))
+                    ok=false;
+                if(!(rt instanceof Int) && !(rt instanceof Char))
+                    ok=false;
+                
+                if(!ok)
+                    throw new Exception("Can't do assignment between " + lt.toString() + " and " + rt.toString());
+                else
+                {
+                    ae.entry=new Entry(rt,false);
+                    return rt;
+                }
+            }
+            else
+            {
+                ae.entry=new Entry(rt, false);
+                return rt;
+            }
         }
         else if(e instanceof BinaryExpr)
         {
@@ -297,10 +330,147 @@ public class Semantic
             Type lt = checkExpr(be.left);
             Type rt = checkExpr(be.right);
             
-            
-            
+            if(lt.canOperateWith(be.operation_type, rt))
+            {
+                be.entry=new Entry(rt, false);
+                return rt;
+            }
+            else
+                throw new Exception("Can't do binary operation between " + lt.toString() + " and " + rt.toString());
         }
-        
+        else if(e instanceof CastExpr)
+        {
+            CastExpr ce = (CastExpr)e;
+            
+            Type expr_type = checkExpr(ce.expr);
+            Type cmd_type = checkTypeSpecifier(ce.type_name.type_specifier);
+            if(ce.type_name.stars!=null)
+                for(int i=0;i<ce.type_name.stars.cnt;i++)
+                    cmd_type = new Pointer(cmd_type);
+            
+            boolean ok=true;
+            if(!(expr_type instanceof Int) && !(expr_type instanceof Char) && !(expr_type instanceof Pointer))
+                ok=false;
+            if(!(cmd_type instanceof Int) && !(cmd_type instanceof Char) && !(cmd_type instanceof Pointer))
+                ok=false;
+            
+            if(!ok)
+                throw new Exception("Can't cast non-basic types: from " + expr_type.toString() +" to " + cmd_type.toString());
+            else
+            {
+                ce.entry=new Entry(cmd_type, false);
+                return cmd_type;
+            }
+        }
+        else if(e instanceof PostfixExpr)
+        {
+            PostfixExpr pe = (PostfixExpr)e;
+            
+            if(pe.operation_type == PostfixExpr.Type.MPAREN)
+            {
+                //array or pointer
+                Type param_type = checkExpr((Expr)pe.param);
+                
+                if((param_type instanceof Int) || (param_type instanceof Char))
+                {
+                    Type expr_type = checkExpr(pe.expr);
+                    
+                    if(expr_type instanceof Array)
+                    {
+                        Array aa = (Array)expr_type;
+                        pe.entry=new Entry(aa.type, true);
+                        return aa.type;
+                    }
+                    else if(expr_type instanceof Pointer)
+                    {
+                        Pointer pp = (Pointer)expr_type;
+                        pe.entry = new Entry(pp.elem_type, true);
+                        return pp.elem_type;
+                    }
+                    else
+                        throw new Exception("Not a pointer or array!");
+                }
+                else
+                    throw new Exception("Invalid index!");
+            }
+            else if(pe.operation_type == PostfixExpr.Type.PAREN)
+            {
+                //function call
+                
+            }
+            else if(pe.operation_type == PostfixExpr.Type.DOT)
+            {
+                
+            }
+            else if(pe.operation_type == PostfixExpr.Type.PTR)
+            {
+                
+            }
+            else if(pe.operation_type == PostfixExpr.Type.INC)
+            {
+                
+            }
+            else if(pe.operation_type == PostfixExpr.Type.DEC)
+            {
+                
+            }
+            else
+                throw new Exception("Internal Error!");
+        }
+        else if(e instanceof UnaryExpr)
+        {
+            UnaryExpr ue = (UnaryExpr)e;
+            
+            if(ue.operation_type == UnaryExpr.Type.INC)
+            {
+                
+            }
+            else if(ue.operation_type == UnaryExpr.Type.DEC)
+            {
+                
+            }
+            else if(ue.operation_type == UnaryExpr.Type.SIZEOF)
+            {
+                
+            }
+            else if(ue.operation_type == UnaryExpr.Type.BIT_AND)
+            {
+                
+            }
+            else if(ue.operation_type == UnaryExpr.Type.STAR)
+            {
+                
+            }
+            else
+            {
+                
+            }
+        }
+        else if(e instanceof PrimaryExpr)
+        {
+            PrimaryExpr pe = (PrimaryExpr)e;
+            
+            if(pe.elem_type == PrimaryExpr.Type.ID)
+            {
+                
+            }
+            else if(pe.elem_type == PrimaryExpr.Type.STRING)
+            {
+                
+            }
+            else if(pe.elem_type == PrimaryExpr.Type.INT)
+            {
+                
+            }
+            else if(pe.elem_type == PrimaryExpr.Type.CHAR)
+            {
+                
+            }
+            else
+                throw new Exception("Internal Error!");
+        }
+        else
+            throw new Exception("Not an Expr!");
     }
 
     public void checkStmt(Stmt _s) throws Exception
