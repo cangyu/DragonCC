@@ -1,16 +1,13 @@
 package compiler.semantic;
 
+import java.io.*;
 import java.util.*;
 import compiler.ast.*;
+import compiler.syntactic.*;
 
 public class Semantic
 {
-    private Table env;
-
-    public Semantic()
-    {
-        env = new Table();
-    }
+    private Table env = new Table();
 
     public void check(Object _obj) throws Exception
     {
@@ -29,10 +26,14 @@ public class Semantic
             else
                 checkFuncDef((FuncDef) gd);
         }
+        
+        System.out.println("Program checking completed!");
     }
 
     public void checkDecl(Decl _decl) throws Exception
     {
+        System.out.println("Checking declaration: "+_decl.toString());
+        
         // get current defined type of this declaration
         Type def_type = checkTypeSpecifier(_decl.type_specifier);
 
@@ -66,7 +67,7 @@ public class Semantic
             }
         }
     }
-
+    
     public Type checkTypeSpecifier(TypeSpecifier _ts) throws Exception
     {
         // current type
@@ -122,20 +123,6 @@ public class Semantic
         }
         else
             return null;
-    }
-
-    public Type checkPlainDeclarator(PlainDeclarator _pdr, Type _def_type) throws Exception
-    {
-        if(_pdr.stars == null || _pdr.stars.cnt == 0)
-            return _def_type;
-        else
-        {
-            Type real_type = _def_type;
-            for (int i = 0; i < _pdr.stars.cnt; i++)
-                real_type = new Pointer(real_type);
-
-            return real_type;
-        }
     }
 
     public Type checkDeclarator(Declarator _dr, Type _def_type) throws Exception
@@ -195,11 +182,14 @@ public class Semantic
             return checkExpr(_ir.value);
         else
         {
+            // resolve the type of each element recursively
+            // aims to get the nesting description
+            
+            //get the type of the first initializer
             Iterator<Initializer> it = _ir.initializers.comp.iterator();
-
-            // resolve the type of each element
             Type et = checkInitializer(it.next());
 
+            //checking following initializers
             while (it.hasNext())
             {
                 Type ct = checkInitializer(it.next());
@@ -211,7 +201,21 @@ public class Semantic
             return new Array(_ir.initializers.comp.size(), et);
         }
     }
+    
+    public Type checkPlainDeclarator(PlainDeclarator _pdr, Type _def_type) throws Exception
+    {
+        if(_pdr.stars == null || _pdr.stars.cnt == 0)
+            return _def_type;
+        else
+        {
+            Type real_type = _def_type;
+            for (int i = 0; i < _pdr.stars.cnt; i++)
+                real_type = new Pointer(real_type);
 
+            return real_type;
+        }
+    }
+    
     public LinkedList<Type> checkParameters(Parameters _p) throws Exception
     {
         LinkedList<Type> ans = new LinkedList<Type>();
@@ -247,234 +251,120 @@ public class Semantic
 
         return ans;
     }
-
-    public void checkFuncDef(FuncDef _func) throws Exception
-    {
-        Type def_type = checkTypeSpecifier(_func.type_specifier);
-        Type real_type = checkPlainDeclarator(_func.id, def_type);
-
-        // since the grammar is simplified, we won't encounter pointers
-        if(real_type instanceof Name)
-            throw new Exception("Undefined struct/union shouldn't be the return type of function: " + _func.id.id);
-
-        String u = _func.id.id.intern();
-        Entry ce = env.get(Symbol.symbol(u));
-
-        if(ce != null)
-            throw new Exception(u + " has already been defined in this scope!");
-
-        env.beginScope();
-        LinkedList<Type> args = checkParameters(_func.paras);
-        checkStmt(_func.comp_stmt);
-        env.endScope();
-
-        Function ft = new Function(u, args, real_type);
-        FuncEntry fe = new FuncEntry(ft);
-
-        env.put(Symbol.symbol(u), fe);
-    }
-
+    
     public Type checkExpr(Expr e) throws Exception
     {
         if(e==null)
             return null;
-        else if(e instanceof Expression)
-        {
-            Expression ee = (Expression)e;
-            Type ct=null;
-            
-            for(Expr elem : ee.comp)
-                ct = checkExpr(elem);
-            
-            ee.entry=new Entry(ct, false);
-            
-            return ct;
-        }
-        else if(e instanceof AssignmentExpr)
-        {
-            AssignmentExpr ae = (AssignmentExpr)e;
-            
-            Type lt = checkExpr(ae.left);
-            Type rt = checkExpr(ae.right);
-            
-            if(!lt.isAssignable(rt))
-                throw new Exception("Incompatible Assignment between " + lt.toString() + " and " + rt.toString());
-            else if(!ae.left.entry.isLValue)
-                throw new Exception("Expr: " + ae.left.toString() + " is not LValue!");
-            else if(ae.operation_type!=AssignmentExpr.Type.ASSIGN)
-            {
-                boolean ok=true;
-                if(!(lt instanceof Int) && !(lt instanceof Char))
-                    ok=false;
-                if(!(rt instanceof Int) && !(rt instanceof Char))
-                    ok=false;
-                
-                if(!ok)
-                    throw new Exception("Can't do assignment between " + lt.toString() + " and " + rt.toString());
-                else
-                {
-                    ae.entry=new Entry(rt,false);
-                    return rt;
-                }
-            }
-            else
-            {
-                ae.entry=new Entry(rt, false);
-                return rt;
-            }
-        }
-        else if(e instanceof BinaryExpr)
-        {
-            BinaryExpr be = (BinaryExpr)e;
-            
-            Type lt = checkExpr(be.left);
-            Type rt = checkExpr(be.right);
-            
-            if(lt.canOperateWith(be.operation_type, rt))
-            {
-                be.entry=new Entry(rt, false);
-                return rt;
-            }
-            else
-                throw new Exception("Can't do binary operation between " + lt.toString() + " and " + rt.toString());
-        }
-        else if(e instanceof CastExpr)
-        {
-            CastExpr ce = (CastExpr)e;
-            
-            Type expr_type = checkExpr(ce.expr);
-            Type cmd_type = checkTypeSpecifier(ce.type_name.type_specifier);
-            if(ce.type_name.stars!=null)
-                for(int i=0;i<ce.type_name.stars.cnt;i++)
-                    cmd_type = new Pointer(cmd_type);
-            
-            boolean ok=true;
-            if(!(expr_type instanceof Int) && !(expr_type instanceof Char) && !(expr_type instanceof Pointer))
-                ok=false;
-            if(!(cmd_type instanceof Int) && !(cmd_type instanceof Char) && !(cmd_type instanceof Pointer))
-                ok=false;
-            
-            if(!ok)
-                throw new Exception("Can't cast non-basic types: from " + expr_type.toString() +" to " + cmd_type.toString());
-            else
-            {
-                ce.entry=new Entry(cmd_type, false);
-                return cmd_type;
-            }
-        }
-        else if(e instanceof PostfixExpr)
-        {
-            PostfixExpr pe = (PostfixExpr)e;
-            
-            if(pe.operation_type == PostfixExpr.Type.MPAREN)
-            {
-                //array or pointer
-                Type param_type = checkExpr((Expr)pe.param);
-                
-                if((param_type instanceof Int) || (param_type instanceof Char))
-                {
-                    Type expr_type = checkExpr(pe.expr);
-                    
-                    if(expr_type instanceof Array)
-                    {
-                        Array aa = (Array)expr_type;
-                        pe.entry=new Entry(aa.type, true);
-                        return aa.type;
-                    }
-                    else if(expr_type instanceof Pointer)
-                    {
-                        Pointer pp = (Pointer)expr_type;
-                        pe.entry = new Entry(pp.elem_type, true);
-                        return pp.elem_type;
-                    }
-                    else
-                        throw new Exception("Not a pointer or array!");
-                }
-                else
-                    throw new Exception("Invalid index!");
-            }
-            else if(pe.operation_type == PostfixExpr.Type.PAREN)
-            {
-                //function call
-                
-            }
-            else if(pe.operation_type == PostfixExpr.Type.DOT)
-            {
-                
-            }
-            else if(pe.operation_type == PostfixExpr.Type.PTR)
-            {
-                
-            }
-            else if(pe.operation_type == PostfixExpr.Type.INC)
-            {
-                
-            }
-            else if(pe.operation_type == PostfixExpr.Type.DEC)
-            {
-                
-            }
-            else
-                throw new Exception("Internal Error!");
-        }
-        else if(e instanceof UnaryExpr)
-        {
-            UnaryExpr ue = (UnaryExpr)e;
-            
-            if(ue.operation_type == UnaryExpr.Type.INC)
-            {
-                
-            }
-            else if(ue.operation_type == UnaryExpr.Type.DEC)
-            {
-                
-            }
-            else if(ue.operation_type == UnaryExpr.Type.SIZEOF)
-            {
-                
-            }
-            else if(ue.operation_type == UnaryExpr.Type.BIT_AND)
-            {
-                
-            }
-            else if(ue.operation_type == UnaryExpr.Type.STAR)
-            {
-                
-            }
-            else
-            {
-                
-            }
-        }
         else if(e instanceof PrimaryExpr)
-        {
-            PrimaryExpr pe = (PrimaryExpr)e;
-            
-            if(pe.elem_type == PrimaryExpr.Type.ID)
-            {
-                
-            }
-            else if(pe.elem_type == PrimaryExpr.Type.STRING)
-            {
-                
-            }
-            else if(pe.elem_type == PrimaryExpr.Type.INT)
-            {
-                
-            }
-            else if(pe.elem_type == PrimaryExpr.Type.CHAR)
-            {
-                
-            }
-            else
-                throw new Exception("Internal Error!");
-        }
+            return checkExpr_PrimaryExpr((PrimaryExpr)e);
+        else if(e instanceof UnaryExpr)
+            return checkExpr_UnaryExpr((UnaryExpr)e);
         else
             throw new Exception("Not an Expr!");
     }
-
-    public void checkStmt(Stmt _s) throws Exception
+    
+    public Type checkExpr_PrimaryExpr(PrimaryExpr pe) throws Exception
     {
+        if(pe.elem_type == PrimaryExpr.Type.ID)
+        {
+            String vn = (String)pe.value;
+            Entry ve = env.get(Symbol.symbol(vn));
+            if(ve==null)
+                throw new Exception("Identifier " + vn + " Use before declaration!");
+            else
+                return ve.type;
+        }
+        else if(pe.elem_type == PrimaryExpr.Type.STRING)
+        {
+            Type ct = new Pointer(Char.getInstance());
+            return ct;
+        }
+        else if(pe.elem_type == PrimaryExpr.Type.INT)
+        {
+            pe.isConst=true;            
+            return Int.getInstance();
+        }
+        else if(pe.elem_type == PrimaryExpr.Type.CHAR)
+        {
+            pe.isConst=true;
+            return Char.getInstance();
+        }
+        else
+            throw new Exception("Internal Error!");
+    }
+    
+    public Type checkExpr_UnaryExpr(UnaryExpr ue) throws Exception
+    {
+        if(ue.operation_type == UnaryExpr.Type.INC)
+        {
+            
+        }
+        else if(ue.operation_type == UnaryExpr.Type.DEC)
+        {
+            
+        }
+        else if(ue.operation_type == UnaryExpr.Type.BIT_AND)
+        {
+            
+        }
+        else if(ue.operation_type == UnaryExpr.Type.STAR)
+        {
+            
+        }
+        else if(ue.operation_type == UnaryExpr.Type.SIZEOF)
+        {
+            
+        }
+        else if(ue.operation_type == UnaryExpr.Type.POSITIVE)
+        {
+            
+        }
+        else if(ue.operation_type == UnaryExpr.Type.NEGATIVE)
+        {
+            
+        }
+        else if(ue.operation_type == UnaryExpr.Type.BIT_NOT)
+        {
+            
+        }
+        else if(ue.operation_type == UnaryExpr.Type.NOT)
+        {
+            
+        }
+        else
+            throw new Exception("Internal Error!");
+    }
 
+    public void checkFuncDef(FuncDef _func) throws Exception
+    {
+        System.out.println("Checking function: "+_func.id.id);
+    }
+
+    public static void main(String argv[]) throws Exception
+    {
+        Semantic sc = new Semantic();
+        
+        InputStream inp = new FileInputStream("tests/example.c");
+        Parser parser = new Parser(inp);
+        java_cup.runtime.Symbol parseTree = null;
+
+        try
+        {
+            parseTree = parser.parse();
+        }
+        catch (Throwable e)
+        {
+            e.printStackTrace();
+            throw new Error(e.toString());
+        }
+        finally
+        {
+            inp.close();
+        }
+
+        Program program = (Program) parseTree.value;
+        
+        sc.check(program);
     }
 }

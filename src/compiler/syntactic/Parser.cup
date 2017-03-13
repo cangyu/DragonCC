@@ -112,7 +112,7 @@ non terminal TypeName type_name;
 non terminal Arguments arguments;
 
 precedence nonassoc ELSE;
- 
+
 start with program;
 
 //the expressions in priority hierarchy
@@ -220,10 +220,10 @@ func_declarator ::= plain_declarator:pd LPAREN RPAREN {: RESULT = new Declarator
 
 declarators ::= declarator:d {: RESULT = new Declarators(d); :}
               | declarators:ds COMMA declarator:d {: ds.comp.add(d); RESULT = ds; :};
-              
+
 init_declarator ::= declarator:d {: RESULT = new InitDeclarator(d, null); :}
                   | declarator:d ASSIGN initializer:i {: RESULT = new InitDeclarator(d, i); :};              
-              						
+
 init_declarators ::= init_declarator:id {: RESULT = new InitDeclarators(id); :}
                    | init_declarators:ids COMMA init_declarator:id {: ids.comp.add(id); RESULT = ids; :};
 
