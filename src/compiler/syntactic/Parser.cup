@@ -118,7 +118,7 @@ start with program;
 //the expressions in priority hierarchy
 primary_expression ::= ID:id {: RESULT = new PrimaryExpr(PrimaryExpr.Type.ID, id); :}
 					 | STRINGCONTENT:str {: RESULT = new PrimaryExpr(PrimaryExpr.Type.STRING, str); :}
-					 | LPAREN expression:e RPAREN {: RESULT = e; :}
+					 | LPAREN expression:e RPAREN {: RESULT = new PrimaryExpr(PrimaryExpr.Type.PAREN, e); :}
 					 | NUM:num {: RESULT = new PrimaryExpr(PrimaryExpr.Type.INT, num); :}
 					 | CHARCONTENT:ch {: RESULT = new PrimaryExpr(PrimaryExpr.Type.CHAR, ch); :};
 
