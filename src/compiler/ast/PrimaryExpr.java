@@ -2,15 +2,15 @@ package compiler.ast;
 
 public class PrimaryExpr extends Expr
 {
-	public static enum Type{ID, STRING, CHAR, INT};
+	public static enum Type{ID, STRING, CHAR, INT, PAREN};
 	
 	public Type elem_type;
-	public Object value;
+	public Object elem;
 	
 	public PrimaryExpr(Type _t, Object _val)
 	{
 		elem_type = _t;
-		value = _val;;
+		elem = _val;;
 	}
 	
 	@Override
@@ -19,15 +19,17 @@ public class PrimaryExpr extends Expr
 		switch(elem_type)
 		{
 		case ID:
-			return (String)value;
+			return (String)elem;
 		case STRING:
-			return "\"" + (String)value + "\"";
+			return "\"" + (String)elem + "\"";
 		case INT:
-			return ((Integer)value).toString();
+			return ((Integer)elem).toString();
 		case CHAR:
-			return "\'" + (String)value + "\'";
+			return "\'" + (String)elem + "\'";
+		case PAREN:
+		    return '(' + ((Expression)elem).toString() + ')';
 		default:
-			return "";	
+			return "";
 		}
 	}
 }

@@ -23,7 +23,7 @@ public class Expression extends Expr
 			if(comp.size() > 1)
 			{
 				for(int i=1;i< comp.size(); i++)
-					ans += ("," + comp.get(i).toString());
+					ans += (", " + comp.get(i).toString());
 			}
 		}
 		

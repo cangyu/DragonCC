@@ -7,12 +7,12 @@ import compiler.ast.BinaryExpr;
 public final class Array extends Type
 {
     public int capacity;
-    public Type type;
+    public Type elem_type;
 
     public Array(int _cap, Type _ct)
     {
         capacity = _cap;
-        type = _ct;
+        elem_type = _ct;
     }
     
     @Override
@@ -21,7 +21,7 @@ public final class Array extends Type
         if(this == rhs)
             return true;
         else if (rhs instanceof Array)
-            return this.type.equals(((Array)rhs).type);
+            return this.elem_type.equals(((Array)rhs).elem_type);
         else
             return false;
     }
