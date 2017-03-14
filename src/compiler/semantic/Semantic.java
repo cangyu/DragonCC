@@ -379,7 +379,10 @@ public class Semantic
             {
                 Function cft = (Function)ft;
                 
-                Arguments 
+                if(cft.args != null)
+                {
+                    
+                }
                 
                 return cft.ret_type;
             }
