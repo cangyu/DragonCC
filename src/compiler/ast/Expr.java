@@ -1,17 +1,13 @@
 package compiler.ast;
 
-import compiler.semantic.Entry;
+import compiler.semantic.Type;
 
 public abstract class Expr
 {
-    public Entry entry;
-	public boolean isConst;
-	public int val;
-	
-	@Override
-	public String toString()
-	{
-	    return "Expr";
-	}
+    //general attributes for an expr
+    public Type type;
+    public boolean isLValue;//left value can be taken address of, while right value can not
+    public boolean isConst;
+    public Object val;
 }
 
