@@ -46,6 +46,6 @@ final public class ParserTest
 
 	public static void main(String argv[]) throws IOException
 	{
-		parse("tests/example2.c");
+		parse("tests/example3.c");
 	}
 }
