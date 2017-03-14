@@ -381,7 +381,7 @@ public class Semantic
                 
                 if(cft.args != null)
                 {
-                    
+                    Arguments ca= (Arguments)pe.param;
                 }
                 
                 return cft.ret_type;
