@@ -7,7 +7,7 @@ import compiler.syntactic.*;
 
 final public class ParserTest
 {	
-	public static void parse(String filename) throws IOException 
+	public static void parse(String filename) throws IOException
 	{		
 		InputStream inp = new FileInputStream(filename);
 		Parser parser = new Parser(inp);

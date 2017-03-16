@@ -8,8 +8,7 @@ public final class ScannerTest implements Symbols
     public static void main(String[] args) throws Exception
     {
         System.out.println("===ScannerTest : Self-Testing===");
-        scan("test/test.c");
-        scan("test/example.c");
+        scan("test/example-ce.c");
         scan("test/example1.c");
         scan("test/example2.c");
         scan("test/example3.c");
