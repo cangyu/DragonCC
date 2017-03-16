@@ -1,8 +1,9 @@
-package compiler.syntactic;
+package compiler.main;
 
 import java.io.*;
 import com.google.gson.*;
 import org.json.*;
+import compiler.syntactic.*;
 
 final public class ParserTest
 {	
@@ -46,6 +47,6 @@ final public class ParserTest
 
 	public static void main(String argv[]) throws IOException
 	{
-		parse("tests/example3.c");
+		parse(argv[0]);
 	}
 }

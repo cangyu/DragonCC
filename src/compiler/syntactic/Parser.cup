@@ -278,7 +278,7 @@ program ::= general_decl:gd {: RESULT = new Program(gd); :}
 
 general_decl ::= decl:d {: RESULT = d; :}
                | func_def:fd {: RESULT = fd; :};
-
+             
 //statements
 stmt ::= expression_stmt:es {: RESULT = es; :}
 	   | compound_stmt:cs {: RESULT = cs; :}

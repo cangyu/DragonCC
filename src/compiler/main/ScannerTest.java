@@ -1,18 +1,18 @@
-package compiler.syntactic;
+package compiler.main;
 
-import java_cup.runtime.*;
 import java.io.*;
+import compiler.syntactic.*;
 
 public final class ScannerTest implements Symbols
 {
-
     public static void main(String[] args) throws Exception
     {
         System.out.println("===ScannerTest : Self-Testing===");
-        scan("tests/example.c");
-        scan("tests/example1.c");
-        scan("tests/example2.c");
-        scan("tests/example3.c");
+        scan("test/test.c");
+        scan("test/example.c");
+        scan("test/example1.c");
+        scan("test/example2.c");
+        scan("test/example3.c");
         System.out.println("===ScannerTest : Self-Testing Over===");
     }
 
