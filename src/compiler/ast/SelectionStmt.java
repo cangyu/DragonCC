@@ -11,4 +11,9 @@ public class SelectionStmt extends Stmt
 		if_clause = _ic;
 		else_clause = _ec;
 	}
+	
+    public void accept(ASTNodeVisitor v)
+    {
+        v.visit(this);
+    }
 }

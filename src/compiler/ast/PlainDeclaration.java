@@ -1,14 +1,14 @@
 package compiler.ast;
 
-public class TypeName extends ASTNode
+public class PlainDeclaration extends ASTNode
 {
 	public TypeSpecifier type_specifier;
-	public StarList stars;
+	public Declarator declarator;
 	
-	public TypeName(TypeSpecifier _ts, StarList _ss)
+	public PlainDeclaration(TypeSpecifier _ts, Declarator _d)
 	{
 		type_specifier = _ts;
-		stars = _ss;
+		declarator = _d;
 	}
 	
     public void accept(ASTNodeVisitor v)

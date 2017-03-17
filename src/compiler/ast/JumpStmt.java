@@ -12,4 +12,9 @@ public class JumpStmt extends Stmt
 		type = _jt;
 		ans = _e;
 	}
+	
+    public void accept(ASTNodeVisitor v)
+    {
+        v.visit(this);
+    }
 }

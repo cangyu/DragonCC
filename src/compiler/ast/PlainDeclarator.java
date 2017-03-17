@@ -1,13 +1,18 @@
 package compiler.ast;
 
-public class PlainDeclarator
+public class PlainDeclarator extends ASTNode
 {
-	public Star stars;
-	public String id;
+	public StarList star_list;
+	public String identifier;
 	
-	public PlainDeclarator(Star _s, String _id)
+	public PlainDeclarator(StarList _s, String _id)
 	{
-		stars = _s;
-		id = _id;
+	    star_list = _s;
+	    identifier = _id;
 	}
+	
+    public void accept(ASTNodeVisitor v)
+    {
+        v.visit(this);
+    }
 }

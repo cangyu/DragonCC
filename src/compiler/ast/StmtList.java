@@ -1,13 +1,13 @@
 package compiler.ast;
 
-public class Expression extends Expr
+public class StmtList extends ASTNode
 {
-	public Expr head;
-	public Expression next;
+	public Stmt head;
+	public StmtList next;
 	
-	public Expression(Expr _e)
+	public StmtList(Stmt _s)
 	{
-	    head = _e;
+	    head = _s;
 	    next = null;
 	}
 	

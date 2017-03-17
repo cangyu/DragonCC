@@ -1,12 +1,12 @@
 package compiler.ast;
 
-public class ExpressionStmt extends Stmt
+public class StarList extends ASTNode
 {
-	public Expr expr;
+	public int cnt;
 	
-	public ExpressionStmt(Expr e)
+	public StarList(int _ic)
 	{
-		expr = e;
+		cnt = _ic;
 	}
 	
     public void accept(ASTNodeVisitor v)

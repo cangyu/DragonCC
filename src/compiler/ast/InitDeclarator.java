@@ -1,6 +1,6 @@
 package compiler.ast;
 
-public class InitDeclarator 
+public class InitDeclarator extends ASTNode
 {
 	public Declarator declarator;
 	public Initializer initializer;
@@ -10,4 +10,9 @@ public class InitDeclarator
 		declarator = _d;
 		initializer = _i;
 	}
+	
+    public void accept(ASTNodeVisitor v)
+    {
+        v.visit(this);
+    }
 }

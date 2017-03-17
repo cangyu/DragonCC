@@ -2,18 +2,17 @@ package compiler.ast;
 
 public class CastExpr extends Expr
 {
-	public TypeName type_name;
+	public TypeName target_type;
 	public Expr expr;
 	
 	public CastExpr(TypeName _t, Expr _e)
 	{
-		type_name = _t;
+	    target_type = _t;
 		expr = _e;
 	}
 	
-	@Override
-	public String toString()
-	{
-		return "(" + type_name.toString() + ")" + expr.toString();
-	}
+    public void accept(ASTNodeVisitor v)
+    {
+        v.visit(this);
+    }
 }

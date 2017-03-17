@@ -24,4 +24,9 @@ public class IterationStmt extends Stmt
 		next_op = _t3;
 		stmt = _s;
 	}
+	
+    public void accept(ASTNodeVisitor v)
+    {
+        v.visit(this);
+    }
 }

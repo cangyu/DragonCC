@@ -1,17 +1,18 @@
 package compiler.ast;
 
-public class Initializer 
+public class Initializer extends ASTNode
 {
-	public Expr value;
-	public Initializers initializers;
-	
-	public Initializer(Expr _e)
-	{
-		value = _e;
-	}
-	
-	public Initializer(Initializers _is)
-	{
-		initializers  =_is;
-	}
+    public Expr expr;
+    public InitializerList initializer_list;
+
+    public Initializer(Expr _e, InitializerList _is)
+    {
+        expr = _e;
+        initializer_list = _is;
+    }
+
+    public void accept(ASTNodeVisitor v)
+    {
+        v.visit(this);
+    }
 }

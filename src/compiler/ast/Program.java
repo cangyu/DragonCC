@@ -1,14 +1,18 @@
 package compiler.ast;
 
-import java.util.LinkedList;
-
-public class Program 
+public class Program extends ASTNode
 {
-	public LinkedList<GeneralDeclaration> comp;
-	
-	public Program(GeneralDeclaration _df)
-	{
-		comp = new LinkedList<GeneralDeclaration>();
-		comp.add(_df);
-	}
+    public ProgramComp comp;
+    public Program next;
+
+    public Program(ProgramComp pc)
+    {
+        comp = pc;
+        next = null;
+    }
+
+    void accept(ASTNodeVisitor v)
+    {
+        v.visit(this);
+    }
 }

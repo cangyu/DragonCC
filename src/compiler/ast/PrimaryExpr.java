@@ -2,34 +2,19 @@ package compiler.ast;
 
 public class PrimaryExpr extends Expr
 {
-	public static enum Type{ID, STRING, CHAR, INT, PAREN};
+	public static enum ElemType{ID, STRING, CHAR, INT};
 	
-	public Type elem_type;
+	public ElemType elem_type;
 	public Object elem;
 	
-	public PrimaryExpr(Type _t, Object _val)
+	public PrimaryExpr(ElemType _t, Object _e)
 	{
 		elem_type = _t;
-		elem = _val;;
+		elem = _e;
 	}
 	
-	@Override
-	public String toString()
-	{
-		switch(elem_type)
-		{
-		case ID:
-			return (String)elem;
-		case STRING:
-			return "\"" + (String)elem + "\"";
-		case INT:
-			return ((Integer)elem).toString();
-		case CHAR:
-			return "\'" + (String)elem + "\'";
-		case PAREN:
-		    return '(' + ((Expression)elem).toString() + ')';
-		default:
-			return "";
-		}
-	}
+    public void accept(ASTNodeVisitor v)
+    {
+        v.visit(this);
+    }
 }
