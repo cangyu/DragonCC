@@ -57,10 +57,7 @@ public class Main
 
     public static void BuildAST(Program prog)
     {
-        for(GeneralDeclaration gd : prog.comp)
-        {
-            
-        }
+        
     }
 
 }
