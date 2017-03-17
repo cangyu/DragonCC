@@ -11,7 +11,7 @@ public class PostfixExpr extends Expr
     public Operator op;
     public Object param;
 
-    public PostfixExpr(Expr _pexpr, Object _param, Operator _t)
+    public PostfixExpr(Expr _pexpr, Operator _t, Object _param)
     {
         expr = _pexpr;
         param = _param;
