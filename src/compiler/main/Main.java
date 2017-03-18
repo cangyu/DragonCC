@@ -57,7 +57,7 @@ public class Main
 
     public static void BuildAST(Program prog)
     {
-        
+        ASTPrinter ast_printer = new ASTPrinter();
+        prog.accept(ast_printer);
     }
-
 }

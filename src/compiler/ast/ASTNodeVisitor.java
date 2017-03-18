@@ -3,48 +3,47 @@ package compiler.ast;
 public interface ASTNodeVisitor
 {
     /* Expr */
-    void visit(Expression exp);
-    void visit(AssignmentExpr ae);
-    void visit(BinaryExpr be);
-    void visit(CastExpr ce);
-    void visit(UnaryExpr ue);
-    void visit(PostfixExpr pe);
-    void visit(PrimaryExpr pe);
+    public void visit(Expression exp);
+    public void visit(AssignmentExpr ae);
+    public void visit(BinaryExpr be);
+    public void visit(CastExpr ce);
+    public void visit(UnaryExpr ue);
+    public void visit(PostfixExpr pe);
+    public void visit(PrimaryExpr pe);
     
     /* Stmt */
-    void visit(Stmt s);
-    void visit(StmtList _sl);
-    void visit(ExpressionStmt es);
-    void visit(CompoundStmt cs);
-    void visit(SelectionStmt ss);
-    void visit(JumpStmt js);
-    void visit(IterationStmt is);
+    public void visit(StmtList _sl);
+    public void visit(ExpressionStmt es);
+    public void visit(CompoundStmt cs);
+    public void visit(SelectionStmt ss);
+    public void visit(JumpStmt js);
+    public void visit(IterationStmt is);
     
     /* Decl */
-    void visit(StarList _p);
-    void visit(Declaration decl);
-    void visit(Declarator d);
-    void visit(DeclarationList ds);
-    void visit(DeclaratorList ds);
-    void visit(InitDeclarator id);
-    void visit(InitDeclaratorList ids);
-    void visit(Initializer ini);
-    void visit(InitializerList ir);
-    void visit(NonInitDeclaration nid);
-    void visit(NonInitDeclarationList nids);
-    void visit(PlainDeclaration pd);
-    void visit(PlainDeclarator pdr);
+    public void visit(StarList _p);
+    public void visit(Declaration decl);
+    public void visit(FuncDeclarator fd);
+    public void visit(VarDeclarator vd);
+    public void visit(DeclarationList ds);
+    public void visit(DeclaratorList ds);
+    public void visit(InitDeclarator id);
+    public void visit(InitDeclaratorList ids);
+    public void visit(Initializer ini);
+    public void visit(InitializerList ir);
+    public void visit(NonInitDeclaration nid);
+    public void visit(NonInitDeclarationList nids);
+    public void visit(PlainDeclaration pd);
+    public void visit(PlainDeclarator pdr);
 
     /* Func */
-    void visit(FuncDef func);
-    void visit(ArgumentList args);
-    void visit(ParameterList pl);
+    public void visit(FuncDef func);
+    public void visit(ArgumentList args);
+    public void visit(ParameterList pl);
 
     /* Type */
-    void visit(TypeName t);
-    void visit(TypeSpecifier ts);
+    public void visit(TypeName t);
+    public void visit(TypeSpecifier ts);
     
     /* Program */
-    void visit(Program prog);
-    void visit(ProgramComp pc);
+    public void visit(Program prog);
 }
