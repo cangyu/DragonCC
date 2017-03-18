@@ -11,53 +11,58 @@ import compiler.semantic.*;
 
 public class Main
 {
-    public static void main(String[] args) throws Exception
-    {
-        System.out.println("Compiling: " + args[0]);
-        Compile(args[0]);
-        System.out.println("Compilation Done!");
-    }
+	public static void main(String[] args) throws Exception
+	{
+		System.out.println("Compiling: " + args[0]);
+		Compile(args[0]);
+		System.out.println("Compilation Done!");
+	}
 
-    public static void Compile(String _filename) throws Exception
-    {
-        System.out.println("\tParsing...");
-        Program prog = Parse(_filename);
-        System.out.println("\tParsing Done!");
-        
-        System.out.println("\tBuilding AST...");
-        BuildAST(prog);
-        System.out.println("\tBuilding AST Done!");
+	public static void Compile(String _filename) throws Exception
+	{
+		String src_path = "test/" + _filename;
+		String ast_filename = "result/" + _filename + "_AST.txt";
 
-        // Semantic sc = new Semantic(prog);
-        // sc.checkProgram();
-    }
+		System.out.println("\tParsing...");
+		Program prog = Parse(src_path);
+		System.out.println("\tParsing Done!");
+		
+		System.out.println("\tBuilding AST...");
+		BufferedWriter ast_out = new BufferedWriter(new FileWriter(ast_filename));
+		ASTPrinter ast_printer = new ASTPrinter();
+		prog.accept(ast_printer);
+		for (String str : prog.ast_rep)
+			ast_out.write(str+"\n");
+		ast_out.close();
+		System.out.println("\tOutput at: " + ast_filename);
+		System.out.println("\tBuilding AST Done!");
 
-    public static Program Parse(String _filename) throws Exception
-    {
-        InputStream inp = new FileInputStream(_filename);
-        Parser parser = new Parser(inp);
-        java_cup.runtime.Symbol parseTree = null;
+		System.out.println("\tSemantic Checking...");
+		// Semantic sc = new Semantic(prog);
+		// sc.checkProgram();
+		System.out.println("\tSemantic Check Done!");
+	}
 
-        try
-        {
-            parseTree = parser.parse();
-        }
-        catch (Throwable e)
-        {
-            e.printStackTrace();
-            throw new Error(e.toString());
-        }
-        finally
-        {
-            inp.close();
-        }
+	public static Program Parse(String _filename) throws Exception
+	{
+		InputStream inp = new FileInputStream(_filename);
+		Parser parser = new Parser(inp);
+		java_cup.runtime.Symbol parseTree = null;
 
-        return (Program) parseTree.value;
-    }
+		try
+		{
+			parseTree = parser.parse();
+		}
+		catch (Throwable e)
+		{
+			e.printStackTrace();
+			throw new Error(e.toString());
+		}
+		finally
+		{
+			inp.close();
+		}
 
-    public static void BuildAST(Program prog)
-    {
-        ASTPrinter ast_printer = new ASTPrinter();
-        prog.accept(ast_printer);
-    }
+		return (Program) parseTree.value;
+	}
 }

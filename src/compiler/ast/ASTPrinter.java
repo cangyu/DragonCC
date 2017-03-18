@@ -1,5 +1,7 @@
 package compiler.ast;
 
+import java.util.Iterator;
+
 public class ASTPrinter implements ASTNodeVisitor
 {
 	/* Expr */
@@ -719,37 +721,120 @@ public class ASTPrinter implements ASTNodeVisitor
 	public void visit(VarDeclarator vd)
 	{
 		// construct components and count lines
+		vd.plain_declarator.accept(this);
+
+		if(vd.dimension.size() != 0)
+		{
+			Iterator<Expr> it = vd.dimension.iterator();
+			while (it.hasNext())
+				it.next().accept(this);
+		}
+
+		// count lines
 		int lc = 1;
+		lc += vd.plain_declarator.ast_rep.length;
+		if(vd.dimension.size() != 0)
+		{
+			Iterator<Expr> it = vd.dimension.iterator();
+			while (it.hasNext())
+				lc += it.next().ast_rep.length;
+		}
 
 		// initialize format
 		vd.ast_rep = new String[lc];
 		vd.ast_rep[0] = "--VarDecl";
-		
+		for (int i = 1; i < lc; i++)
+			vd.ast_rep[i] = "    |";
+
 		// add contents
+		int cl = 1;
+		for (String str : vd.plain_declarator.ast_rep)
+			vd.ast_rep[cl++] += str;
+
+		if(vd.dimension.size() != 0)
+		{
+			Iterator<Expr> it = vd.dimension.iterator();
+			while (it.hasNext())
+			{
+				String[] _s = it.next().ast_rep;
+				for (String str : _s)
+					vd.ast_rep[cl++] += str;
+			}
+		}
 	}
 
 	public void visit(DeclarationList ds)
 	{
-		// construct components and count lines
+		// construct components
+		DeclarationList _dl = ds;
+		while (_dl != null)
+		{
+			_dl.head.accept(this);
+			_dl = _dl.next;
+		}
+
+		// count lines
 		int lc = 1;
+		_dl = ds;
+		while (_dl != null)
+		{
+			lc += _dl.head.ast_rep.length;
+			_dl = _dl.next;
+		}
 
 		// initialize format
+		ds.ast_rep = new String[lc];
+		ds.ast_rep[0] = "--DeclarationList";
+		for (int i = 1; i < lc; i++)
+			ds.ast_rep[i] = "    |";
 
 		// add contents
-		ds.ast_rep = new String[1];
-		ds.ast_rep[0] = "--DeclarationList";
+		int cl = 1;
+		_dl = ds;
+		while (_dl != null)
+		{
+			for (String str : _dl.head.ast_rep)
+				ds.ast_rep[cl++] += str;
+
+			_dl = _dl.next;
+		}
 	}
 
 	public void visit(DeclaratorList ds)
 	{
-		// construct components and count lines
+		// construct components
+		DeclaratorList _dl = ds;
+		while (_dl != null)
+		{
+			_dl.head.accept(this);
+			_dl = _dl.next;
+		}
+
+		// count lines
 		int lc = 1;
+		_dl = ds;
+		while (_dl != null)
+		{
+			lc += _dl.head.ast_rep.length;
+			_dl = _dl.next;
+		}
 
 		// initialize format
+		ds.ast_rep = new String[lc];
+		ds.ast_rep[0] = "--DeclaratorList";
+		for (int i = 1; i < lc; i++)
+			ds.ast_rep[i] = "    |";
 
 		// add contents
-		ds.ast_rep = new String[1];
-		ds.ast_rep[0] = "--DeclaratorList";
+		int cl = 1;
+		_dl = ds;
+		while (_dl != null)
+		{
+			for (String str : _dl.head.ast_rep)
+				ds.ast_rep[cl++] += str;
+
+			_dl = _dl.next;
+		}
 	}
 
 	public void visit(InitDeclarator id)
@@ -757,23 +842,66 @@ public class ASTPrinter implements ASTNodeVisitor
 		// construct components and count lines
 		int lc = 1;
 
+		id.declarator.accept(this);
+		lc += id.declarator.ast_rep.length;
+
+		if(id.initializer != null)
+		{
+			id.initializer.accept(this);
+			lc += id.initializer.ast_rep.length;
+		}
+
 		// initialize format
+		id.ast_rep = new String[lc];
+		id.ast_rep[0] = "--InitDeclarator";
+		for (int i = 1; i < lc; i++)
+			id.ast_rep[i] = "    |";
 
 		// add contents
-		id.ast_rep = new String[1];
-		id.ast_rep[0] = "--InitDeclarator";
+		int cl = 1;
+		for (String str : id.declarator.ast_rep)
+			id.ast_rep[cl++] += str;
+
+		if(id.initializer != null)
+			for (String str : id.initializer.ast_rep)
+				id.ast_rep[cl++] += str;
 	}
 
 	public void visit(InitDeclaratorList ids)
 	{
-		// construct components and count lines
+		// construct components
+		InitDeclaratorList _dl = ids;
+		while (_dl != null)
+		{
+			_dl.head.accept(this);
+			_dl = _dl.next;
+		}
+
+		// count lines
 		int lc = 1;
+		_dl = ids;
+		while (_dl != null)
+		{
+			lc += _dl.head.ast_rep.length;
+			_dl = _dl.next;
+		}
 
 		// initialize format
+		ids.ast_rep = new String[lc];
+		ids.ast_rep[0] = "--InitDeclaratorList";
+		for (int i = 1; i < lc; i++)
+			ids.ast_rep[i] = "    |";
 
 		// add contents
-		ids.ast_rep = new String[1];
-		ids.ast_rep[0] = "--InitDeclaratorList";
+		int cl = 1;
+		_dl = ids;
+		while (_dl != null)
+		{
+			for (String str : _dl.head.ast_rep)
+				ids.ast_rep[cl++] += str;
+
+			_dl = _dl.next;
+		}
 	}
 
 	public void visit(Initializer ini)
@@ -781,71 +909,182 @@ public class ASTPrinter implements ASTNodeVisitor
 		// construct components and count lines
 		int lc = 1;
 
-		// initialize format
+		if(ini.expr != null)
+		{
+			ini.expr.accept(this);
+			lc += ini.expr.ast_rep.length;
+		}
 
-		// add contents
-		ini.ast_rep = new String[1];
+		if(ini.initializer_list != null)
+		{
+			ini.initializer_list.accept(this);
+			lc += ini.initializer_list.ast_rep.length;
+		}
+
+		// initialize format
+		ini.ast_rep = new String[lc];
 		ini.ast_rep[0] = "--Initializer";
+		for (int i = 1; i < lc; i++)
+			ini.ast_rep[i] = "    |";
+
+		// add contents
+		int cl = 1;
+		if(ini.expr != null)
+			for (String str : ini.expr.ast_rep)
+				ini.ast_rep[cl++] += str;
+
+		if(ini.initializer_list != null)
+			for (String str : ini.initializer_list.ast_rep)
+				ini.ast_rep[cl++] += str;
 	}
 
-	public void visit(InitializerList ir)
+	public void visit(InitializerList x)
+	{
+		// construct components
+		InitializerList y = x;
+		while (y != null)
+		{
+			y.head.accept(this);
+			y = y.next;
+		}
+
+		// count lines
+		int lc = 1;
+		y = x;
+		while (y != null)
+		{
+			lc += y.head.ast_rep.length;
+			y = y.next;
+		}
+
+		// initialize format
+		x.ast_rep = new String[lc];
+		x.ast_rep[0] = "--InitializerList";
+		for (int i = 1; i < lc; i++)
+			x.ast_rep[i] = "    |";
+
+		// add contents
+		int cl = 1;
+		y = x;
+		while (y != null)
+		{
+			for (String str : y.head.ast_rep)
+				x.ast_rep[cl++] += str;
+
+			y = y.next;
+		}
+	}
+
+	public void visit(NonInitDeclaration x)
 	{
 		// construct components and count lines
 		int lc = 1;
+		x.type_specifier.accept(this);
+		lc += x.type_specifier.ast_rep.length;
+
+		x.declarator_list.accept(this);
+		lc += x.declarator_list.ast_rep.length;
 
 		// initialize format
+		x.ast_rep = new String[lc];
+		x.ast_rep[0] = "--NonInitDeclaration";
+		for (int i = 1; i < lc; i++)
+			x.ast_rep[i] = "   |";
 
 		// add contents
-		ir.ast_rep = new String[1];
-		ir.ast_rep[0] = "--InitializerList";
+		int cl = 1;
+		for (String str : x.type_specifier.ast_rep)
+			x.ast_rep[cl++] += str;
+
+		for (String str : x.declarator_list.ast_rep)
+			x.ast_rep[cl++] += str;
 	}
 
-	public void visit(NonInitDeclaration nid)
+	public void visit(NonInitDeclarationList x)
+	{
+		// construct components
+		NonInitDeclarationList y = x;
+		while (y != null)
+		{
+			y.head.accept(this);
+			y = y.next;
+		}
+
+		// count lines
+		int lc = 1;
+		y = x;
+		while (y != null)
+		{
+			lc += y.head.ast_rep.length;
+			y = y.next;
+		}
+
+		// initialize format
+		x.ast_rep = new String[lc];
+		x.ast_rep[0] = "--NonInitDeclarationList";
+		for (int i = 1; i < lc; i++)
+			x.ast_rep[i] = "    |";
+
+		// add contents
+		int cl = 1;
+		y = x;
+		while (y != null)
+		{
+			for (String str : y.head.ast_rep)
+				x.ast_rep[cl++] += str;
+
+			y = y.next;
+		}
+	}
+
+	public void visit(PlainDeclaration x)
 	{
 		// construct components and count lines
 		int lc = 1;
+		x.type_specifier.accept(this);
+		lc += x.type_specifier.ast_rep.length;
+
+		x.declarator.accept(this);
+		lc += x.declarator.ast_rep.length;
 
 		// initialize format
+		x.ast_rep = new String[lc];
+		x.ast_rep[0] = "--PlainDeclaration";
+		for (int i = 1; i < lc; i++)
+			x.ast_rep[i] = "    |";
 
 		// add contents
-		nid.ast_rep = new String[1];
-		nid.ast_rep[0] = "--NonInitDeclaration";
+		int cl = 1;
+		for (String str : x.type_specifier.ast_rep)
+			x.ast_rep[cl++] += str;
+
+		for (String str : x.declarator.ast_rep)
+			x.ast_rep[cl++] += str;
 	}
 
-	public void visit(NonInitDeclarationList nids)
+	public void visit(PlainDeclarator x)
 	{
 		// construct components and count lines
-		int lc = 1;
-
+		int lc = 2;
+		if(x.star_list.cnt > 0)
+		{
+			x.star_list.accept(this);
+			lc += x.star_list.ast_rep.length;
+		}
+		
 		// initialize format
+		x.ast_rep = new String[lc];
+		x.ast_rep[0] = "--PlainDeclarator";
+		for (int i = 1; i < lc; i++)
+			x.ast_rep[i] = "    |";
 
 		// add contents
-		nids.ast_rep = new String[1];
-		nids.ast_rep[0] = "--NonInitDeclarationList";
-	}
+		int cl = 1;
+		if(x.star_list.cnt > 0)
+			for (String str : x.star_list.ast_rep)
+				x.ast_rep[cl++] += str;
 
-	public void visit(PlainDeclaration pd)
-	{
-		// construct components and count lines
-		int lc = 1;
-
-		// initialize format
-
-		// add contents
-		pd.ast_rep = new String[1];
-		pd.ast_rep[0] = "--PlainDeclaration";
-	}
-
-	public void visit(PlainDeclarator pdr)
-	{
-		// construct components and count lines
-		int lc = 1;
-
-		// initialize format
-
-		// add contents
-		pdr.ast_rep = new String[1];
-		pdr.ast_rep[0] = "--PlainDeclarator";
+		x.ast_rep[cl++] += "--Identifier: " + x.identifier;
 	}
 
 	/* Func */
@@ -891,26 +1130,104 @@ public class ASTPrinter implements ASTNodeVisitor
 			func.ast_rep[cl++] += str;
 	}
 
-	public void visit(ArgumentList args)
+	public void visit(ArgumentList x)
 	{
-		args.ast_rep = new String[1];
-		args.ast_rep[0] = "--ArgumentList";
-		/*
-		 * System.out.print(" "); args.arg.accept(this); args.next.accept(this);
-		 */
+		// construct components
+		ArgumentList y = x;
+		while (y != null)
+		{
+			y.head.accept(this);
+			y = y.next;
+		}
+
+		// count lines
+		int lc = 1;
+		y = x;
+		while (y != null)
+		{
+			lc += y.head.ast_rep.length;
+			y = y.next;
+		}
+
+		// initialize format
+		x.ast_rep = new String[lc];
+		x.ast_rep[0] = "--ArgumentList";
+		for (int i = 1; i < lc; i++)
+			x.ast_rep[i] = "    |";
+
+		// add contents
+		int cl = 1;
+		y = x;
+		while (y != null)
+		{
+			for (String str : y.head.ast_rep)
+				x.ast_rep[cl++] += str;
+
+			y = y.next;
+		}
 	}
 
-	public void visit(ParameterList pl)
+	public void visit(ParameterList x)
 	{
-		pl.ast_rep = new String[1];
-		pl.ast_rep[0] = "--ParameterList";
+		// construct components
+		ParameterList y = x;
+		while (y != null)
+		{
+			y.head.accept(this);
+			y = y.next;
+		}
+
+		// count lines
+		int lc = 1;
+		y = x;
+		while (y != null)
+		{
+			lc += y.head.ast_rep.length;
+			y = y.next;
+		}
+
+		// initialize format
+		x.ast_rep = new String[lc];
+		x.ast_rep[0] = "--ParameterList";
+		for (int i = 1; i < lc; i++)
+			x.ast_rep[i] = "    |";
+
+		// add contents
+		int cl = 1;
+		y = x;
+		while (y != null)
+		{
+			for (String str : y.head.ast_rep)
+				x.ast_rep[cl++] += str;
+
+			y = y.next;
+		}
 	}
 
 	/* Type */
-	public void visit(TypeName t)
+	public void visit(TypeName x)
 	{
-		t.ast_rep = new String[1];
-		t.ast_rep[0] = "--TypeName";
+		// construct components and count lines
+		int lc = 1;
+		x.type_specifier.accept(this);
+		lc += x.type_specifier.ast_rep.length;
+		
+		x.star_list.accept(this);
+		lc += x.star_list.ast_rep.length;
+		
+		// initialize format
+		x.ast_rep = new String[lc];
+		x.ast_rep[0] = "--TypeName";
+		for (int i = 1; i < lc; i++)
+			x.ast_rep[i] = "    |";
+
+		// add contents
+		int cl = 1;
+		for (String str : x.type_specifier.ast_rep)
+			x.ast_rep[cl++] += str;
+
+		for (String str : x.star_list.ast_rep)
+			x.ast_rep[cl++] += str;
 	}
 
 	public void visit(TypeSpecifier ts)
@@ -995,9 +1312,5 @@ public class ASTPrinter implements ASTNodeVisitor
 
 			cp = cp.next;
 		}
-
-		// output
-		for (String str : prog.ast_rep)
-			System.out.println(str);
 	}
 }
