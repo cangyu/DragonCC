@@ -199,8 +199,8 @@ assignment_expression ::= logical_or_expression:loe {: RESULT = loe; :}
 				  
 constant_expression ::= logical_or_expression:loe {: RESULT = loe; :};
 
-expression ::= assignment_expression:ae {: RESULT = new Expression(ae); :}
-			 | expression:e COMMA assignment_expression:ae {: e.next = new Expression(ae); RESULT = e.next; :};
+expression ::= assignment_expression:ae {: RESULT = new Expression(ae, null); :}
+			 | assignment_expression:ae COMMA expression:e {: RESULT = new Expression(ae, e); :};
 
 //the declarators, from simple to complex and multiple
 star_list ::= /* Empty */ {: RESULT = new StarList(0); :}
@@ -217,14 +217,14 @@ var_declarator ::= plain_declarator:pd {: RESULT = new VarDeclarator(pd); :}
 func_declarator ::= plain_declarator:pd LPAREN RPAREN {: RESULT = new FuncDeclarator(pd, null); :}
                   | plain_declarator:pd LPAREN parameter_list:para RPAREN {: RESULT = new FuncDeclarator(pd, para); :};
 
-declarator_list ::= declarator:d {: RESULT = new DeclaratorList(d); :}
-                  | declarator_list:ds COMMA declarator:d {: ds.next = new DeclaratorList(d); RESULT = ds.next; :};
+declarator_list ::= declarator:d {: RESULT = new DeclaratorList(d, null); :}
+                  | declarator:d COMMA declarator_list:ds {: RESULT = new DeclaratorList(d, ds); :};
 
 init_declarator ::= declarator:d {: RESULT = new InitDeclarator(d, null); :}
                   | declarator:d ASSIGN initializer:i {: RESULT = new InitDeclarator(d, i); :};              
 
-init_declarator_list ::= init_declarator:id {: RESULT = new InitDeclaratorList(id); :}
-                       | init_declarator_list:ids COMMA init_declarator:id {: ids.next = new InitDeclaratorList(id); RESULT = ids.next; :};
+init_declarator_list ::= init_declarator:id {: RESULT = new InitDeclaratorList(id, null); :}
+                       | init_declarator:id COMMA init_declarator_list:ids {: RESULT = new InitDeclaratorList(id, ids); :};
 
 //the declarations, from simple to complex and multiple
 plain_declaration ::= type_specifier:t declarator:d {: RESULT = new PlainDeclaration(t, d); :};
@@ -232,20 +232,20 @@ plain_declaration ::= type_specifier:t declarator:d {: RESULT = new PlainDeclara
 declaration ::= type_specifier:t init_declarator_list:id SEMI {: RESULT = new Declaration(t, id); :}
               | type_specifier:t SEMI {: RESULT = new Declaration(t, null); :};
        
-declaration_list ::= declaration:d {: RESULT = new DeclarationList(d); :}
-                   | declaration_list:ds declaration:d {: ds.next = new DeclarationList(d); RESULT = ds.next; :};   
+declaration_list ::= declaration:d {: RESULT = new DeclarationList(d, null); :}
+                   | declaration:d declaration_list:ds {: RESULT = new DeclarationList(d, ds); :};   
        
 non_init_declaration ::= type_specifier:t declarator_list:ds SEMI {: RESULT = new NonInitDeclaration(t, ds); :};
 
-non_init_declaration_list ::= non_init_declaration:nid {: RESULT = new NonInitDeclarationList(nid); :}
-                            | non_init_declaration_list:nids non_init_declaration:nid {: nids.next = new NonInitDeclarationList(nid); RESULT = nids.next; :};
+non_init_declaration_list ::= non_init_declaration:nid {: RESULT = new NonInitDeclarationList(nid, null); :}
+                            | non_init_declaration:nid non_init_declaration_list:nids {: RESULT = new NonInitDeclarationList(nid, nids); :};
                  
 //initializer, mutual inclusive
 initializer ::= assignment_expression:ae {: RESULT = new Initializer(ae, null); :}
               | LBRACE initializer_list:is RBRACE {: RESULT = new Initializer(null, is); :};
 
-initializer_list ::= initializer:i {: RESULT = new InitializerList(i); :}
-               | initializer_list:is COMMA initializer:i {: is.next = new InitializerList(i); RESULT = is.next; :};
+initializer_list ::= initializer:i {: RESULT = new InitializerList(i, null); :}
+               | initializer:i COMMA initializer_list:is {: RESULT = new InitializerList(i, is); :};
        
 //types
 type_specifier ::= VOID {: RESULT = new TypeSpecifier(TypeSpecifier.Type.VOID, null, null); :}
@@ -261,18 +261,18 @@ type_specifier ::= VOID {: RESULT = new TypeSpecifier(TypeSpecifier.Type.VOID, n
 type_name ::= type_specifier:ts star_list:ss {: RESULT = new TypeName(ts, ss); :};
             
 //function
-parameter_list ::= plain_declaration:pd {: RESULT = new ParameterList(pd); :}
-                 | parameter_list:p COMMA plain_declaration:pd {: p.next = new ParameterList(pd); RESULT = p.next; :};
+parameter_list ::= plain_declaration:pd {: RESULT = new ParameterList(pd, null); :}
+                 | plain_declaration:pd COMMA parameter_list:pl {: RESULT = new ParameterList(pd, pl); :};
 
-argument_list ::= assignment_expression:ae {: RESULT = new ArgumentList(ae); :}  
-                | argument_list:arg_list COMMA assignment_expression:ae {: arg_list.next = new ArgumentList(ae); RESULT = arg_list.next; :};
+argument_list ::= assignment_expression:ae {: RESULT = new ArgumentList(ae, null); :}  
+                | assignment_expression:ae COMMA argument_list:arg_list {: RESULT = new ArgumentList(ae, arg_list); :};
 
 func_def ::= type_specifier:t plain_declarator:pd LPAREN RPAREN compound_stmt:cs {: RESULT = new FuncDef(t, pd, null, cs); :}
            | type_specifier:t plain_declarator:pd LPAREN parameter_list:p RPAREN compound_stmt:cs {: RESULT = new FuncDef(t, pd, p, cs); :};
 
 //program
-program ::= prog_comp:pc {: RESULT = new Program(pc); :}
-		  | program:p prog_comp:pc {: p.next = new Program(pc); RESULT = p.next; :};
+program ::= prog_comp:pc {: RESULT = new Program(pc, null); :}
+		  | prog_comp:pc program:p {: RESULT = new Program(pc, p); :};
 
 prog_comp ::= declaration:d {: RESULT = d; :}
             | func_def:fd {: RESULT = fd; :};

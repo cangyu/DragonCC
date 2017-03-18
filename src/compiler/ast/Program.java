@@ -2,13 +2,13 @@ package compiler.ast;
 
 public class Program extends ASTNode
 {
-    public ProgramComp comp;
+    public ProgramComp head;
     public Program next;
 
-    public Program(ProgramComp pc)
+    public Program(ProgramComp _pc, Program _p)
     {
-        comp = pc;
-        next = null;
+    	head = _pc;
+        next = _p;
     }
 
     void accept(ASTNodeVisitor v)

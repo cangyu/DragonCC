@@ -2,11 +2,11 @@ package compiler.ast;
 
 public class ExpressionStmt extends Stmt
 {
-	public Expr expr;
+	public Expression e;
 	
-	public ExpressionStmt(Expr e)
+	public ExpressionStmt(Expression _e)
 	{
-		expr = e;
+		e = _e;
 	}
 	
     public void accept(ASTNodeVisitor v)

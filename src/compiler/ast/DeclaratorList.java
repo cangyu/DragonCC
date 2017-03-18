@@ -5,10 +5,10 @@ public class DeclaratorList extends ASTNode
     public Declarator head;
     public DeclaratorList next;
 
-    public DeclaratorList(Declarator _d)
+    public DeclaratorList(Declarator _d, DeclaratorList _n)
     {
         head = _d;
-        next = null;
+        next = _n;
     }
 
     public void accept(ASTNodeVisitor v)

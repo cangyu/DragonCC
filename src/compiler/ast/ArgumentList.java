@@ -5,10 +5,10 @@ public class ArgumentList extends ASTNode
     public Expr head;
     public ArgumentList next;
 
-    public ArgumentList(Expr e)
+    public ArgumentList(Expr _e, ArgumentList _n)
     {
-        head = e;
-        next = null;
+        head = _e;
+        next = _n;
     }
 
     public void accept(ASTNodeVisitor v)

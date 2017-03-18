@@ -5,10 +5,10 @@ public class Expression extends Expr
 	public Expr head;
 	public Expression next;
 	
-	public Expression(Expr _e)
+	public Expression(Expr _e, Expression _n)
 	{
 	    head = _e;
-	    next = null;
+	    next = _n;
 	}
 	
     public void accept(ASTNodeVisitor v)

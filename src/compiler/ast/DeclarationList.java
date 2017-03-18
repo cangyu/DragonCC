@@ -5,10 +5,10 @@ public class DeclarationList extends ASTNode
     public Declaration head;
     public DeclarationList next;
 
-    public DeclarationList(Declaration _d)
+    public DeclarationList(Declaration _d, DeclarationList _n)
     {
         head = _d;
-        next = null;
+        next = _n;
     }
 
     public void accept(ASTNodeVisitor v)

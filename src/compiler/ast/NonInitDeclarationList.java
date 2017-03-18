@@ -5,10 +5,10 @@ public class NonInitDeclarationList extends ASTNode
     public NonInitDeclaration head;
     public NonInitDeclarationList next;
 
-    public NonInitDeclarationList(NonInitDeclaration _nid)
+    public NonInitDeclarationList(NonInitDeclaration _nid, NonInitDeclarationList _n)
     {
         head = _nid;
-        next = null;
+        next = _n;
     }
 
     public void accept(ASTNodeVisitor v)
