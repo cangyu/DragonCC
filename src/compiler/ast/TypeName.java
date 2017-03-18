@@ -3,12 +3,12 @@ package compiler.ast;
 public class TypeName extends ASTNode
 {
 	public TypeSpecifier type_specifier;
-	public StarList stars;
+	public StarList star_list;
 	
 	public TypeName(TypeSpecifier _ts, StarList _ss)
 	{
 		type_specifier = _ts;
-		stars = _ss;
+		star_list = _ss;
 	}
 	
     public void accept(ASTNodeVisitor v)
