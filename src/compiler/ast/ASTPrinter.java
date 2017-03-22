@@ -4,33 +4,29 @@ import java.util.Iterator;
 
 public class ASTPrinter implements ASTNodeVisitor
 {
+	final private static String leading = "--";
+	final private static String seperator = "    |";
+
 	/* Expr */
 	public void visit(Expression exp)
 	{
-		// construct sub-nodes
+		// construct nodes and count lines
 		Expression ce = exp;
+		int lc = 1;
 		while (ce != null)
 		{
 			ce.head.accept(this);
-			ce = ce.next;
-		}
-
-		// count lines
-		int lc = 1;
-		ce = exp;
-		while (ce != null)
-		{
 			lc += ce.head.ast_rep.length;
 			ce = ce.next;
 		}
 
 		// initialize format
 		exp.ast_rep = new String[lc];
-		exp.ast_rep[0] = "--Expression";
+		exp.ast_rep[0] = leading + "Expression";
 		for (int i = 1; i < lc; i++)
-			exp.ast_rep[i] = "    |";
+			exp.ast_rep[i] = seperator;
 
-		// add sub-nodes' content
+		// add contents
 		int cl = 1;
 		ce = exp;
 		while (ce != null)
@@ -44,23 +40,21 @@ public class ASTPrinter implements ASTNodeVisitor
 
 	public void visit(AssignmentExpr ae)
 	{
-		// construct sub-nodes
-		ae.left.accept(this);
-		ae.right.accept(this);
-
-		// count lines
+		// construct nodes and count lines
 		int lc = 2;
+		ae.left.accept(this);
 		lc += ae.left.ast_rep.length;
+		ae.right.accept(this);
 		lc += ae.right.ast_rep.length;
 
 		// initialize format
 		ae.ast_rep = new String[lc];
-		ae.ast_rep[0] = "--AssignmentExpr";
+		ae.ast_rep[0] = leading + "AssignmentExpr";
 		for (int i = 1; i < lc; i++)
-			ae.ast_rep[i] = "    |";
+			ae.ast_rep[i] = seperator;
 
 		// add sub-nodes' content
-		ae.ast_rep[1] += "--Operator: ";
+		ae.ast_rep[1] += leading + "Operator: ";
 		switch (ae.op)
 		{
 		case ASSIGN:
@@ -110,23 +104,21 @@ public class ASTPrinter implements ASTNodeVisitor
 
 	public void visit(BinaryExpr be)
 	{
-		// construct sub-nodes
-		be.left.accept(this);
-		be.right.accept(this);
-
-		// count lines
+		// construct sub-nodes and count lines
 		int lc = 2;
+		be.left.accept(this);
 		lc += be.left.ast_rep.length;
+		be.right.accept(this);
 		lc += be.right.ast_rep.length;
 
 		// initialize format
 		be.ast_rep = new String[lc];
-		be.ast_rep[0] = "--BinaryExpr";
+		be.ast_rep[0] = leading + "BinaryExpr";
 		for (int i = 1; i < lc; i++)
-			be.ast_rep[i] = "    |";
+			be.ast_rep[i] = seperator;
 
 		// add sub-nodes' content
-		be.ast_rep[1] += "--Operator: ";
+		be.ast_rep[1] += leading + "Operator: ";
 		switch (be.op)
 		{
 		case BIT_AND:
@@ -208,9 +200,9 @@ public class ASTPrinter implements ASTNodeVisitor
 
 		// initialize format
 		ce.ast_rep = new String[lc];
-		ce.ast_rep[0] = "--CastExpr";
+		ce.ast_rep[0] = leading + "CastExpr";
 		for (int i = 1; i < lc; i++)
-			ce.ast_rep[i] = "    |";
+			ce.ast_rep[i] = seperator;
 
 		// add sub-nodes' content
 		int cl = 1;
@@ -224,24 +216,24 @@ public class ASTPrinter implements ASTNodeVisitor
 	public void visit(UnaryExpr ue)
 	{
 		// construct sub-nodes
-		if(ue.expr != null)
+		if (ue.expr != null)
 			ue.expr.accept(this);
 
-		if(ue.type_name != null)
+		if (ue.type_name != null)
 			ue.type_name.accept(this);
 
 		// count lines
 		int lc = 2;
 		lc += ue.expr.ast_rep.length;
 
-		if(ue.type_name != null)
+		if (ue.type_name != null)
 			lc += ue.type_name.ast_rep.length;
 
 		// initialize format
 		ue.ast_rep = new String[lc];
-		ue.ast_rep[0] = "--UnaryExpr";
+		ue.ast_rep[0] = leading + "UnaryExpr";
 		for (int i = 1; i < lc; i++)
-			ue.ast_rep[i] = "    |";
+			ue.ast_rep[i] = seperator;
 
 		// add sub-nodes' content
 		ue.ast_rep[1] += "--Operator: ";
@@ -279,11 +271,11 @@ public class ASTPrinter implements ASTNodeVisitor
 		}
 
 		int cl = 2;
-		if(ue.expr != null)
+		if (ue.expr != null)
 			for (String str : ue.expr.ast_rep)
 				ue.ast_rep[cl++] += str;
 
-		if(ue.type_name != null)
+		if (ue.type_name != null)
 			for (String str : ue.type_name.ast_rep)
 				ue.ast_rep[cl++] += str;
 	}
@@ -295,15 +287,15 @@ public class ASTPrinter implements ASTNodeVisitor
 		pe.expr.accept(this);
 		lc += pe.expr.ast_rep.length;
 
-		if(pe.param != null)
+		if (pe.param != null)
 		{
-			if(pe.op == PostfixExpr.Operator.MPAREN)
+			if (pe.op == PostfixExpr.Operator.MPAREN)
 			{
 				Expression es = (Expression) pe.param;
 				es.accept(this);
 				lc += es.ast_rep.length;
 			}
-			else if(pe.op == PostfixExpr.Operator.PAREN)
+			else if (pe.op == PostfixExpr.Operator.PAREN)
 			{
 				ArgumentList al = (ArgumentList) pe.param;
 				al.accept(this);
@@ -316,10 +308,10 @@ public class ASTPrinter implements ASTNodeVisitor
 		// initialize format
 		pe.ast_rep = new String[lc];
 
-		pe.ast_rep[0] = "--PostfixExpr";
+		pe.ast_rep[0] = leading + "PostfixExpr";
 
 		for (int i = 1; i < lc; i++)
-			pe.ast_rep[i] = "    |";
+			pe.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
@@ -327,7 +319,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		for (String str : pe.expr.ast_rep)
 			pe.ast_rep[cl++] += str;
 
-		pe.ast_rep[cl] += "--Operator: ";
+		pe.ast_rep[cl] += leading + "Operator: ";
 		switch (pe.op)
 		{
 		case MPAREN:
@@ -353,15 +345,15 @@ public class ASTPrinter implements ASTNodeVisitor
 			break;
 		}
 
-		if(pe.param != null)
+		if (pe.param != null)
 		{
-			if(pe.op == PostfixExpr.Operator.MPAREN)
+			if (pe.op == PostfixExpr.Operator.MPAREN)
 			{
 				Expression es = (Expression) pe.param;
 				for (String str : es.ast_rep)
 					pe.ast_rep[cl++] += str;
 			}
-			else if(pe.op == PostfixExpr.Operator.PAREN)
+			else if (pe.op == PostfixExpr.Operator.PAREN)
 			{
 				ArgumentList al = (ArgumentList) pe.param;
 				for (String str : al.ast_rep)
@@ -370,7 +362,7 @@ public class ASTPrinter implements ASTNodeVisitor
 			else
 			{
 				String str = (String) pe.param;
-				pe.ast_rep[cl] += "--Identifier: ";
+				pe.ast_rep[cl] += leading + "Identifier: ";
 				pe.ast_rep[cl++] += str;
 			}
 		}
@@ -422,9 +414,9 @@ public class ASTPrinter implements ASTNodeVisitor
 
 		// initialize format
 		sl.ast_rep = new String[lc];
-		sl.ast_rep[0] = "--StmtList";
+		sl.ast_rep[0] = leading + "StmtList";
 		for (int i = 1; i < lc; i++)
-			sl.ast_rep[i] = "    |";
+			sl.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
@@ -440,7 +432,7 @@ public class ASTPrinter implements ASTNodeVisitor
 
 	public void visit(ExpressionStmt es)
 	{
-		if(es.e != null)
+		if (es.e != null)
 		{
 			es.e.accept(this);
 			es.ast_rep = es.e.ast_rep;
@@ -451,13 +443,13 @@ public class ASTPrinter implements ASTNodeVisitor
 	{
 		// construct components and count lines
 		int lc = 1;
-		if(cs.declaration_list != null)
+		if (cs.declaration_list != null)
 		{
 			cs.declaration_list.accept(this);
 			lc += cs.declaration_list.ast_rep.length;
 		}
 
-		if(cs.stmt_list != null)
+		if (cs.stmt_list != null)
 		{
 			cs.stmt_list.accept(this);
 			lc += cs.stmt_list.ast_rep.length;
@@ -465,18 +457,18 @@ public class ASTPrinter implements ASTNodeVisitor
 
 		// initialize format
 		cs.ast_rep = new String[lc];
-		cs.ast_rep[0] = "--CompoundStmt";
+		cs.ast_rep[0] = leading + "CompoundStmt";
 		for (int i = 1; i < lc; i++)
-			cs.ast_rep[i] = "    |";
+			cs.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
 
-		if(cs.declaration_list != null)
+		if (cs.declaration_list != null)
 			for (String str : cs.declaration_list.ast_rep)
 				cs.ast_rep[cl++] += str;
 
-		if(cs.stmt_list != null)
+		if (cs.stmt_list != null)
 			for (String str : cs.stmt_list.ast_rep)
 				cs.ast_rep[cl++] += str;
 	}
@@ -492,7 +484,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		ss.if_clause.accept(this);
 		lc += ss.if_clause.ast_rep.length;
 
-		if(ss.else_clause != null)
+		if (ss.else_clause != null)
 		{
 			ss.else_clause.accept(this);
 			lc += ss.else_clause.ast_rep.length;
@@ -500,9 +492,9 @@ public class ASTPrinter implements ASTNodeVisitor
 
 		// initialize format
 		ss.ast_rep = new String[lc];
-		ss.ast_rep[0] = "--SelectionStmt";
+		ss.ast_rep[0] = leading + "SelectionStmt";
 		for (int i = 1; i < lc; i++)
-			ss.ast_rep[i] = "    |";
+			ss.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
@@ -513,7 +505,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		for (String str : ss.if_clause.ast_rep)
 			ss.ast_rep[cl++] += str;
 
-		if(ss.else_clause != null)
+		if (ss.else_clause != null)
 			for (String str : ss.else_clause.ast_rep)
 				ss.ast_rep[cl++] += str;
 	}
@@ -522,7 +514,7 @@ public class ASTPrinter implements ASTNodeVisitor
 	{
 		// construct sub-nodes and count lines
 		int lc = 1;
-		if(js.expr != null)
+		if (js.expr != null)
 		{
 			js.expr.accept(this);
 			lc += js.expr.ast_rep.length;
@@ -531,9 +523,9 @@ public class ASTPrinter implements ASTNodeVisitor
 		js.ast_rep = new String[lc];
 
 		// initialize format
-		js.ast_rep[0] = "--JumpStmt: ";
+		js.ast_rep[0] = leading + "JumpStmt: ";
 		for (int i = 1; i < lc; i++)
-			js.ast_rep[i] = "    |";
+			js.ast_rep[i] = seperator;
 
 		// add components
 		switch (js.type)
@@ -551,7 +543,7 @@ public class ASTPrinter implements ASTNodeVisitor
 			break;
 		}
 
-		if(js.expr != null)
+		if (js.expr != null)
 		{
 			int cl = 1;
 			for (String str : js.expr.ast_rep)
@@ -564,19 +556,19 @@ public class ASTPrinter implements ASTNodeVisitor
 		// construct sub-nodes and count lines
 		int lc = 2;
 
-		if(is.init != null)
+		if (is.init != null)
 		{
 			is.init.accept(this);
 			lc += is.init.ast_rep.length;
 		}
 
-		if(is.judge != null)
+		if (is.judge != null)
 		{
 			is.judge.accept(this);
 			lc += is.judge.ast_rep.length;
 		}
 
-		if(is.next != null)
+		if (is.next != null)
 		{
 			is.next.accept(this);
 			lc += is.next.ast_rep.length;
@@ -587,12 +579,12 @@ public class ASTPrinter implements ASTNodeVisitor
 
 		// initialize format
 		is.ast_rep = new String[lc];
-		is.ast_rep[0] = "--IterationStmt";
+		is.ast_rep[0] = leading + "IterationStmt";
 		for (int i = 1; i < lc; i++)
-			is.ast_rep[i] = "    |";
+			is.ast_rep[i] = seperator;
 
 		// add contents
-		is.ast_rep[1] += "--Type: ";
+		is.ast_rep[1] += leading + "Type: ";
 		switch (is.iteration_type)
 		{
 		case FOR:
@@ -606,7 +598,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		}
 
 		int cl = 2;
-		if(is.iteration_type == IterationStmt.Type.WHILE)
+		if (is.iteration_type == IterationStmt.Type.WHILE)
 		{
 			for (String str : is.judge.ast_rep)
 				is.ast_rep[cl++] += str;
@@ -616,7 +608,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		}
 		else
 		{
-			if(is.init != null)
+			if (is.init != null)
 			{
 				is.ast_rep[1] += 'O';
 
@@ -626,7 +618,7 @@ public class ASTPrinter implements ASTNodeVisitor
 			else
 				is.ast_rep[1] += 'X';
 
-			if(is.judge != null)
+			if (is.judge != null)
 			{
 				is.ast_rep[1] += 'O';
 
@@ -636,7 +628,7 @@ public class ASTPrinter implements ASTNodeVisitor
 			else
 				is.ast_rep[1] += 'X';
 
-			if(is.next != null)
+			if (is.next != null)
 			{
 				is.ast_rep[1] += 'O';
 
@@ -655,7 +647,7 @@ public class ASTPrinter implements ASTNodeVisitor
 	public void visit(StarList sl)
 	{
 		sl.ast_rep = new String[1];
-		sl.ast_rep[0] = String.format("--StarList: %d", sl.cnt);
+		sl.ast_rep[0] = String.format(leading + "StarList: %d", sl.cnt);
 	}
 
 	public void visit(Declaration decl)
@@ -666,7 +658,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		decl.type_specifier.accept(this);
 		lc += decl.type_specifier.ast_rep.length;
 
-		if(decl.init_declarator_list != null)
+		if (decl.init_declarator_list != null)
 		{
 			decl.init_declarator_list.accept(this);
 			lc += decl.init_declarator_list.ast_rep.length;
@@ -674,16 +666,16 @@ public class ASTPrinter implements ASTNodeVisitor
 
 		// initialize format
 		decl.ast_rep = new String[lc];
-		decl.ast_rep[0] = "--Declaration";
+		decl.ast_rep[0] = leading + "Declaration";
 		for (int i = 1; i < lc; i++)
-			decl.ast_rep[i] = "    |";
+			decl.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
 		for (String str : decl.type_specifier.ast_rep)
 			decl.ast_rep[cl++] += str;
 
-		if(decl.init_declarator_list != null)
+		if (decl.init_declarator_list != null)
 			for (String str : decl.init_declarator_list.ast_rep)
 				decl.ast_rep[cl++] += str;
 	}
@@ -696,7 +688,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		fd.plain_declarator.accept(this);
 		lc += fd.plain_declarator.ast_rep.length;
 
-		if(fd.param != null)
+		if (fd.param != null)
 		{
 			fd.param.accept(this);
 			lc += fd.param.ast_rep.length;
@@ -706,14 +698,14 @@ public class ASTPrinter implements ASTNodeVisitor
 		fd.ast_rep = new String[lc];
 		fd.ast_rep[0] = "--FuncDecl";
 		for (int i = 1; i < lc; i++)
-			fd.ast_rep[i] = "    |";
+			fd.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
 		for (String str : fd.plain_declarator.ast_rep)
 			fd.ast_rep[cl++] += str;
 
-		if(fd.param != null)
+		if (fd.param != null)
 			for (String str : fd.param.ast_rep)
 				fd.ast_rep[cl++] += str;
 	}
@@ -723,7 +715,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		// construct components and count lines
 		vd.plain_declarator.accept(this);
 
-		if(vd.dimension.size() != 0)
+		if (vd.dimension.size() != 0)
 		{
 			Iterator<Expr> it = vd.dimension.iterator();
 			while (it.hasNext())
@@ -733,7 +725,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		// count lines
 		int lc = 1;
 		lc += vd.plain_declarator.ast_rep.length;
-		if(vd.dimension.size() != 0)
+		if (vd.dimension.size() != 0)
 		{
 			Iterator<Expr> it = vd.dimension.iterator();
 			while (it.hasNext())
@@ -744,14 +736,14 @@ public class ASTPrinter implements ASTNodeVisitor
 		vd.ast_rep = new String[lc];
 		vd.ast_rep[0] = "--VarDecl";
 		for (int i = 1; i < lc; i++)
-			vd.ast_rep[i] = "    |";
+			vd.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
 		for (String str : vd.plain_declarator.ast_rep)
 			vd.ast_rep[cl++] += str;
 
-		if(vd.dimension.size() != 0)
+		if (vd.dimension.size() != 0)
 		{
 			Iterator<Expr> it = vd.dimension.iterator();
 			while (it.hasNext())
@@ -784,9 +776,9 @@ public class ASTPrinter implements ASTNodeVisitor
 
 		// initialize format
 		ds.ast_rep = new String[lc];
-		ds.ast_rep[0] = "--DeclarationList";
+		ds.ast_rep[0] = leading + "DeclarationList";
 		for (int i = 1; i < lc; i++)
-			ds.ast_rep[i] = "    |";
+			ds.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
@@ -821,9 +813,9 @@ public class ASTPrinter implements ASTNodeVisitor
 
 		// initialize format
 		ds.ast_rep = new String[lc];
-		ds.ast_rep[0] = "--DeclaratorList";
+		ds.ast_rep[0] = leading + "DeclaratorList";
 		for (int i = 1; i < lc; i++)
-			ds.ast_rep[i] = "    |";
+			ds.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
@@ -845,7 +837,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		id.declarator.accept(this);
 		lc += id.declarator.ast_rep.length;
 
-		if(id.initializer != null)
+		if (id.initializer != null)
 		{
 			id.initializer.accept(this);
 			lc += id.initializer.ast_rep.length;
@@ -853,16 +845,16 @@ public class ASTPrinter implements ASTNodeVisitor
 
 		// initialize format
 		id.ast_rep = new String[lc];
-		id.ast_rep[0] = "--InitDeclarator";
+		id.ast_rep[0] = leading + "InitDeclarator";
 		for (int i = 1; i < lc; i++)
-			id.ast_rep[i] = "    |";
+			id.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
 		for (String str : id.declarator.ast_rep)
 			id.ast_rep[cl++] += str;
 
-		if(id.initializer != null)
+		if (id.initializer != null)
 			for (String str : id.initializer.ast_rep)
 				id.ast_rep[cl++] += str;
 	}
@@ -888,9 +880,9 @@ public class ASTPrinter implements ASTNodeVisitor
 
 		// initialize format
 		ids.ast_rep = new String[lc];
-		ids.ast_rep[0] = "--InitDeclaratorList";
+		ids.ast_rep[0] = leading + "InitDeclaratorList";
 		for (int i = 1; i < lc; i++)
-			ids.ast_rep[i] = "    |";
+			ids.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
@@ -909,13 +901,13 @@ public class ASTPrinter implements ASTNodeVisitor
 		// construct components and count lines
 		int lc = 1;
 
-		if(ini.expr != null)
+		if (ini.expr != null)
 		{
 			ini.expr.accept(this);
 			lc += ini.expr.ast_rep.length;
 		}
 
-		if(ini.initializer_list != null)
+		if (ini.initializer_list != null)
 		{
 			ini.initializer_list.accept(this);
 			lc += ini.initializer_list.ast_rep.length;
@@ -923,17 +915,17 @@ public class ASTPrinter implements ASTNodeVisitor
 
 		// initialize format
 		ini.ast_rep = new String[lc];
-		ini.ast_rep[0] = "--Initializer";
+		ini.ast_rep[0] = leading + "Initializer";
 		for (int i = 1; i < lc; i++)
-			ini.ast_rep[i] = "    |";
+			ini.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
-		if(ini.expr != null)
+		if (ini.expr != null)
 			for (String str : ini.expr.ast_rep)
 				ini.ast_rep[cl++] += str;
 
-		if(ini.initializer_list != null)
+		if (ini.initializer_list != null)
 			for (String str : ini.initializer_list.ast_rep)
 				ini.ast_rep[cl++] += str;
 	}
@@ -959,9 +951,9 @@ public class ASTPrinter implements ASTNodeVisitor
 
 		// initialize format
 		x.ast_rep = new String[lc];
-		x.ast_rep[0] = "--InitializerList";
+		x.ast_rep[0] = leading + "InitializerList";
 		for (int i = 1; i < lc; i++)
-			x.ast_rep[i] = "    |";
+			x.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
@@ -987,7 +979,7 @@ public class ASTPrinter implements ASTNodeVisitor
 
 		// initialize format
 		x.ast_rep = new String[lc];
-		x.ast_rep[0] = "--NonInitDeclaration";
+		x.ast_rep[0] = leading + "NonInitDeclaration";
 		for (int i = 1; i < lc; i++)
 			x.ast_rep[i] = "   |";
 
@@ -1021,9 +1013,9 @@ public class ASTPrinter implements ASTNodeVisitor
 
 		// initialize format
 		x.ast_rep = new String[lc];
-		x.ast_rep[0] = "--NonInitDeclarationList";
+		x.ast_rep[0] = leading + "NonInitDeclarationList";
 		for (int i = 1; i < lc; i++)
-			x.ast_rep[i] = "    |";
+			x.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
@@ -1049,9 +1041,9 @@ public class ASTPrinter implements ASTNodeVisitor
 
 		// initialize format
 		x.ast_rep = new String[lc];
-		x.ast_rep[0] = "--PlainDeclaration";
+		x.ast_rep[0] = leading + "PlainDeclaration";
 		for (int i = 1; i < lc; i++)
-			x.ast_rep[i] = "    |";
+			x.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
@@ -1066,25 +1058,25 @@ public class ASTPrinter implements ASTNodeVisitor
 	{
 		// construct components and count lines
 		int lc = 2;
-		if(x.star_list.cnt > 0)
+		if (x.star_list.cnt > 0)
 		{
 			x.star_list.accept(this);
 			lc += x.star_list.ast_rep.length;
 		}
-		
+
 		// initialize format
 		x.ast_rep = new String[lc];
-		x.ast_rep[0] = "--PlainDeclarator";
+		x.ast_rep[0] = leading + "PlainDeclarator";
 		for (int i = 1; i < lc; i++)
-			x.ast_rep[i] = "    |";
+			x.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
-		if(x.star_list.cnt > 0)
+		if (x.star_list.cnt > 0)
 			for (String str : x.star_list.ast_rep)
 				x.ast_rep[cl++] += str;
 
-		x.ast_rep[cl++] += "--Identifier: " + x.identifier;
+		x.ast_rep[cl++] += leading + "Identifier: " + x.identifier;
 	}
 
 	/* Func */
@@ -1095,7 +1087,7 @@ public class ASTPrinter implements ASTNodeVisitor
 
 		func.func_name.accept(this);
 
-		if(func.params != null)
+		if (func.params != null)
 			func.params.accept(this);
 
 		func.comp_stmt.accept(this);
@@ -1104,15 +1096,15 @@ public class ASTPrinter implements ASTNodeVisitor
 		int lc = 1;
 		lc += func.type_specifier.ast_rep.length;
 		lc += func.func_name.ast_rep.length;
-		if(func.params != null)
+		if (func.params != null)
 			lc += func.params.ast_rep.length;
 		lc += func.comp_stmt.ast_rep.length;
 
 		func.ast_rep = new String[lc];
-		func.ast_rep[0] = "--FuncDef";
+		func.ast_rep[0] = leading + "FuncDef";
 
 		for (int i = 1; i < lc; i++)
-			func.ast_rep[i] = "    |";
+			func.ast_rep[i] = seperator;
 
 		// add nodes' content
 		int cl = 1;
@@ -1122,7 +1114,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		for (String str : func.func_name.ast_rep)
 			func.ast_rep[cl++] += str;
 
-		if(func.params != null)
+		if (func.params != null)
 			for (String str : func.params.ast_rep)
 				func.ast_rep[cl++] += str;
 
@@ -1151,9 +1143,9 @@ public class ASTPrinter implements ASTNodeVisitor
 
 		// initialize format
 		x.ast_rep = new String[lc];
-		x.ast_rep[0] = "--ArgumentList";
+		x.ast_rep[0] = leading + "ArgumentList";
 		for (int i = 1; i < lc; i++)
-			x.ast_rep[i] = "    |";
+			x.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
@@ -1188,9 +1180,9 @@ public class ASTPrinter implements ASTNodeVisitor
 
 		// initialize format
 		x.ast_rep = new String[lc];
-		x.ast_rep[0] = "--ParameterList";
+		x.ast_rep[0] = leading + "ParameterList";
 		for (int i = 1; i < lc; i++)
-			x.ast_rep[i] = "    |";
+			x.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
@@ -1211,15 +1203,15 @@ public class ASTPrinter implements ASTNodeVisitor
 		int lc = 1;
 		x.type_specifier.accept(this);
 		lc += x.type_specifier.ast_rep.length;
-		
+
 		x.star_list.accept(this);
 		lc += x.star_list.ast_rep.length;
-		
+
 		// initialize format
 		x.ast_rep = new String[lc];
-		x.ast_rep[0] = "--TypeName";
+		x.ast_rep[0] = leading + "TypeName";
 		for (int i = 1; i < lc; i++)
-			x.ast_rep[i] = "    |";
+			x.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
@@ -1233,19 +1225,19 @@ public class ASTPrinter implements ASTNodeVisitor
 	public void visit(TypeSpecifier ts)
 	{
 		// construct sub-nodes
-		if(ts.comp != null)
+		if (ts.comp != null)
 			ts.comp.accept(this);
 
 		// count lines
 		int lc = 2;
-		if(ts.comp != null)
+		if (ts.comp != null)
 			lc += ts.comp.ast_rep.length;
 
 		// initialize format
 		ts.ast_rep = new String[lc];
-		ts.ast_rep[0] = "--TypeSpecifier";
+		ts.ast_rep[0] = leading + "TypeSpecifier";
 		for (int i = 1; i < lc; i++)
-			ts.ast_rep[i] = "    |";
+			ts.ast_rep[i] = seperator;
 
 		// add contents
 		ts.ast_rep[1] += "--Type: ";
@@ -1267,11 +1259,11 @@ public class ASTPrinter implements ASTNodeVisitor
 			ts.ast_rep[1] += "union ";
 			break;
 		}
-		if(ts.tag != null)
+		if (ts.tag != null)
 			ts.ast_rep[1] += ts.tag;
 
 		int cl = 2;
-		if(ts.comp != null)
+		if (ts.comp != null)
 			for (String str : ts.comp.ast_rep)
 				ts.ast_rep[cl] += str;
 	}
@@ -1300,7 +1292,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		prog.ast_rep = new String[lc];
 		prog.ast_rep[0] = "Program";
 		for (int i = 1; i < lc; i++)
-			prog.ast_rep[i] = "  |";
+			prog.ast_rep[i] = "  |";// since no leading characters for "Program"
 
 		// add sub-nodes' content
 		cp = prog;
