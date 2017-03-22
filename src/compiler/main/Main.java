@@ -1,10 +1,6 @@
 package compiler.main;
 
 import java.io.*;
-import java.util.*;
-import org.json.*;
-import com.google.gson.*;
-import java_cup.runtime.*;
 import compiler.syntactic.*;
 import compiler.ast.*;
 import compiler.semantic.*;
@@ -38,8 +34,8 @@ public class Main
 		System.out.println("\tBuilding AST Done!");
 
 		System.out.println("\tSemantic Checking...");
-		// Semantic sc = new Semantic(prog);
-		// sc.checkProgram();
+		Semantic sc = new Semantic(prog);
+		sc.check();
 		System.out.println("\tSemantic Check Done!");
 	}
 
