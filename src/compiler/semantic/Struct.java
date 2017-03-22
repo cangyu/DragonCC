@@ -1,14 +1,12 @@
 package compiler.semantic;
 
-import java.util.LinkedList;
-
 import compiler.ast.BinaryExpr;
 
 public final class Struct extends Record 
 {
-	public Struct(String _name, LinkedList<RecordField> _field)
+	public Struct(String _name, Table _e)
 	{
-		super(_name, _field);
+		super(_name, _e);
 	}
 	
 	@Override

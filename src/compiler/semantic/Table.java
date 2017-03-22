@@ -2,7 +2,7 @@ package compiler.semantic;
 
 class Binder 
 {
-	Entry value;
+	Object value;
 	Symbol prevtop;
 	Binder tail;
 
@@ -27,7 +27,7 @@ public class Table
 	/**
 	 * Gets the object associated with the specified symbol in the Table.
 	 */
-	public Entry get(Symbol key)
+	public Object get(Symbol key)
 	{
 		Binder e = dict.get(key);
 		if (e == null)

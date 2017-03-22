@@ -1,15 +1,13 @@
 package compiler.semantic;
 
-import java.util.LinkedList;
-
 public abstract class Record extends Type
-{    
-	public String name;
-	public LinkedList<RecordField> fields;
-	
-	public Record(String _name, LinkedList<RecordField> _field)
+{
+	public String tag;
+	public Table comp;
+
+	public Record(String _n, Table _c)
 	{
-		name = _name;
-		fields = _field;
+		tag = _n;
+		comp = _c;
 	}
 }
