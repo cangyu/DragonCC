@@ -981,7 +981,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		x.ast_rep = new String[lc];
 		x.ast_rep[0] = leading + "NonInitDeclaration";
 		for (int i = 1; i < lc; i++)
-			x.ast_rep[i] = "   |";
+			x.ast_rep[i] = seperator;
 
 		// add contents
 		int cl = 1;
@@ -1240,7 +1240,7 @@ public class ASTPrinter implements ASTNodeVisitor
 			ts.ast_rep[i] = seperator;
 
 		// add contents
-		ts.ast_rep[1] += "--Type: ";
+		ts.ast_rep[1] += leading + "Type: ";
 		switch (ts.type)
 		{
 		case VOID:
@@ -1265,7 +1265,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		int cl = 2;
 		if (ts.comp != null)
 			for (String str : ts.comp.ast_rep)
-				ts.ast_rep[cl] += str;
+				ts.ast_rep[cl++] += str;
 	}
 
 	/* Program */
