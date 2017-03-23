@@ -6,7 +6,7 @@ class Binder
 	Symbol prevtop;
 	Binder tail;
 
-	Binder(Entry v, Symbol p, Binder t) 
+	Binder(Object v, Symbol p, Binder t) 
 	{
 		value = v;
 		prevtop = p;
@@ -39,7 +39,7 @@ public class Table
 	/**
 	 * Puts the specified value into the Table, bound to the specified Symbol.
 	 */
-	public void put(Symbol key, Entry value) 
+	public void put(Symbol key, Object value) 
 	{
 		dict.put(key, new Binder(value, top, dict.get(key)));
 		top = key;

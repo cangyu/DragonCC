@@ -6,9 +6,9 @@ import compiler.ast.BinaryExpr;
 
 public final class Union extends Record
 {
-    public Union(String _name, LinkedList<RecordField> _field)
+    public Union(String _name, Table _e)
     {
-        super(_name, _field);
+        super(_name, _e);
     }
 
     @Override

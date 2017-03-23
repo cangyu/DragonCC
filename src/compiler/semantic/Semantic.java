@@ -10,11 +10,6 @@ public class Semantic
 	private Table env, tag_env;
 	private Program prog_start;
 
-	private static void panic(String msg) throws Exception
-	{
-		throw new Exception(msg);
-	}
-
 	public Semantic(Program prog)
 	{
 		env = new Table();
@@ -24,7 +19,7 @@ public class Semantic
 
 	public void check() throws Exception
 	{
-		// TODO
+		check(prog_start);
 	}
 
 	private void check(Program x) throws Exception
@@ -41,7 +36,7 @@ public class Semantic
 		}
 	}
 
-	private Type check(TypeSpecifier x, Table e) throws Exception
+	private Type check(TypeSpecifier x, int flag) throws Exception
 	{
 		TypeSpecifier.Type ct = x.type;
 
@@ -53,405 +48,258 @@ public class Semantic
 			return Char.getInstance();
 		else if (ct == TypeSpecifier.Type.STRUCT)
 		{
-			Entry ce = (Entry) tag_env.get(Symbol.getSymbol(x.tag));
-
-			// ONLY 2 possibilities: usage / declaration
 			if (x.comp == null)
 			{
-				if (ce == null)
-					return new Name(true, x.tag, e);
-				else if (ce.type instanceof Struct)
-					return ce.type;
+				if (flag == 0)// struct node;
+				{
+					Symbol ss = Symbol.getSymbol(x.tag);
+					Entry ce = (Entry) tag_env.get(ss);
+
+					if (ce != null)
+					{
+						if (ce.type instanceof Struct)
+							return ce.type;
+						else
+							throw new Exception(x.tag + " is not defined as struct!");
+					}
+					else
+					{
+						Struct ret = new Struct(x.tag, null);
+						tag_env.put(ss, new TypeEntry(ret));
+						return ret;
+					}
+				}
+				else if (flag == 1)// struct node a;
+				{
+					Symbol ss = Symbol.getSymbol(x.tag);
+					Entry ce = (Entry) tag_env.get(ss);
+
+					if (ce != null)
+					{
+						if (ce.type instanceof Struct)
+							return ce.type;
+						else
+							throw new Exception(x.tag + " is not defined as struct!");
+					}
+					else
+						throw new Exception("struct " + x.tag + " is undefined!");
+				}
+				else if (flag == 2)// struct node *a;
+				{
+					Symbol ss = Symbol.getSymbol(x.tag);
+					Entry ce = (Entry) tag_env.get(ss);
+
+					if (ce != null)
+					{
+						if (ce.type instanceof Struct)
+							return ce.type;
+						else
+							throw new Exception(x.tag + " is not defined as struct!");
+					}
+					else
+					{
+						Name ret = new Name(true, x.tag);
+						return ret;
+					}
+				}
 				else
-					panic(x.tag + " is not defined as a struct!");
+					throw new Exception("Internal Error!");
 			}
 			else
 			{
-				if (ce == null)
+				if (x.tag == null)// struct { ... }
 				{
-					Struct ans = new Struct(x.tag, new Table());
-					
-					NonInitDeclarationList y = x.comp;
-					while (y != null)
-					{
-						NonInitDeclaration cnid = y.head;
-						Type def_type = check(cnid.type_specifier);
-
-						DeclaratorList z = cnid.declarator_list;
-						while (z != null)
-						{
-							if(z.head instanceof VarDeclarator)
-							{					
-								VarDeclarator vdr = (VarDeclarator)z.head;
-								
-								Type real_type = check(vdr, def_type, ans.comp);
-								
-								ans.comp.put(Symbol.getSymbol(vdr.plain_declarator.identifier), new VarEntry(real_type));
-							}
-							else
-								panic("Can not declare a function inside a struct");
-							
-							z=z.next;
-						}
-
-						y = y.next;
-					}
-					
-					return ans;
+					Table ccomp = new Table();
+					check(x.comp, ccomp);
+					return new Struct(x.tag, ccomp);
 				}
-				else
-					panic(x.tag + " has already been defined!");
+				else// struct node { ... }
+				{
+					Symbol csym = Symbol.getSymbol(x.tag);
+					Entry ce = (Entry) tag_env.get(csym);
+					Table ccomp = null;
+
+					if (ce != null)// may be declared before
+					{
+						if (ce.type instanceof Struct)
+						{
+							Struct cst = (Struct) ce.type;
+							if (cst.comp != null)
+								throw new Exception("struct " + x.tag + " has already been defined!");
+							else
+							{
+								cst.comp = new Table();
+								check(x.comp, cst.comp);
+								return ce.type;
+							}
+						}
+						else
+							throw new Exception(x.tag + " has been declared differently!");
+					}
+					else// first time meet
+					{
+						ccomp = new Table();
+						check(x.comp, ccomp);
+						Struct ret = new Struct(x.tag, ccomp);
+						tag_env.put(csym, ret);
+						return ret;
+					}
+				}
 			}
 		}
 		else if (ct == TypeSpecifier.Type.UNION)
 		{
-
+			// TODO
+			return null;
 		}
 		else
-			panic("Internal Error!");
+			throw new Exception("Internal Error!");
 	}
 
-	private void checkDecl(Decl _decl) throws Exception
+	private void check(NonInitDeclarationList x, Table ccomp) throws Exception
 	{
-		System.out.println("Checking declaration: " + _decl.toString());
-
-		// get current defined type of this declaration
-		Type def_type = checkTypeSpecifier(_decl.type_specifier);
-
-		// if no init_declarators, this is just a type declaration
-		if (_decl.init_declarators == null)
-			return;
-
-		// check each init_declarator
-		for (InitDeclarator elem : _decl.init_declarators.comp)
+		NonInitDeclarationList y = x;
+		while (y != null)
 		{
-			// take the stars into consideration, get real type of the
-			// identifier
-			Type real_type = checkDeclarator(elem.declarator, def_type);
-
-			// get the type of the initializer, array nested in array or plain
-			Type init_type = checkInitializer(elem.initializer);
-
-			// 2 possibilities: function declaration / variable definition
-			Declarator cd = elem.declarator;
-			if (cd.isFunc)
+			NonInitDeclaration z = y.head;
+			TypeSpecifier cts = z.type_specifier;
+			DeclaratorList w = z.declarator_list;
+			while (w != null)
 			{
-				// as this simplified grammar doesn't support function pointer,
-				// there should be no initializer for a function identifier
-				if (init_type != null)
-					throw new Exception("Can't intialize function: " + cd.plain_declarator.id);
-			}
-			else
-			{
-				// init_type must be consistent with real_type
-				if (init_type != null && !real_type.isAssignable(init_type))
-					throw new Exception("Can't initialize variable: " + cd.plain_declarator.id);
-			}
-		}
-	}
+				if (w.head instanceof VarDeclarator)
+				{
+					VarDeclarator vdr = (VarDeclarator) w.head;
 
-	private Type checkDeclarator(Declarator _dr, Type _def_type) throws Exception
-	{
-		// take stars into consideration
-		Type real_type = checkPlainDeclarator(_dr.plain_declarator, _def_type);
+					String vdrr = vdr.plain_declarator.identifier;
+					int sc = vdr.plain_declarator.star_list.cnt;
+					Symbol csym = Symbol.getSymbol(vdrr);
+					if (ccomp.get(csym) != null)
+						throw new Exception(vdrr + " has already been defined in this scope!");
 
-		if (_dr.isFunc)
-		{
-			env.beginScope();
-			LinkedList<Type> params = checkParameters(_dr.param);
-			env.endScope();
+					Type def_type = sc == 0 ? check(cts, 1) : check(cts, 2);
+					Type real_type = check(vdr.plain_declarator, def_type);
+					if(real_type instanceof Void)
+						throw new Exception("Variable " + vdrr + " can not be declared as void");
 
-			Function func = new Function(_dr.plain_declarator.id, params, real_type);
-			FuncEntry fe = new FuncEntry(func);
-
-			env.put(Symbol.symbol(func.name), fe);
-		}
-		else
-		{
-			// all the dimension settings must be constants
-			Iterator<Expr> it = _dr.dimension.iterator();
-			while (it.hasNext())
-			{
-				Expr e = it.next();
-				checkExpr(e);
-
-				int cur_dim = 0;
-				if (e.isConst && e.val instanceof Integer)
-					cur_dim = (Integer) (e.val);
+					ccomp.put(csym, new TypeEntry(real_type));
+				}
 				else
-					throw new Exception(e.toString() + "isn't a legal dimension setting!");
+				{
+					String fcn = ((FuncDeclarator) w.head).plain_declarator.identifier;
+					throw new Exception("Function: " + fcn + " can not be declared here!");
+				}
 
-				real_type = new Array(cur_dim, real_type);
+				w = w.next;
 			}
 
-			if (real_type instanceof Void)
-				throw new Exception("Can't declare " + _dr.plain_declarator.id + "as void!");
-			else if (real_type instanceof Name)
-				throw new Exception("Can't declare " + _dr.plain_declarator.id + "as undefined type!");
-			else
+			y = y.next;
+		}
+	}
+
+	private Type check(PlainDeclarator x, Type dt)
+	{
+		Type ret = dt;
+
+		int sc = x.star_list.cnt;
+		for (int i = 0; i < sc; i++)
+			ret = new Pointer(ret);
+
+		return ret;
+	}
+
+	private void check(Declaration x) throws Exception
+	{
+		InitDeclaratorList y = x.init_declarator_list;
+
+		if (y == null)// TypeSpecifier;
+		{
+			switch (x.type_specifier.type)
 			{
-				// set up new entry
-				VarEntry ve = new VarEntry(real_type);
-				env.put(Symbol.symbol(_dr.plain_declarator.id), ve);
+			case STRUCT:
+			case UNION:
+				check(x.type_specifier, 0);
+				break;
+			case VOID:
+			case INT:
+			case CHAR:
+				throw new Exception("Meaningless declaration of intrinsic type!");
+			default:
+				break;
 			}
 		}
+		else// TypeSpecifier InitDeclaratorList
+		{
+			while (y != null)
+			{
+				InitDeclarator z = y.head;
+
+				Declarator p = z.declarator;
+				Initializer q = z.initializer;
+
+				if (p instanceof VarDeclarator)
+				{
+					VarDeclarator vp = (VarDeclarator) p;
+
+					Type real_type = check(vp, x.type_specifier);
+					Type init_type = check(q);
+
+					// TODO
+					// check isAssignable
+
+					Symbol csym = Symbol.getSymbol(vp.plain_declarator.identifier);
+
+					env.put(csym, new VarEntry(real_type));
+				}
+				else if (p instanceof FuncDeclarator)
+				{
+					if (q != null)
+						throw new Exception("Can not initialize a function!");
+
+					FuncDeclarator fp = (FuncDeclarator) p;
+
+					Type real_type = check(fp, x.type_specifier);// ???
+
+					Symbol csym = Symbol.getSymbol(fp.plain_declarator.identifier);
+
+					env.put(csym, new FuncEntry(real_type));// ???
+				}
+				else
+					throw new Exception("Internal Error!");
+
+				y = y.next;
+			}
+		}
+	}
+
+	private void check(FuncDef x) throws Exception
+	{
+
+	}
+
+	private Type check(VarDeclarator x, TypeSpecifier y) throws Exception
+	{
+		int sc = x.plain_declarator.star_list.cnt;
+		Type def_type = sc == 0 ? check(y, 1) : check(y, 2);
+		Type real_type = check(x.plain_declarator, def_type);
+
+		if(real_type instanceof Void)
+			throw new Exception("Variable " + x.plain_declarator.identifier + " can not be declared as void");
+		
+		// TODO
+		// check dimension
 
 		return real_type;
 	}
 
-	// resolve the type of each element recursively
-	// aims to get the nesting description
-	private Type checkInitializer(Initializer _ir) throws Exception
+	private Type check(Initializer x) throws Exception
 	{
-		if (_ir == null)
-			return null;
-		else if (_ir.value != null)
-			return checkExpr(_ir.value);
-		else
-		{
-			// get the type of the first initializer
-			Iterator<Initializer> it = _ir.initializers.comp.iterator();
-			Type et = checkInitializer(it.next());
 
-			// checking following initializers
-			// all initializers should hold same type
-			while (it.hasNext())
-			{
-				Type ct = checkInitializer(it.next());
-
-				if (et.equals(ct) == false)
-					throw new Exception("Different types in one array!");
-			}
-
-			// TODO
-			// not proper to use initializer's size as length of the array
-			return new Array(_ir.initializers.comp.size(), et);
-		}
+		return null;
 	}
 
-	private Type checkPlainDeclarator(PlainDeclarator _pdr, Type _def_type) throws Exception
+	private Type check(FuncDeclarator x, TypeSpecifier y) throws Exception
 	{
-		if (_pdr.stars == null || _pdr.stars.cnt == 0)
-			return _def_type;
-		else
-		{
-			Type real_type = _def_type;
-			for (int i = 0; i < _pdr.stars.cnt; i++)
-				real_type = new Pointer(real_type);
 
-			return real_type;
-		}
-	}
-
-	private LinkedList<Type> checkParameters(Parameters _p) throws Exception
-	{
-		LinkedList<Type> ans = new LinkedList<Type>();
-
-		if (_p != null)
-		{
-			for (PlainDecl elem : _p.comp)
-			{
-				Type def_type = checkTypeSpecifier(elem.type_specifier);
-				Type real_type = checkDeclarator(elem.declarator, def_type);
-
-				ans.add(real_type);
-			}
-		}
-
-		return ans;
-	}
-
-	private Type checkExpr(Expr e) throws Exception
-	{
-		if (e == null)
-			return null;
-		else if (e instanceof PrimaryExpr)
-			return checkExpr_PrimaryExpr((PrimaryExpr) e);
-		else if (e instanceof PostfixExpr)
-			return checkExpr_PostfixExpr((PostfixExpr) e);
-		else if (e instanceof UnaryExpr)
-			return checkExpr_UnaryExpr((UnaryExpr) e);
-		else
-			throw new Exception("Not an Expr!");
-	}
-
-	private Type checkExpr_PrimaryExpr(PrimaryExpr pe) throws Exception
-	{
-		if (pe.elem_type == PrimaryExpr.Type.ID)
-		{
-			String vn = (String) pe.elem;
-			Entry ve = env.get(Symbol.symbol(vn));
-
-			if (ve != null)
-			{
-				// TODO
-				// at present, may be not proper
-				pe.isConst = false;
-
-				// derive from entry
-				pe.isLValue = ve.isLValue;
-				pe.type = ve.type;
-
-				// TODO
-				// will be set later, according to entry
-				pe.val = null;
-
-				return pe.type;
-			}
-			else
-				throw new Exception("Identifier " + vn + " Use before declaration!");
-		}
-		else if (pe.elem_type == PrimaryExpr.Type.STRING)
-		{
-			pe.isConst = true;
-			pe.isLValue = false;
-			pe.type = new Pointer(Char.getInstance());
-			pe.val = (String) pe.elem;
-
-			return pe.type;
-		}
-		else if (pe.elem_type == PrimaryExpr.Type.INT)
-		{
-			pe.isConst = true;
-			pe.isLValue = false;
-			pe.type = Int.getInstance();
-			pe.val = (Integer) pe.elem;
-
-			return pe.type;
-		}
-		else if (pe.elem_type == PrimaryExpr.Type.CHAR)
-		{
-			pe.isConst = true;
-			pe.isLValue = false;
-			pe.type = Char.getInstance();
-			pe.val = (Character) pe.elem;
-
-			return pe.type;
-		}
-		else if (pe.elem_type == PrimaryExpr.Type.PAREN)
-		{
-			pe.isConst = false;
-			pe.isLValue = false;
-			pe.type = checkExpr((Expression) pe.elem);
-			pe.val = ((Expression) pe.elem).comp.getLast().val;
-
-			return pe.type;
-		}
-		else
-			throw new Exception("Internal Error!");
-	}
-
-	private Type checkExpr_PostfixExpr(PostfixExpr pe) throws Exception
-	{
-		if (pe.operation_type == PostfixExpr.Type.MPAREN)
-		{
-			Expr param_expr = (Expr) pe.param;
-			Type param_type = checkExpr(param_expr);
-
-			if (param_type instanceof Int || param_type instanceof Char)
-			{
-				Type et = checkExpr(pe.expr);
-
-				if (et instanceof Pointer)
-				{
-					pe.isConst = false;
-					pe.isLValue = true;
-					pe.type = ((Pointer) et).elem_type;
-					pe.val = null;
-
-					return pe.type;
-				}
-				else if (et instanceof Array)
-				{
-					pe.isConst = false;
-					pe.isLValue = true;
-					pe.type = ((Array) et).elem_type;
-					pe.val = null;
-
-					return pe.type;
-				}
-				else
-					throw new Exception(pe.expr.toString() + " is not an array nor a pointer!");
-			}
-			else
-				throw new Exception(param_expr.toString() + " is not a valid index!");
-		}
-		else if (pe.operation_type == PostfixExpr.Type.PAREN)
-		{
-			Type ft = checkExpr(pe.expr);
-			if (ft instanceof Function)
-			{
-				Function cft = (Function) ft;
-
-				if (cft.args != null)
-				{
-					Arguments ca = (Arguments) pe.param;
-				}
-
-				return cft.ret_type;
-			}
-			else
-				throw new Exception(pe.expr.toString() + " is not a function!");
-		}
-		else
-			throw new Exception("Internal Error!");
-	}
-
-	private Type checkExpr_UnaryExpr(UnaryExpr ue) throws Exception
-	{
-		if (ue.operation_type == UnaryExpr.Type.INC)
-		{
-			Type ct = checkExpr(ue.expr);
-			if ((ct instanceof Int) || (ct instanceof Char))
-			{
-				return ct;
-			}
-			else if (ct instanceof Pointer)
-			{
-
-				return ct;
-			}
-			else
-				throw new Exception("Cannot increase " + ue.expr.toString());
-		}
-		else if (ue.operation_type == UnaryExpr.Type.DEC)
-		{
-
-		}
-		else if (ue.operation_type == UnaryExpr.Type.BIT_AND)
-		{
-
-		}
-		else if (ue.operation_type == UnaryExpr.Type.STAR)
-		{
-
-		}
-		else if (ue.operation_type == UnaryExpr.Type.SIZEOF)
-		{
-
-		}
-		else if (ue.operation_type == UnaryExpr.Type.POSITIVE)
-		{
-
-		}
-		else if (ue.operation_type == UnaryExpr.Type.NEGATIVE)
-		{
-
-		}
-		else if (ue.operation_type == UnaryExpr.Type.BIT_NOT)
-		{
-
-		}
-		else if (ue.operation_type == UnaryExpr.Type.NOT)
-		{
-
-		}
-		else
-			throw new Exception("Internal Error!");
-	}
-
-	private void checkFuncDef(FuncDef _func) throws Exception
-	{
-		System.out.println("Checking function: " + _func.func_name.id);
+		return null;
 	}
 }
