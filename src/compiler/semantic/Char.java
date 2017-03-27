@@ -17,29 +17,18 @@ public final class Char extends Type
     @Override
     public boolean equals(Type rhs)
     {
-        if(this == rhs)
-            return true;
-        else if(rhs instanceof Char || rhs instanceof Int)
-            return true;
-        else
-            return false;
+        return (rhs instanceof Char || rhs instanceof Int);
     }
 
     @Override
-    public boolean isAssignable(Type rhs)
+    public boolean isAssignableWith(Type rhs)
     {
-        if(rhs instanceof Char || rhs instanceof Int)
-            return true;
-        else
-            return false;
+        return (rhs instanceof Char || rhs instanceof Int);
     }
 
     @Override
-    public boolean canOperateWith(BinaryExpr.Type _op, Type _t)
+    public boolean canOperateWith(BinaryExpr.Operator op, Type rhs)
     {
-        if(_t instanceof Int || _t instanceof Char)
-            return true;
-        else
-            return false;
+        return (rhs instanceof Int || rhs instanceof Char);
     }
 }

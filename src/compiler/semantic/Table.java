@@ -39,7 +39,7 @@ public class Table
 	/**
 	 * Puts the specified value into the Table, bound to the specified Symbol.
 	 */
-	public void put(Symbol key, Object value) 
+	public void put(Symbol key, Object value)
 	{
 		dict.put(key, new Binder(value, top, dict.get(key)));
 		top = key;

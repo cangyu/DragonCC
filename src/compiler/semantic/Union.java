@@ -23,7 +23,7 @@ public final class Union extends Record
     }
     
     @Override
-    public boolean isAssignable(Type rhs)
+    public boolean isAssignableWith(Type rhs)
     {
         if(rhs instanceof Union)
             return true;

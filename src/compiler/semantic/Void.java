@@ -17,20 +17,17 @@ public final class Void extends Type
     @Override
     public boolean equals(Type rhs)
     {
-        if(this == rhs)
-            return true;
-        else
-            return false;
+    	return (rhs instanceof Void);
     }
 
     @Override
-    public boolean isAssignable(Type rhs)
+    public boolean isAssignableWith(Type rhs)
     {
         return false;
     }
 
     @Override
-    public boolean canOperateWith(BinaryExpr.Type _op, Type _t)
+    public boolean canOperateWith(BinaryExpr.Operator _op, Type _t)
     {
         return false;
     }

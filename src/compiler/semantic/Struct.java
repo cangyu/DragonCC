@@ -21,7 +21,7 @@ public final class Struct extends Record
 	}
 	
 	@Override
-    public boolean isAssignable(Type rhs)
+    public boolean isAssignableWith(Type rhs)
     {
         if(rhs instanceof Struct)
             return true;
@@ -30,7 +30,7 @@ public final class Struct extends Record
     }
     
     @Override
-    public boolean canOperateWith(BinaryExpr.Type _op, Type _t)
+    public boolean canOperateWith(BinaryExpr.Operator _op, Type _t)
     {
         return false;
     }

@@ -4,18 +4,9 @@ import compiler.ast.BinaryExpr;
 
 public abstract class Type
 {
-    public boolean equals(Type rhs)
-    {
-        return false;
-    }
+    public abstract boolean equals(Type rhs);
 
-    public boolean isAssignable(Type rhs)
-    {
-        return false;
-    }
+    public abstract boolean isAssignableWith(Type rhs);
 
-    public boolean canOperateWith(BinaryExpr.Type _op, Type _t)
-    {
-        return false;
-    }
+    public abstract boolean canOperateWith(BinaryExpr.Operator op, Type t);
 }

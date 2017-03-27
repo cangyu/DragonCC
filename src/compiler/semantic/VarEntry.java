@@ -2,8 +2,10 @@ package compiler.semantic;
 
 public final class VarEntry extends Entry 
 {
-	public VarEntry(Type _t)
+	public boolean hasInitialized = false;
+	
+	public VarEntry(Type t, boolean hi)
 	{
-		super(_t, true);
+		super(t, true);
 	}
 }

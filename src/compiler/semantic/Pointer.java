@@ -23,7 +23,7 @@ public class Pointer extends Type
 	}
 
 	@Override
-	public boolean isAssignable(Type rhs)
+	public boolean isAssignableWith(Type rhs)
 	{
 		if (rhs instanceof Array || rhs instanceof Pointer)
 			return true;

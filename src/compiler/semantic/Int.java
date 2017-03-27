@@ -26,20 +26,14 @@ public final class Int extends Type
     }
 
     @Override
-    public boolean isAssignable(Type rhs)
+    public boolean isAssignableWith(Type rhs)
     {
-        if(rhs instanceof Int || rhs instanceof Char)
-            return true;
-        else
-            return false;
+        return (rhs instanceof Int || rhs instanceof Char);
     }
     
     @Override
-    public boolean canOperateWith(BinaryExpr.Type _op, Type _t)
+    public boolean canOperateWith(BinaryExpr.Operator op, Type rhs)
     {
-        if(_t instanceof Int || _t instanceof Char)
-            return true;
-        else
-            return false;
+        return (rhs instanceof Int || rhs instanceof Char);
     }
 }
