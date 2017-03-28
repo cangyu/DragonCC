@@ -11,7 +11,7 @@ public class Expression extends Expr
 	    next = _n;
 	}
 	
-    public void accept(ASTNodeVisitor v)
+    public void accept(ASTNodeVisitor v) throws Exception
     {
         v.visit(this);
     }

@@ -11,7 +11,7 @@ public class FuncDeclarator extends Declarator
         param = _pl;
     }
 
-    public void accept(ASTNodeVisitor v)
+    public void accept(ASTNodeVisitor v) throws Exception
     {
         v.visit(this);
     }

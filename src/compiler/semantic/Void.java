@@ -4,7 +4,7 @@ import compiler.ast.BinaryExpr;
 
 public final class Void extends Type
 {
-    public static Void instance;
+    private static Void instance;
 
     public static Void getInstance()
     {

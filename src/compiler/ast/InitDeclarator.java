@@ -11,7 +11,7 @@ public class InitDeclarator extends ASTNode
 		initializer = _i;
 	}
 	
-    public void accept(ASTNodeVisitor v)
+    public void accept(ASTNodeVisitor v) throws Exception
     {
         v.visit(this);
     }

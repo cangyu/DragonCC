@@ -4,7 +4,7 @@ import compiler.ast.BinaryExpr;
 
 public final class Char extends Type
 {
-    public static Char instance;
+    private static Char instance;
 
     public static Char getInstance()
     {

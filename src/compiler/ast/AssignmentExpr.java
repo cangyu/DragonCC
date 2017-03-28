@@ -17,7 +17,7 @@ public class AssignmentExpr extends Expr
         right = _r;
     }
 
-    public void accept(ASTNodeVisitor v)
+    public void accept(ASTNodeVisitor v) throws Exception
     {
         v.visit(this);
     }

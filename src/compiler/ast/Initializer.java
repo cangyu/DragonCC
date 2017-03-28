@@ -11,7 +11,7 @@ public class Initializer extends ASTNode
         initializer_list = _is;
     }
 
-    public void accept(ASTNodeVisitor v)
+    public void accept(ASTNodeVisitor v) throws Exception
     {
         v.visit(this);
     }

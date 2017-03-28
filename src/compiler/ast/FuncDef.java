@@ -15,7 +15,7 @@ public class FuncDef extends ProgramComp
 		comp_stmt = _cs;
 	}
 	
-	public void accept(ASTNodeVisitor v)
+	public void accept(ASTNodeVisitor v) throws Exception
 	{
 	    v.visit(this);
 	}

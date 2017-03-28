@@ -11,7 +11,7 @@ public class PlainDeclaration extends ASTNode
 		declarator = _d;
 	}
 	
-    public void accept(ASTNodeVisitor v)
+    public void accept(ASTNodeVisitor v) throws Exception
     {
         v.visit(this);
     }

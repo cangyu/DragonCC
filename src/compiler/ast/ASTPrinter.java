@@ -8,7 +8,7 @@ public class ASTPrinter implements ASTNodeVisitor
 	final private static String seperator = "    |";
 
 	/* Expr */
-	public void visit(Expression exp)
+	public void visit(Expression exp) throws Exception
 	{
 		// construct nodes and count lines
 		Expression ce = exp;
@@ -38,7 +38,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		}
 	}
 
-	public void visit(AssignmentExpr ae)
+	public void visit(AssignmentExpr ae) throws Exception
 	{
 		// construct nodes and count lines
 		int lc = 2;
@@ -102,7 +102,7 @@ public class ASTPrinter implements ASTNodeVisitor
 			ae.ast_rep[cl++] += str;
 	}
 
-	public void visit(BinaryExpr be)
+	public void visit(BinaryExpr be) throws Exception
 	{
 		// construct sub-nodes and count lines
 		int lc = 2;
@@ -187,7 +187,7 @@ public class ASTPrinter implements ASTNodeVisitor
 			be.ast_rep[cl++] += str;
 	}
 
-	public void visit(CastExpr ce)
+	public void visit(CastExpr ce) throws Exception
 	{
 		// construct sub-nodes
 		ce.target_type.accept(this);
@@ -213,7 +213,7 @@ public class ASTPrinter implements ASTNodeVisitor
 			ce.ast_rep[cl++] += str;
 	}
 
-	public void visit(UnaryExpr ue)
+	public void visit(UnaryExpr ue) throws Exception
 	{
 		// construct sub-nodes
 		if (ue.expr != null)
@@ -280,7 +280,7 @@ public class ASTPrinter implements ASTNodeVisitor
 				ue.ast_rep[cl++] += str;
 	}
 
-	public void visit(PostfixExpr pe)
+	public void visit(PostfixExpr pe) throws Exception
 	{
 		// construct and count
 		int lc = 2;
@@ -368,7 +368,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		}
 	}
 
-	public void visit(PrimaryExpr pe)
+	public void visit(PrimaryExpr pe) throws Exception
 	{
 		pe.ast_rep = new String[1];
 		pe.ast_rep[0] = "--";
@@ -393,7 +393,7 @@ public class ASTPrinter implements ASTNodeVisitor
 	}
 
 	/* Stmt */
-	public void visit(StmtList sl)
+	public void visit(StmtList sl) throws Exception
 	{
 		// construct sub-nodes
 		StmtList s = sl;
@@ -430,7 +430,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		}
 	}
 
-	public void visit(ExpressionStmt es)
+	public void visit(ExpressionStmt es) throws Exception
 	{
 		if (es.e != null)
 		{
@@ -439,7 +439,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		}
 	}
 
-	public void visit(CompoundStmt cs)
+	public void visit(CompoundStmt cs) throws Exception
 	{
 		// construct components and count lines
 		int lc = 1;
@@ -473,7 +473,7 @@ public class ASTPrinter implements ASTNodeVisitor
 				cs.ast_rep[cl++] += str;
 	}
 
-	public void visit(SelectionStmt ss)
+	public void visit(SelectionStmt ss) throws Exception
 	{
 		// construct sub-nodes and count lines
 		int lc = 1;
@@ -510,7 +510,7 @@ public class ASTPrinter implements ASTNodeVisitor
 				ss.ast_rep[cl++] += str;
 	}
 
-	public void visit(JumpStmt js)
+	public void visit(JumpStmt js) throws Exception
 	{
 		// construct sub-nodes and count lines
 		int lc = 1;
@@ -551,7 +551,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		}
 	}
 
-	public void visit(IterationStmt is)
+	public void visit(IterationStmt is) throws Exception
 	{
 		// construct sub-nodes and count lines
 		int lc = 2;
@@ -644,13 +644,13 @@ public class ASTPrinter implements ASTNodeVisitor
 	}
 
 	/* Decl */
-	public void visit(StarList sl)
+	public void visit(StarList sl) throws Exception
 	{
 		sl.ast_rep = new String[1];
 		sl.ast_rep[0] = String.format(leading + "StarList: %d", sl.cnt);
 	}
 
-	public void visit(Declaration decl)
+	public void visit(Declaration decl) throws Exception
 	{
 		// construct components and count lines
 		int lc = 1;
@@ -680,7 +680,7 @@ public class ASTPrinter implements ASTNodeVisitor
 				decl.ast_rep[cl++] += str;
 	}
 
-	public void visit(FuncDeclarator fd)
+	public void visit(FuncDeclarator fd) throws Exception
 	{
 		// construct components and count lines
 		int lc = 1;
@@ -710,7 +710,7 @@ public class ASTPrinter implements ASTNodeVisitor
 				fd.ast_rep[cl++] += str;
 	}
 
-	public void visit(VarDeclarator vd)
+	public void visit(VarDeclarator vd) throws Exception
 	{
 		// construct components and count lines
 		vd.plain_declarator.accept(this);
@@ -755,7 +755,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		}
 	}
 
-	public void visit(DeclarationList ds)
+	public void visit(DeclarationList ds) throws Exception
 	{
 		// construct components
 		DeclarationList _dl = ds;
@@ -792,7 +792,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		}
 	}
 
-	public void visit(DeclaratorList ds)
+	public void visit(DeclaratorList ds) throws Exception
 	{
 		// construct components
 		DeclaratorList _dl = ds;
@@ -829,7 +829,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		}
 	}
 
-	public void visit(InitDeclarator id)
+	public void visit(InitDeclarator id) throws Exception
 	{
 		// construct components and count lines
 		int lc = 1;
@@ -859,7 +859,7 @@ public class ASTPrinter implements ASTNodeVisitor
 				id.ast_rep[cl++] += str;
 	}
 
-	public void visit(InitDeclaratorList ids)
+	public void visit(InitDeclaratorList ids) throws Exception
 	{
 		// construct components
 		InitDeclaratorList _dl = ids;
@@ -896,7 +896,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		}
 	}
 
-	public void visit(Initializer ini)
+	public void visit(Initializer ini) throws Exception
 	{
 		// construct components and count lines
 		int lc = 1;
@@ -930,7 +930,7 @@ public class ASTPrinter implements ASTNodeVisitor
 				ini.ast_rep[cl++] += str;
 	}
 
-	public void visit(InitializerList x)
+	public void visit(InitializerList x) throws Exception
 	{
 		// construct components
 		InitializerList y = x;
@@ -967,7 +967,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		}
 	}
 
-	public void visit(NonInitDeclaration x)
+	public void visit(NonInitDeclaration x) throws Exception
 	{
 		// construct components and count lines
 		int lc = 1;
@@ -992,7 +992,7 @@ public class ASTPrinter implements ASTNodeVisitor
 			x.ast_rep[cl++] += str;
 	}
 
-	public void visit(NonInitDeclarationList x)
+	public void visit(NonInitDeclarationList x) throws Exception
 	{
 		// construct components
 		NonInitDeclarationList y = x;
@@ -1029,7 +1029,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		}
 	}
 
-	public void visit(PlainDeclaration x)
+	public void visit(PlainDeclaration x) throws Exception
 	{
 		// construct components and count lines
 		int lc = 1;
@@ -1054,7 +1054,7 @@ public class ASTPrinter implements ASTNodeVisitor
 			x.ast_rep[cl++] += str;
 	}
 
-	public void visit(PlainDeclarator x)
+	public void visit(PlainDeclarator x) throws Exception
 	{
 		// construct components and count lines
 		int lc = 2;
@@ -1080,7 +1080,7 @@ public class ASTPrinter implements ASTNodeVisitor
 	}
 
 	/* Func */
-	public void visit(FuncDef func)
+	public void visit(FuncDef func) throws Exception
 	{
 		// construct sub-nodes
 		func.type_specifier.accept(this);
@@ -1122,7 +1122,7 @@ public class ASTPrinter implements ASTNodeVisitor
 			func.ast_rep[cl++] += str;
 	}
 
-	public void visit(ArgumentList x)
+	public void visit(ArgumentList x) throws Exception
 	{
 		// construct components
 		ArgumentList y = x;
@@ -1159,7 +1159,7 @@ public class ASTPrinter implements ASTNodeVisitor
 		}
 	}
 
-	public void visit(ParameterList x)
+	public void visit(ParameterList x) throws Exception
 	{
 		// construct components
 		ParameterList y = x;
@@ -1197,7 +1197,7 @@ public class ASTPrinter implements ASTNodeVisitor
 	}
 
 	/* Type */
-	public void visit(TypeName x)
+	public void visit(TypeName x) throws Exception
 	{
 		// construct components and count lines
 		int lc = 1;
@@ -1222,7 +1222,7 @@ public class ASTPrinter implements ASTNodeVisitor
 			x.ast_rep[cl++] += str;
 	}
 
-	public void visit(TypeSpecifier ts)
+	public void visit(TypeSpecifier ts) throws Exception
 	{
 		// construct sub-nodes
 		if (ts.comp != null)
@@ -1269,7 +1269,7 @@ public class ASTPrinter implements ASTNodeVisitor
 	}
 
 	/* Program */
-	public void visit(Program prog)
+	public void visit(Program prog) throws Exception
 	{
 		// construct sub-nodes
 		Program cp = prog;

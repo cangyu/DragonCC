@@ -15,7 +15,7 @@ public class TypeSpecifier extends ASTNode
 		comp = _c;
 	}
 	
-    public void accept(ASTNodeVisitor v)
+    public void accept(ASTNodeVisitor v) throws Exception
     {
         v.visit(this);
     }

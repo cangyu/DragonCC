@@ -12,7 +12,7 @@ public class SelectionStmt extends Stmt
 		else_clause = _ec;
 	}
 	
-    public void accept(ASTNodeVisitor v)
+    public void accept(ASTNodeVisitor v) throws Exception
     {
         v.visit(this);
     }

@@ -11,7 +11,7 @@ public class Declaration extends ProgramComp
 		init_declarator_list = _ids;
 	}
 	
-	public void accept(ASTNodeVisitor v)
+	public void accept(ASTNodeVisitor v) throws Exception
     {
         v.visit(this);
     }

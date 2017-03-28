@@ -6,8 +6,8 @@ public abstract class Expr extends ASTNode
 {
 	public boolean isConst;
 	public Object value;
-	public boolean hasInitialized = false;
+	public boolean hasInitialized;
 	public Type type;
-	public boolean isLvalue = false;
+	public boolean isLvalue;
 }
 

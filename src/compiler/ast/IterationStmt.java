@@ -27,7 +27,7 @@ public class IterationStmt extends Stmt
         stmt = _s;
     }
 
-    public void accept(ASTNodeVisitor v)
+    public void accept(ASTNodeVisitor v) throws Exception
     {
         v.visit(this);
     }

@@ -4,105 +4,105 @@ public class PrettyPrinter implements ASTNodeVisitor
 {
 
 	@Override
-	public void visit(Expression x)
+	public void visit(Expression x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(AssignmentExpr x)
+	public void visit(AssignmentExpr x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(BinaryExpr x)
+	public void visit(BinaryExpr x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(CastExpr x)
+	public void visit(CastExpr x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(UnaryExpr x)
+	public void visit(UnaryExpr x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(PostfixExpr x)
+	public void visit(PostfixExpr x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(PrimaryExpr x)
+	public void visit(PrimaryExpr x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(StmtList x)
+	public void visit(StmtList x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(ExpressionStmt x)
+	public void visit(ExpressionStmt x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(CompoundStmt x)
+	public void visit(CompoundStmt x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(SelectionStmt x)
+	public void visit(SelectionStmt x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(JumpStmt x)
+	public void visit(JumpStmt x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(IterationStmt x)
+	public void visit(IterationStmt x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(StarList x)
+	public void visit(StarList x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(Declaration x)
+	public void visit(Declaration x) throws Exception
 	{
 		int lc =0;
 		x.type_specifier.accept(this);
@@ -116,126 +116,126 @@ public class PrettyPrinter implements ASTNodeVisitor
 	}
 
 	@Override
-	public void visit(FuncDeclarator x)
+	public void visit(FuncDeclarator x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(VarDeclarator x)
+	public void visit(VarDeclarator x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(DeclarationList x)
+	public void visit(DeclarationList x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(DeclaratorList x)
+	public void visit(DeclaratorList x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(InitDeclarator x)
+	public void visit(InitDeclarator x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(InitDeclaratorList x)
+	public void visit(InitDeclaratorList x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(Initializer x)
+	public void visit(Initializer x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(InitializerList x)
+	public void visit(InitializerList x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(NonInitDeclaration x)
+	public void visit(NonInitDeclaration x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(NonInitDeclarationList x)
+	public void visit(NonInitDeclarationList x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(PlainDeclaration x)
+	public void visit(PlainDeclaration x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(PlainDeclarator x)
+	public void visit(PlainDeclarator x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(FuncDef x)
+	public void visit(FuncDef x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(ArgumentList x)
+	public void visit(ArgumentList x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(ParameterList x)
+	public void visit(ParameterList x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(TypeName x)
+	public void visit(TypeName x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(TypeSpecifier x)
+	public void visit(TypeSpecifier x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visit(Program x)
+	public void visit(Program x) throws Exception
 	{	
 		Program y = x;
 		int lc =0;

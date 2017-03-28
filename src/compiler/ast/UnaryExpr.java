@@ -18,7 +18,7 @@ public class UnaryExpr extends Expr
         type_name = _tn;
     }
 
-    public void accept(ASTNodeVisitor v)
+    public void accept(ASTNodeVisitor v) throws Exception
     {
         v.visit(this);
     }

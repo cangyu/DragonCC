@@ -16,7 +16,7 @@ public class JumpStmt extends Stmt
         expr = _e;
     }
 
-    public void accept(ASTNodeVisitor v)
+    public void accept(ASTNodeVisitor v) throws Exception
     {
         v.visit(this);
     }

@@ -9,7 +9,7 @@ public class ExpressionStmt extends Stmt
 		e = _e;
 	}
 	
-    public void accept(ASTNodeVisitor v)
+    public void accept(ASTNodeVisitor v) throws Exception
     {
         v.visit(this);
     }

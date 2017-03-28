@@ -18,7 +18,7 @@ public class PostfixExpr extends Expr
         op = _t;
     }
 
-    public void accept(ASTNodeVisitor v)
+    public void accept(ASTNodeVisitor v) throws Exception
     {
         v.visit(this);
     }

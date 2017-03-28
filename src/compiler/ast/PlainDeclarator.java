@@ -11,7 +11,7 @@ public class PlainDeclarator extends ASTNode
 	    identifier = _id;
 	}
 	
-    public void accept(ASTNodeVisitor v)
+    public void accept(ASTNodeVisitor v) throws Exception
     {
         v.visit(this);
     }

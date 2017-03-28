@@ -4,7 +4,7 @@ import compiler.ast.BinaryExpr;
 
 public final class Int extends Type
 {
-    public static Int instance;
+    private static Int instance;
     
     public static Int getInstance()
     {

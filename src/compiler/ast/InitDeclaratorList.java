@@ -11,7 +11,7 @@ public class InitDeclaratorList extends ASTNode
 	    next = _n;
 	}
 	
-    public void accept(ASTNodeVisitor v)
+    public void accept(ASTNodeVisitor v) throws Exception
     {
         v.visit(this);
     }

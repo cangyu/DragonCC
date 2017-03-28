@@ -11,7 +11,7 @@ public class CastExpr extends Expr
 		expr = _e;
 	}
 	
-    public void accept(ASTNodeVisitor v)
+    public void accept(ASTNodeVisitor v) throws Exception
     {
         v.visit(this);
     }

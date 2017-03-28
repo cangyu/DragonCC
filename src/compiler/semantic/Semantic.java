@@ -1,6 +1,5 @@
 package compiler.semantic;
 
-import java.io.*;
 import java.util.*;
 import compiler.ast.*;
 import compiler.syntactic.*;
@@ -19,6 +18,11 @@ public class Semantic
 
 	public void check() throws Exception
 	{
+		//figure out all constants
+		ConstExprEval cee = new ConstExprEval();
+		prog_start.accept(cee);
+		
+		//type checking
 		check(prog_start);
 	}
 

@@ -11,7 +11,7 @@ public class TypeName extends ASTNode
 		star_list = _ss;
 	}
 	
-    public void accept(ASTNodeVisitor v)
+    public void accept(ASTNodeVisitor v) throws Exception
     {
         v.visit(this);
     }

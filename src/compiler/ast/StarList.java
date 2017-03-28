@@ -9,7 +9,7 @@ public class StarList extends ASTNode
 		cnt = _ic;
 	}
 	
-    public void accept(ASTNodeVisitor v)
+    public void accept(ASTNodeVisitor v) throws Exception
     {
         v.visit(this);
     }

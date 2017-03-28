@@ -3,47 +3,47 @@ package compiler.ast;
 public interface ASTNodeVisitor
 {
     /* Expr */
-    public void visit(Expression x);
-    public void visit(AssignmentExpr x);
-    public void visit(BinaryExpr x);
-    public void visit(CastExpr x);
-    public void visit(UnaryExpr x);
-    public void visit(PostfixExpr x);
-    public void visit(PrimaryExpr x);
+    public abstract void visit(Expression x) throws Exception;
+    public abstract void visit(AssignmentExpr x) throws Exception;
+    public abstract void visit(BinaryExpr x) throws Exception;
+    public abstract void visit(CastExpr x) throws Exception;
+    public abstract void visit(UnaryExpr x) throws Exception;
+    public abstract void visit(PostfixExpr x) throws Exception;
+    public abstract void visit(PrimaryExpr x) throws Exception;
     
     /* Stmt */
-    public void visit(StmtList x);
-    public void visit(ExpressionStmt x);
-    public void visit(CompoundStmt x);
-    public void visit(SelectionStmt x);
-    public void visit(JumpStmt x);
-    public void visit(IterationStmt x);
+    public abstract void visit(StmtList x) throws Exception;
+    public abstract void visit(ExpressionStmt x) throws Exception;
+    public abstract void visit(CompoundStmt x) throws Exception;
+    public abstract void visit(SelectionStmt x) throws Exception;
+    public abstract void visit(JumpStmt x) throws Exception;
+    public abstract void visit(IterationStmt x) throws Exception;
     
     /* Decl */
-    public void visit(StarList x);
-    public void visit(Declaration x);
-    public void visit(FuncDeclarator x);
-    public void visit(VarDeclarator x);
-    public void visit(DeclarationList x);
-    public void visit(DeclaratorList x);
-    public void visit(InitDeclarator x);
-    public void visit(InitDeclaratorList x);
-    public void visit(Initializer x);
-    public void visit(InitializerList x);
-    public void visit(NonInitDeclaration x);
-    public void visit(NonInitDeclarationList x);
-    public void visit(PlainDeclaration x);
-    public void visit(PlainDeclarator x);
+    public abstract void visit(StarList x) throws Exception;
+    public abstract void visit(Declaration x) throws Exception;
+    public abstract void visit(FuncDeclarator x) throws Exception;
+    public abstract void visit(VarDeclarator x) throws Exception;
+    public abstract void visit(DeclarationList x) throws Exception;
+    public abstract void visit(DeclaratorList x) throws Exception;
+    public abstract void visit(InitDeclarator x) throws Exception;
+    public abstract void visit(InitDeclaratorList x) throws Exception;
+    public abstract void visit(Initializer x) throws Exception;
+    public abstract void visit(InitializerList x) throws Exception;
+    public abstract void visit(NonInitDeclaration x) throws Exception;
+    public abstract void visit(NonInitDeclarationList x) throws Exception;
+    public abstract void visit(PlainDeclaration x) throws Exception;
+    public abstract void visit(PlainDeclarator x) throws Exception;
 
     /* Func */
-    public void visit(FuncDef x);
-    public void visit(ArgumentList x);
-    public void visit(ParameterList x);
+    public abstract void visit(FuncDef x) throws Exception;
+    public abstract void visit(ArgumentList x) throws Exception;
+    public abstract void visit(ParameterList x) throws Exception;
 
     /* Type */
-    public void visit(TypeName x);
-    public void visit(TypeSpecifier x);
+    public abstract void visit(TypeName x) throws Exception;
+    public abstract void visit(TypeSpecifier x) throws Exception;
     
     /* Program */
-    public void visit(Program x);
+    public abstract void visit(Program x) throws Exception;
 }

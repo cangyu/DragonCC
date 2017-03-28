@@ -5,7 +5,7 @@ public abstract class ASTNode
 	public String [] ast_rep;
 	public String [] code_rep;
 	
-    public abstract void accept(ASTNodeVisitor v);
+    public abstract void accept(ASTNodeVisitor v) throws Exception;
     
     public String toString()
     {
