@@ -1,6 +1,6 @@
 package compiler.semantic;
 
-import compiler.ast.BinaryExpr;
+import compiler.ast.BinaryExpr.Operator;
 
 public class Pointer extends Type
 {
@@ -9,14 +9,15 @@ public class Pointer extends Type
 	public Pointer(Type _t)
 	{
 		elem_type = _t;
+		size = 4;
 	}
 
 	@Override
 	public boolean equals(Type rhs)
 	{
-		if (this == rhs)
+		if(this == rhs)
 			return true;
-		else if (rhs instanceof Pointer)
+		else if(rhs instanceof Pointer)
 			return ((Pointer) this).elem_type.equals(((Pointer) rhs).elem_type);
 		else
 			return false;
@@ -25,42 +26,50 @@ public class Pointer extends Type
 	@Override
 	public boolean isAssignableWith(Type rhs)
 	{
-		if (rhs instanceof Array || rhs instanceof Pointer)
+		if(rhs instanceof Array || rhs instanceof Pointer)
 			return true;
 		else
 			return false;
 	}
 
 	@Override
-	public boolean canOperateWith(BinaryExpr.Type _op, Type _t)
+	public boolean canOperateWith(Operator _op, Type _t)
 	{
-		if (_op == BinaryExpr.Type.PLUS)
+		if(_op == Operator.PLUS)
 		{
-			if (_t instanceof Int)
+			if(_t instanceof Int)
 				return true;
 			else
 				return false;
 		}
-		else if (_op == BinaryExpr.Type.MINUS)
+		else if(_op == Operator.MINUS)
 		{
-			if (_t instanceof Pointer)
+			if(_t instanceof Pointer)
 				return true;
-			else if (_t instanceof Int)
+			else if(_t instanceof Int)
 				return true;
 			else
 				return false;
 		}
-		else if (
-			_op == BinaryExpr.Type.EQ || _op == BinaryExpr.Type.NE || _op == BinaryExpr.Type.LE || _op == BinaryExpr.Type.LT || _op == BinaryExpr.Type.GE
-					|| _op == BinaryExpr.Type.GT
-		)
+		else if(_op == Operator.EQ 
+				|| _op == Operator.NE 
+				|| _op == Operator.LE
+				|| _op == Operator.LT 
+				|| _op == Operator.GE 
+				|| _op == Operator.GT)
 		{
-			if (_t instanceof Array || _t instanceof Pointer)
+			if(_t instanceof Array || _t instanceof Pointer)
 				return true;
 			else
 				return false;
 		}
 		else
 			return false;
+	}
+
+	@Override
+	public boolean canBeCastTo(Type rhs)
+	{
+		return (rhs instanceof Char || rhs instanceof Int || rhs instanceof Pointer);
 	}
 }

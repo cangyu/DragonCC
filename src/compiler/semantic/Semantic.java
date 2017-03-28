@@ -364,7 +364,53 @@ public class Semantic
 	private Type check(FuncDeclarator x, TypeSpecifier y) throws Exception
 	{
 
+		// TODO
 		return null;
+	}
+
+	private Type check(ArgumentList x, Function f) throws Exception
+	{
+		ArgumentList y = x;
+		LinkedList<Type> ats = new LinkedList<Type>();
+		while (y != null)
+		{
+			ats.add(check(y.head));
+			y = y.next;
+		}
+
+		int cnt = 0;
+		Function z = f;
+		while (z != null)
+		{
+			if(z.arg_type != null)
+				++cnt;
+
+			if(z.ret_type instanceof Function)
+				z = (Function) z.ret_type;
+			else
+				break;
+		}
+
+		if(cnt < ats.size())
+			throw new Exception("Too many arguments in function call!");
+		if(ats.size() == 0 && cnt > 0)
+			throw new Exception("Should provide at least 1 argument!");
+
+		Type ret = f.ret_type;
+		z = f;
+		Iterator<Type> it = ats.iterator();
+		while (it.hasNext())
+		{
+			Type cat = it.next();
+			ret = z.ret_type;
+
+			if(cat.equals(z.arg_type))
+				z = (Function) z.ret_type;
+			else
+				throw new Exception("Argument type does not match!");
+		}
+
+		return ret;
 	}
 
 	private Type check(Expr x) throws Exception
@@ -375,6 +421,14 @@ public class Semantic
 			return checkPostfixExpr((PostfixExpr) x);
 		else if(x instanceof UnaryExpr)
 			return checkUnaryExpr((UnaryExpr) x);
+		else if(x instanceof CastExpr)
+			return checkCastExpr((CastExpr) x);
+		else if(x instanceof BinaryExpr)
+			return checkBinaryExpr((BinaryExpr) x);
+		else if(x instanceof AssignmentExpr)
+			return checkAssignmentExpr((AssignmentExpr) x);
+		else if(x instanceof Expression)
+			return checkExpression((Expression) x);
 		else
 			throw new Exception("Internal Error!");
 	}
@@ -443,28 +497,6 @@ public class Semantic
 			throw new Exception("Internal Error!");
 	}
 
-	private Type checkExpression(Expression x) throws Exception
-	{
-		Expression y = x;
-		while (y != null)
-		{
-			check(y.head);
-			y = y.next;
-		}
-
-		y = x;
-		while (y.next != null)
-			y = y.next;
-
-		x.isConst = y.head.isConst;
-		x.value = x.isConst ? y.head.value : null;
-		x.hasInitialized = y.head.hasInitialized;
-		x.type = y.head.type;
-		x.isLvalue = y.head.isLvalue;
-
-		return x.type;
-	}
-
 	private Type checkPostfixExpr(PostfixExpr x) throws Exception
 	{
 		if(x.op == PostfixExpr.Operator.MPAREN)
@@ -473,13 +505,7 @@ public class Semantic
 			Type pt = checkExpression(pe);
 			if(pt instanceof Int || pt instanceof Char)
 			{
-				if(pe.isConst)
-				{
-					int index = ((Integer) pe.value).intValue();
-					if(index < 0)
-						throw new Exception("Index must be non-negative!");
-				}
-
+				// a[-2] is acceptable, no need to check subscript
 				Type et = check(x.expr);
 				if(et instanceof Pointer)
 				{
@@ -505,7 +531,93 @@ public class Semantic
 		}
 		else if(x.op == PostfixExpr.Operator.PAREN)
 		{
-			return null;
+			// currently, function overloading is not supported
+			Type ft = check(x);
+			if(ft instanceof Function)
+			{
+				Function cft = (Function) ft;
+				x.isConst = false;
+				x.isLvalue = false;
+				x.hasInitialized = true;
+				x.type = check((ArgumentList) x.param, cft);
+				return x.type;
+			}
+			else
+				throw new Exception("Only function can be called!");
+		}
+		else if(x.op == PostfixExpr.Operator.DOT)
+		{
+			String p = (String) x.param;
+			Symbol csym = Symbol.getSymbol(p);
+			Type rt = check(x.expr);
+			if(rt instanceof Record)
+			{
+				Record crt = (Record) rt;
+				TypeEntry te = (TypeEntry) crt.comp.get(csym);
+
+				if(te == null)
+					throw new Exception("No item named: " + p + " in record!");
+
+				x.type = te.type;
+				x.isConst = false;
+				x.isLvalue = true;
+				x.hasInitialized = x.expr.hasInitialized;
+				return x.type;
+			}
+			else
+				throw new Exception("Not a record!");
+		}
+		else if(x.op == PostfixExpr.Operator.PTR)
+		{
+			Type rt = check(x.expr);
+			if(rt instanceof Pointer)
+			{
+				Pointer ptr = (Pointer) rt;
+				if(ptr.elem_type instanceof Record)
+				{
+					String p = (String) x.param;
+					Symbol csym = Symbol.getSymbol(p);
+					Record crt = (Record) ptr.elem_type;
+					TypeEntry te = (TypeEntry) crt.comp.get(csym);
+
+					if(crt.comp.get(csym) == null)
+						throw new Exception("No item named: " + p + " in record!");
+
+					x.type = te.type;
+					x.isConst = false;
+					x.isLvalue = true;
+					x.hasInitialized = x.expr.hasInitialized;
+					return x.type;
+				}
+				else
+					throw new Exception("Not a pointer to record!");
+			}
+			else
+				throw new Exception("Not a pointer!");
+		}
+		else if(x.op == PostfixExpr.Operator.INC)
+		{
+			Type pet = check(x.expr);
+			if(!(pet instanceof Pointer || pet instanceof Int || pet instanceof Char))
+				throw new Exception("Can not be post increased!");
+
+			x.isConst = false;
+			x.isLvalue = false;
+			x.hasInitialized = x.expr.hasInitialized;
+			x.type = pet;
+			return x.type;
+		}
+		else if(x.op == PostfixExpr.Operator.DEC)
+		{
+			Type pet = check(x.expr);
+			if(!(pet instanceof Pointer || pet instanceof Int || pet instanceof Char))
+				throw new Exception("Can not be post increased!");
+
+			x.isConst = false;
+			x.isLvalue = false;
+			x.hasInitialized = x.expr.hasInitialized;
+			x.type = pet;
+			return x.type;
 		}
 		else
 			throw new Exception("Internal Error!");
@@ -513,6 +625,246 @@ public class Semantic
 
 	private Type checkUnaryExpr(UnaryExpr x) throws Exception
 	{
-		return null;
+		if(x.op == UnaryExpr.Operator.INC) // ++a
+		{
+			Type xt = check(x.expr);
+			if(!(xt instanceof Int || xt instanceof Char || xt instanceof Pointer))
+				throw new Exception("Can not be increased!");
+
+			x.type = xt;
+			x.hasInitialized = x.expr.hasInitialized;
+			x.isConst = false;
+			x.isLvalue = false;
+			return x.type;
+		}
+		else if(x.op == UnaryExpr.Operator.DEC) // --a
+		{
+			Type xt = check(x.expr);
+			if(!(xt instanceof Int || xt instanceof Char || xt instanceof Pointer))
+				throw new Exception("Can not be increased!");
+
+			x.type = xt;
+			x.hasInitialized = x.expr.hasInitialized;
+			x.isConst = false;
+			x.isLvalue = false;
+			return x.type;
+		}
+		else if(x.op == UnaryExpr.Operator.BIT_AND) // &a
+		{
+			Type xt = check(x.expr);
+			x.hasInitialized = true;
+			x.isConst = true;
+			x.isLvalue = false;
+			x.type = new Pointer(xt);
+			return x.type;
+		}
+		else if(x.op == UnaryExpr.Operator.STAR) // *a
+		{
+			Type xt = check(x.expr);
+			if(xt instanceof Array)
+			{
+				x.type = ((Array) xt).elem_type;
+				x.hasInitialized = x.expr.hasInitialized;
+				x.isConst = (x.type instanceof Array);
+				x.isLvalue = !x.isConst;
+				return x.type;
+			}
+			else if(xt instanceof Pointer)
+			{
+				x.type = ((Pointer) xt).elem_type;
+				x.hasInitialized = x.expr.hasInitialized;
+				x.isConst = false;
+				x.isLvalue = false;
+				return x.type;
+			}
+			else
+				throw new Exception("Only array or pointer can be dereferenced!");
+		}
+		else if(x.op == UnaryExpr.Operator.POSITIVE) // +a
+		{
+			Type xt = check(x.expr);
+			if(xt instanceof Int || xt instanceof Char)
+			{
+				x.type = xt;
+				x.hasInitialized = x.expr.hasInitialized;
+				x.isConst = x.expr.isConst;
+				x.isLvalue = false;
+				return x.type;
+			}
+			else
+				throw new Exception("Can not be converted to be positive!");
+
+		}
+		else if(x.op == UnaryExpr.Operator.NEGATIVE) // -a
+		{
+			Type xt = check(x.expr);
+			if(xt instanceof Int || xt instanceof Char)
+			{
+				x.type = xt;
+				x.hasInitialized = x.expr.hasInitialized;
+				x.isConst = x.expr.isConst;
+				x.isLvalue = false;
+				return x.type;
+			}
+			else
+				throw new Exception("Can not be converted to be negative!");
+		}
+		else if(x.op == UnaryExpr.Operator.BIT_NOT) // ~a
+		{
+			Type xt = check(x.expr);
+			if(xt instanceof Int || xt instanceof Char)
+			{
+				x.type = xt;
+				x.hasInitialized = x.expr.hasInitialized;
+				x.isConst = x.expr.isConst;
+				x.isLvalue = false;
+				return x.type;
+			}
+			else
+				throw new Exception("Can not be negated!");
+		}
+		else if(x.op == UnaryExpr.Operator.NOT) // !a
+		{
+			Type xt = check(x.expr);
+			if(xt instanceof Int || xt instanceof Char)
+			{
+				x.type = xt;
+				x.hasInitialized = x.expr.hasInitialized;
+				x.isConst = x.expr.isConst;
+				x.isLvalue = false;
+				return x.type;
+			}
+			else
+				throw new Exception("Can not be logically reversed!");
+		}
+		else if(x.op == UnaryExpr.Operator.SIZEOF) // sizeof(int) sizeof(a)
+		{
+			if(x.expr != null && x.type_name == null)
+			{
+				x.type = Int.getInstance();
+				x.isConst = true;
+				x.isLvalue = false;
+				x.hasInitialized = true;
+				x.value = (int) 1;
+
+				return x.type;
+			}
+			else if(x.expr == null && x.type_name != null)
+			{
+				Type ct = check(x.expr);
+				x.type = Int.getInstance();
+				x.isConst = true;
+				x.isLvalue = false;
+				x.hasInitialized = true;
+				x.value = ct.size;
+
+				if(x.type_name.star_list.cnt > 0)
+					x.value = 4;
+				else
+				{
+					TypeSpecifier ts = x.type_name.type_specifier;
+					Type tt = check(ts, 0);
+					x.value = tt.size;
+				}
+				return x.type;
+			}
+			else
+				throw new Exception("Internal Error!");
+		}
+		else
+			throw new Exception("Internal Error!");
+	}
+
+	private Type checkCastExpr(CastExpr x) throws Exception
+	{
+		Type tt = check(x.target_type.type_specifier, 0);
+		int n = x.target_type.star_list.cnt;
+		for (int i = 0; i < n; i++)
+			tt = new Pointer(tt);
+
+		Type ot = check(x.expr);
+		if(!ot.canBeCastTo(tt))
+			throw new Exception("Invalid Conversion");
+		
+		x.hasInitialized = x.expr.hasInitialized;
+		x.isConst = x.expr.isConst;
+		x.isLvalue = x.expr.isLvalue;
+		x.type = tt;
+		x.value = x.expr.value;
+		return x.type;
+	}
+
+	private Type checkBinaryExpr(BinaryExpr x) throws Exception
+	{
+		Type lt = check(x.left);
+		Type rt = check(x.right);
+		
+		if(!lt.canOperateWith(x.op, rt))
+			throw new Exception("Incompatible types in BinaryExpr!");
+		
+		x.hasInitialized = (x.left.hasInitialized && x.right.hasInitialized);
+		x.isConst = (x.left.isConst && x.right.isConst);
+		x.isLvalue = false;
+		x.type = rt;
+		return x.type;		
+	}
+
+	private Type checkAssignmentExpr(AssignmentExpr x) throws Exception
+	{
+		Type lt = check(x.left);
+        Type rt = check(x.right);
+        
+        if(!lt.isAssignableWith(rt))
+            throw new Exception("Incompatible assignment!");
+        if(!x.left.isLvalue)
+        	throw new Exception("Left Expr can not be assigned!");
+        
+        if(x.op == AssignmentExpr.Operator.ASSIGN)
+        {
+        	x.type = rt;
+        	x.hasInitialized = x.right.hasInitialized;
+        	x.isConst = false;
+        	x.isLvalue= false;
+        	return x.type;
+        }
+        else
+        {
+            boolean ok=true;
+            if(!(lt instanceof Int) && !(lt instanceof Char))
+                ok=false;
+            if(!(rt instanceof Int) && !(rt instanceof Char))
+                ok=false;
+            
+            if(!ok)
+                throw new Exception("Invalid Assignment!");
+            
+        	x.type = rt;
+        	x.hasInitialized = x.right.hasInitialized;
+        	x.isConst = false;
+        	x.isLvalue= false;
+        	return x.type;
+        }
+	}
+
+	private Type checkExpression(Expression x) throws Exception
+	{
+		Expression y = x;
+		while (y != null)
+		{
+			check(y.head);
+			y = y.next;
+		}
+
+		y = x;
+		while (y.next != null)
+			y = y.next;
+
+		x.isConst = y.head.isConst;
+		x.value = x.isConst ? y.head.value : null;
+		x.hasInitialized = y.head.hasInitialized;
+		x.type = y.head.type;
+		x.isLvalue = y.head.isLvalue;
+
+		return x.type;
 	}
 }

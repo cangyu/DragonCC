@@ -1,5 +1,6 @@
 package compiler.semantic;
 
+import compiler.ast.BinaryExpr.Operator;
 import compiler.ast.TypeSpecifier;
 
 public final class Name extends Type 
@@ -23,10 +24,22 @@ public final class Name extends Type
         else
             return false;
     }
-	
+
 	@Override
-    public boolean isAssignable(Type rhs)
-    {
-        return false;
-    }
+	public boolean isAssignableWith(Type rhs)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean canOperateWith(Operator op, Type t)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean canBeCastTo(Type rhs)
+	{
+		return false;
+	}
 }

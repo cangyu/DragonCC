@@ -9,8 +9,10 @@ public final class Int extends Type
     public static Int getInstance()
     {
         if(instance == null)
+        {
             instance = new Int();
-
+            instance.size = 4;
+        }
         return instance;
     }
 
@@ -36,4 +38,10 @@ public final class Int extends Type
     {
         return (rhs instanceof Int || rhs instanceof Char);
     }
+
+	@Override
+	public boolean canBeCastTo(Type rhs)
+	{
+		return (rhs instanceof Char || rhs instanceof Int || rhs instanceof Pointer);
+	}
 }

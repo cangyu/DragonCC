@@ -3,6 +3,7 @@ package compiler.ast;
 public abstract class ASTNode
 {
 	public String [] ast_rep;
+	public String [] code_rep;
 	
     public abstract void accept(ASTNodeVisitor v);
     

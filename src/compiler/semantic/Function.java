@@ -1,40 +1,39 @@
 package compiler.semantic;
 
-import java.util.LinkedList;
-
 import compiler.ast.BinaryExpr.Operator;
 
 public final class Function extends Type 
 {
-	String name;
-	LinkedList<Type> args;
+	Type arg_type;
 	Type ret_type;
 	
-	public Function(String _name, LinkedList<Type> _args, Type _ret)
+	public Function(Type arg_t, Type ret_t)
 	{
-		name = _name;
-		args = _args;
-		ret_type = _ret;
+		arg_type = arg_t;
+		ret_type = ret_t;
 	}
 
 	@Override
 	public boolean equals(Type rhs)
 	{
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean isAssignableWith(Type rhs)
 	{
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean canOperateWith(Operator op, Type t)
 	{
-		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean canBeCastTo(Type rhs)
+	{
 		return false;
 	}
 }

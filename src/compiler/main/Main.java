@@ -18,6 +18,7 @@ public class Main
 	{
 		String src_path = "test/" + _filename;
 		String ast_filename = "result/" + _filename + "_AST.txt";
+		String prettier_filename = "result/" + _filename + "_PP.c";
 
 		System.out.println("\tParsing...");
 		Program prog = Parse(src_path);
@@ -32,7 +33,19 @@ public class Main
 		ast_out.close();
 		System.out.println("\tOutput at: " + ast_filename);
 		System.out.println("\tBuilding AST Done!");
-
+		
+		/*
+		System.out.println("\tReformating Source Code...");
+		BufferedWriter ppc_out = new BufferedWriter(new FileWriter(prettier_filename));
+		PrettyPrinter pp = new PrettyPrinter();
+		prog.accept(pp);
+		for (String str : prog.code_rep)
+			ppc_out.write(str+"\n");
+		ppc_out.close();
+		System.out.println("\tOutput at: " + prettier_filename);
+		System.out.println("\tReformat Done!");
+		*/
+		
 		System.out.println("\tSemantic Checking...");
 		Semantic sc = new Semantic(prog);
 		sc.check();

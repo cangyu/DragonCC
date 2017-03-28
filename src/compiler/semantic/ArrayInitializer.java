@@ -35,4 +35,10 @@ public class ArrayInitializer extends Type
 		return false;
 	}
 
+	@Override
+	public boolean canBeCastTo(Type rhs)
+	{
+		return false;
+	}
+
 }

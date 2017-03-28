@@ -10,7 +10,7 @@ public class NonInitDeclaration extends ASTNode
         type_specifier = _t;
         declarator_list = _decls;
     }
-
+    
     public void accept(ASTNodeVisitor v)
     {
         v.visit(this);

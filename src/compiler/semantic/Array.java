@@ -82,4 +82,10 @@ public final class Array extends Type
 		else
 			return false;
 	}
+
+	@Override
+	public boolean canBeCastTo(Type rhs)
+	{
+		return (rhs instanceof Pointer);
+	}
 }

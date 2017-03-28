@@ -12,12 +12,7 @@ public final class Struct extends Record
 	@Override
 	public boolean equals(Type rhs)
 	{
-	    if(this == rhs)
-	        return true;
-	    else if(rhs instanceof Struct)
-	        return this.name.intern()==(((Struct)rhs).name).intern();
-	    else
-	        return false;
+		return false;
 	}
 	
 	@Override
@@ -34,4 +29,10 @@ public final class Struct extends Record
     {
         return false;
     }
+
+	@Override
+	public boolean canBeCastTo(Type rhs)
+	{
+		return false;
+	}
 }
