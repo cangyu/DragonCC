@@ -4,7 +4,8 @@ import compiler.ast.BinaryExpr;
 
 public abstract class Type
 {
-	public int size=0;
+	public int size;
+	public boolean complete;
 	
     public abstract boolean equals(Type rhs);
 

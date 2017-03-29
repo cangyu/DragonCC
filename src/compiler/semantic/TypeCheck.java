@@ -1,6 +1,6 @@
 package compiler.semantic;
 
-import java.util.Iterator;
+import java.util.*;
 
 import compiler.ast.*;
 
@@ -301,7 +301,7 @@ public class TypeCheck implements ASTNodeVisitor
 		else if (phase == 2)
 			ts_2pass(x);
 		else if(phase == 3)
-			ts_3pass(x);
+			detect_circuit(x);
 		else
 			panic("Invalid phase number!");
 	}
@@ -539,88 +539,66 @@ public class TypeCheck implements ASTNodeVisitor
 			y = y.next;
 		}
 	}
-
-	private void ts_3pass(TypeSpecifier x) throws Exception
-	{
-		switch (x.type)
-		{
-		case VOID:
-		case INT:
-		case CHAR:
-			break;
-		case STRUCT:
-		case UNION:
-			ts_3pass_record(x);
-			break;
-		default:
-			panic("Internal Error!");
-		}
-	}
-	
-	private void ts_3pass_record(TypeSpecifier x) throws Exception
-	{
-		if(x.comp!=null)
-		{
-			detect_circuit(x);
-		}
-	}
 	
 	private void detect_circuit(TypeSpecifier x) throws Exception
 	{
 		switch(x.type)
 		{
 		case VOID:
-		case INT:
 		case CHAR:
+		case INT:
 			return;
 		default:
 			break;
 		}
 		
-		NonInitDeclarationList y = x.comp;
-		while(y!=null)
-		{
-			if(!all_ptr(y.head.declarator_list))
-				detect_circuit(y.head.type_specifier);
-			
-			y=y.next;
-		}
+		if(x.detail.complete)
+			return;
 		
-		y = x.comp;
-		while(y!=null)
-		{
-			if(!all_ptr(y.head.declarator_list))
-			{
-				switch(y.head.type_specifier.type)
-				{
-				case STRUCT:
-				case UNION:
-					if(!((Record)y.head.type_specifier.detail).complete)
-						panic("Incomplete type detected!");
-					break;
-				default:
-					break;
-				}
-			}
-			y=y.next;
-		}
+		Record crt = (Record)x.detail;
+		detect_circuit(crt);
 		
-		//mark complete
-		((Record)x.detail).complete = true;
+		x.detail.complete = true;
 	}
 	
-	private static boolean all_ptr(DeclaratorList x)
+	private void detect_circuit(Record x) throws Exception
 	{
-		DeclaratorList y = x;
-		while(y!=null)
+		Enumeration<Symbol> es = x.comp.keys();
+		while(es.hasMoreElements())
 		{
-			VarDeclarator vdr = (VarDeclarator)y.head;
-			if(vdr.plain_declarator.star_list.cnt==0)
-				return false;
-				
-			y = y.next;
+			Type te = ((TypeEntry)x.comp.get(es.nextElement())).type;
+			if(te instanceof Pointer)
+				continue;
+			
+			if(te instanceof Array)
+				te = get_base(te);
+			
+			if(te instanceof Record)
+				detect_circuit((Record) te);
 		}
 		
-		return true;
+		es = x.comp.keys();
+		while(es.hasMoreElements())
+		{
+			Type te = ((TypeEntry)x.comp.get(es.nextElement())).type;
+			if(te instanceof Pointer)
+				continue;
+			
+			if(te instanceof Array)
+				te = get_base(te);
+			
+			if(te instanceof Record && !te.complete)
+				panic("Incomplete Record detected!");
+		}
+		
+		x.complete = true;
+	}
+	
+	private static Type get_base(Type x)
+	{
+		if(x instanceof Array)
+			return get_base(((Array)x).elem_type);
+		else
+			return x;
 	}
 }

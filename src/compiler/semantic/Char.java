@@ -12,6 +12,7 @@ public final class Char extends Type
         {
             instance = new Char();
             instance.size = 1;
+            instance.complete = true;
         }
         return instance;
     }

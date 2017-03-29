@@ -12,6 +12,7 @@ public final class Void extends Type
         {
         	instance = new Void();
         	instance.size = 1;
+        	instance.complete = true;
         }
         
         return instance;

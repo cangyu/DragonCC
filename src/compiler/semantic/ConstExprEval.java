@@ -185,8 +185,10 @@ public class ConstExprEval implements ASTNodeVisitor
 		{
 			if (x.param instanceof Expression)
 				((Expression) x.param).accept(this);
-			else
+			
+			if(x.param instanceof ArgumentList)
 				((ArgumentList) x.param).accept(this);
+				
 		}
 
 		x.isConst = false;

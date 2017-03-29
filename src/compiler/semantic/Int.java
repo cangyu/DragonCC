@@ -12,6 +12,7 @@ public final class Int extends Type
         {
             instance = new Int();
             instance.size = 4;
+            instance.complete = true;
         }
         return instance;
     }
