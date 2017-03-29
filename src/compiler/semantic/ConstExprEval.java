@@ -253,8 +253,11 @@ public class ConstExprEval implements ASTNodeVisitor
 	@Override
 	public void visit(CompoundStmt x) throws Exception
 	{
-		x.declaration_list.accept(this);
-		x.stmt_list.accept(this);
+		if(x.declaration_list!=null)
+			x.declaration_list.accept(this);
+		
+		if(x.stmt_list!=null)
+			x.stmt_list.accept(this);
 	}
 
 	@Override
@@ -296,14 +299,17 @@ public class ConstExprEval implements ASTNodeVisitor
 	public void visit(Declaration x) throws Exception
 	{
 		x.type_specifier.accept(this);
-		x.init_declarator_list.accept(this);
+		
+		if(x.init_declarator_list!=null)
+			x.init_declarator_list.accept(this);
 	}
 
 	@Override
 	public void visit(FuncDeclarator x) throws Exception
 	{
 		x.plain_declarator.accept(this);
-		x.param.accept(this);
+		if(x.param!=null)
+			x.param.accept(this);
 	}
 
 	@Override
@@ -341,7 +347,8 @@ public class ConstExprEval implements ASTNodeVisitor
 	public void visit(InitDeclarator x) throws Exception
 	{
 		x.declarator.accept(this);
-		x.initializer.accept(this);
+		if(x.initializer!=null)
+			x.initializer.accept(this);
 	}
 
 	@Override
@@ -411,7 +418,8 @@ public class ConstExprEval implements ASTNodeVisitor
 	{
 		x.type_specifier.accept(this);
 		x.func_name.accept(this);
-		x.params.accept(this);
+		if(x.params!=null)
+			x.params.accept(this);
 		x.comp_stmt.accept(this);
 	}
 
@@ -441,6 +449,7 @@ public class ConstExprEval implements ASTNodeVisitor
 	public void visit(TypeName x) throws Exception
 	{
 		x.type_specifier.accept(this);
+		x.star_list.accept(this);
 	}
 
 	@Override
@@ -450,7 +459,8 @@ public class ConstExprEval implements ASTNodeVisitor
 		{
 		case STRUCT:
 		case UNION:
-			x.comp.accept(this);
+			if(x.comp!=null)
+				x.comp.accept(this);
 			break;
 		default:
 			break;
