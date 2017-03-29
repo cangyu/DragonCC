@@ -35,4 +35,11 @@ public final class Struct extends Record
 	{
 		return false;
 	}
+
+	@Override
+	public int getSize()
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

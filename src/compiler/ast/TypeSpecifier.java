@@ -7,6 +7,7 @@ public class TypeSpecifier extends ASTNode
 	public Type type;
 	public String tag;
 	public NonInitDeclarationList comp;
+	public compiler.semantic.Type detail;
 	
 	public TypeSpecifier(Type _t, String _tag, NonInitDeclarationList _c)
 	{
