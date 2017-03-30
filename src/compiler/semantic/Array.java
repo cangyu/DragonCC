@@ -1,8 +1,7 @@
 package compiler.semantic;
 
 import java.util.Iterator;
-
-import compiler.ast.BinaryExpr;
+import compiler.ast.BinaryExpr.Operator;
 
 //not inherit from pointer, as pointer can 
 //change where it points to, but array can not
@@ -53,34 +52,24 @@ public final class Array extends Type
 	}
 
 	@Override
-	public boolean canOperateWith(BinaryExpr.Operator _op, Type _t)
+	public boolean canOperateWith(Operator op, Type t)
 	{
-		if(_op == BinaryExpr.Operator.PLUS)
+		switch(op)
 		{
-			if(_t instanceof Int)
-				return true;
-			else
-				return false;
-		}
-		else if(_op == BinaryExpr.Operator.MINUS)
-		{
-			if(_t instanceof Array)
-				return true;
-			else if(_t instanceof Int)
-				return true;
-			else
-				return false;
-		}
-		else if(_op == BinaryExpr.Operator.EQ || _op == BinaryExpr.Operator.NE || _op == BinaryExpr.Operator.LE
-				|| _op == BinaryExpr.Operator.LT || _op == BinaryExpr.Operator.GE || _op == BinaryExpr.Operator.GT)
-		{
-			if(_t instanceof Array || _t instanceof Pointer)
-				return true;
-			else
-				return false;
-		}
-		else
+		case PLUS:
+			return (t instanceof Int || t instanceof Char);
+		case MINUS:
+			return (t instanceof Int || t instanceof Char || t instanceof Array || t instanceof Pointer);
+		case EQ:
+		case NE:
+		case LE:
+		case LT:
+		case GE:
+		case GT:
+			return (t instanceof Array || t instanceof Pointer);
+		default:
 			return false;
+		}
 	}
 
 	@Override
