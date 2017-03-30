@@ -4,9 +4,8 @@ import java.util.*;
 import compiler.ast.*;
 
 public class ConstExprEval implements ASTNodeVisitor
-{
-
-	private void panic(String msg) throws Exception
+{	
+	public static void panic(String msg) throws Exception
 	{
 		throw new Exception(msg);
 	}

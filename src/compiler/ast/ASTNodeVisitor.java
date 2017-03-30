@@ -1,7 +1,7 @@
 package compiler.ast;
 
 public interface ASTNodeVisitor
-{
+{	
     /* Expr */
     public abstract void visit(Expression x) throws Exception;
     public abstract void visit(AssignmentExpr x) throws Exception;

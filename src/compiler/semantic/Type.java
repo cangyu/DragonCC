@@ -6,6 +6,7 @@ public abstract class Type
 {
 	public int size;
 	public boolean complete;
+	public boolean visited;
 	
     public abstract boolean equals(Type rhs);
 

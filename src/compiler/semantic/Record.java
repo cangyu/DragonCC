@@ -11,6 +11,7 @@ public abstract class Record extends Type
 		comp = _c;
 		size = 0;
 		complete = false;
+		visited = false;
 	}
 	
 	public abstract int getSize();

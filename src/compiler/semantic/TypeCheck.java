@@ -9,15 +9,15 @@ public class TypeCheck implements ASTNodeVisitor
 	public int phase;
 	public Table rte;
 
+	public static void panic(String msg) throws Exception
+	{
+		throw new Exception(msg);
+	}
+	
 	public TypeCheck(Table _te)
 	{
 		phase = 0;
 		rte = _te;
-	}
-
-	private void panic(String msg) throws Exception
-	{
-		throw new Exception(msg);
 	}
 
 	@Override
@@ -301,7 +301,7 @@ public class TypeCheck implements ASTNodeVisitor
 		else if (phase == 2)
 			ts_2pass(x);
 		else if(phase == 3)
-			detect_circuit(x);
+			ts_3pass(x);
 		else
 			panic("Invalid phase number!");
 	}
@@ -540,7 +540,7 @@ public class TypeCheck implements ASTNodeVisitor
 		}
 	}
 	
-	private void detect_circuit(TypeSpecifier x) throws Exception
+	private void ts_3pass(TypeSpecifier x) throws Exception
 	{
 		switch(x.type)
 		{
@@ -563,6 +563,11 @@ public class TypeCheck implements ASTNodeVisitor
 	
 	private void detect_circuit(Record x) throws Exception
 	{
+		if(x.visited)
+			panic("Incomplete record type detected!");
+		else
+			x.visited = true;
+		
 		Enumeration<Symbol> es = x.comp.keys();
 		while(es.hasMoreElements())
 		{
