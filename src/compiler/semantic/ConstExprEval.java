@@ -4,12 +4,12 @@ import java.util.*;
 import compiler.ast.*;
 
 public class ConstExprEval implements ASTNodeVisitor
-{	
+{
 	public static void panic(String msg) throws Exception
 	{
 		throw new Exception(msg);
 	}
-	
+
 	@Override
 	public void visit(Expression x) throws Exception
 	{
@@ -26,7 +26,7 @@ public class ConstExprEval implements ASTNodeVisitor
 	{
 		x.left.accept(this);
 		x.right.accept(this);
-		
+
 		x.isConst = false;
 		x.value = null;
 		x.hasInitialized = false;
@@ -51,61 +51,61 @@ public class ConstExprEval implements ASTNodeVisitor
 			switch (x.op)
 			{
 			case BIT_AND:
-				x.value=((int)x.left.value) & ((int)x.right.value);
+				x.value = ((int) x.left.value) & ((int) x.right.value);
 				break;
 			case BIT_XOR:
-				x.value=((int)x.left.value) ^ ((int)x.right.value);
+				x.value = ((int) x.left.value) ^ ((int) x.right.value);
 				break;
 			case BIT_OR:
-				x.value=((int)x.left.value) | ((int)x.right.value);
+				x.value = ((int) x.left.value) | ((int) x.right.value);
 				break;
 			case AND:
-				x.value=(((int)x.left.value)!=0 && ((int)x.right.value)!=0) ? 1 : 0;
+				x.value = (((int) x.left.value) != 0 && ((int) x.right.value) != 0) ? 1 : 0;
 				break;
 			case OR:
-				x.value=(((int)x.left.value)!=0 || ((int)x.right.value)!=0) ? 1 : 0;
+				x.value = (((int) x.left.value) != 0 || ((int) x.right.value) != 0) ? 1 : 0;
 				break;
 			case EQ:
-				x.value=(((int)x.left.value) == ((int)x.right.value)) ? 1 : 0;
+				x.value = (((int) x.left.value) == ((int) x.right.value)) ? 1 : 0;
 				break;
 			case NE:
-				x.value=(((int)x.left.value) != ((int)x.right.value)) ? 1 : 0;
+				x.value = (((int) x.left.value) != ((int) x.right.value)) ? 1 : 0;
 				break;
 			case LT:
-				x.value=(((int)x.left.value) < ((int)x.right.value)) ? 1 : 0;
+				x.value = (((int) x.left.value) < ((int) x.right.value)) ? 1 : 0;
 				break;
 			case GT:
-				x.value=(((int)x.left.value) > ((int)x.right.value)) ? 1 : 0;
+				x.value = (((int) x.left.value) > ((int) x.right.value)) ? 1 : 0;
 				break;
 			case LE:
-				x.value=(((int)x.left.value) <= ((int)x.right.value)) ? 1 : 0;
+				x.value = (((int) x.left.value) <= ((int) x.right.value)) ? 1 : 0;
 				break;
 			case GE:
-				x.value=(((int)x.left.value) >= ((int)x.right.value)) ? 1 : 0;
+				x.value = (((int) x.left.value) >= ((int) x.right.value)) ? 1 : 0;
 				break;
 			case SHL:
-				x.value=((int)x.left.value)<<((int)x.right.value);
+				x.value = ((int) x.left.value) << ((int) x.right.value);
 				break;
 			case SHR:
-				x.value=((int)x.left.value)>>((int)x.right.value);
+				x.value = ((int) x.left.value) >> ((int) x.right.value);
 				break;
 			case PLUS:
-				x.value=((int)x.left.value)+((int)x.right.value);
+				x.value = ((int) x.left.value) + ((int) x.right.value);
 				break;
 			case MINUS:
-				x.value=((int)x.left.value)-((int)x.right.value);
+				x.value = ((int) x.left.value) - ((int) x.right.value);
 				break;
 			case TIMES:
-				x.value=((int)x.left.value)*((int)x.right.value);
+				x.value = ((int) x.left.value) * ((int) x.right.value);
 				break;
 			case DIVIDE:
-				if((int)x.right.value == 0)
+				if ((int) x.right.value == 0)
 					panic("Dividend shall not be zero!");
 				else
-					x.value=((int)x.left.value)/((int)x.right.value);
+					x.value = ((int) x.left.value) / ((int) x.right.value);
 				break;
 			case MODULE:
-				x.value=((int)x.left.value)%((int)x.right.value);
+				x.value = ((int) x.left.value) % ((int) x.right.value);
 				break;
 			}
 		}
@@ -184,10 +184,10 @@ public class ConstExprEval implements ASTNodeVisitor
 		{
 			if (x.param instanceof Expression)
 				((Expression) x.param).accept(this);
-			
-			if(x.param instanceof ArgumentList)
+
+			if (x.param instanceof ArgumentList)
 				((ArgumentList) x.param).accept(this);
-				
+
 		}
 
 		x.isConst = false;
@@ -254,10 +254,10 @@ public class ConstExprEval implements ASTNodeVisitor
 	@Override
 	public void visit(CompoundStmt x) throws Exception
 	{
-		if(x.declaration_list!=null)
+		if (x.declaration_list != null)
 			x.declaration_list.accept(this);
-		
-		if(x.stmt_list!=null)
+
+		if (x.stmt_list != null)
 			x.stmt_list.accept(this);
 	}
 
@@ -300,8 +300,8 @@ public class ConstExprEval implements ASTNodeVisitor
 	public void visit(Declaration x) throws Exception
 	{
 		x.type_specifier.accept(this);
-		
-		if(x.init_declarator_list!=null)
+
+		if (x.init_declarator_list != null)
 			x.init_declarator_list.accept(this);
 	}
 
@@ -309,7 +309,7 @@ public class ConstExprEval implements ASTNodeVisitor
 	public void visit(FuncDeclarator x) throws Exception
 	{
 		x.plain_declarator.accept(this);
-		if(x.param!=null)
+		if (x.param != null)
 			x.param.accept(this);
 	}
 
@@ -348,7 +348,7 @@ public class ConstExprEval implements ASTNodeVisitor
 	public void visit(InitDeclarator x) throws Exception
 	{
 		x.declarator.accept(this);
-		if(x.initializer!=null)
+		if (x.initializer != null)
 			x.initializer.accept(this);
 	}
 
@@ -419,7 +419,7 @@ public class ConstExprEval implements ASTNodeVisitor
 	{
 		x.type_specifier.accept(this);
 		x.func_name.accept(this);
-		if(x.params!=null)
+		if (x.params != null)
 			x.params.accept(this);
 		x.comp_stmt.accept(this);
 	}
@@ -460,7 +460,7 @@ public class ConstExprEval implements ASTNodeVisitor
 		{
 		case STRUCT:
 		case UNION:
-			if(x.comp!=null)
+			if (x.comp != null)
 				x.comp.accept(this);
 			break;
 		default:
