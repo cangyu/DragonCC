@@ -1,3 +1,4 @@
 /bin
 /result/*.txt
 /test/*.c
+*.exe

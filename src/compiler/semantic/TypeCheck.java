@@ -1,7 +1,6 @@
 package compiler.semantic;
 
 import java.util.*;
-
 import compiler.ast.*;
 
 public class TypeCheck implements ASTNodeVisitor

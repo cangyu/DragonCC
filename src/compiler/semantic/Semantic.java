@@ -23,9 +23,9 @@ public class Semantic
 		prog_start.accept(cee);
 
 		// type checking
-		//1pass: put all record into tag_env
-		//2pass: decorate all Struct/Union on AST
-		//3pass: detect recursive definition
+		// 1pass: put all record into tag_env
+		// 2pass: decorate all Struct/Union on AST
+		// 3pass: detect recursive definition
 		TypeCheck tckr = new TypeCheck(tag_env);
 		for (int i = 1; i <= 3; i++)
 		{
@@ -33,8 +33,8 @@ public class Semantic
 			prog_start.accept(tckr);
 		}
 
-		//check expr & stmt
-		//check(prog_start);
+		// check expr & stmt
+		check(prog_start);
 	}
 
 	private void check(Program x) throws Exception
@@ -42,7 +42,7 @@ public class Semantic
 		Program y = x;
 		while (y != null)
 		{
-			if (y.head instanceof Declaration)
+			if(y.head instanceof Declaration)
 				check((Declaration) y.head);
 			else
 				check((FuncDef) y.head);
@@ -55,24 +55,24 @@ public class Semantic
 	{
 		TypeSpecifier.Type ct = x.type;
 
-		if (ct == TypeSpecifier.Type.VOID)
+		if(ct == TypeSpecifier.Type.VOID)
 			return Void.getInstance();
-		else if (ct == TypeSpecifier.Type.INT)
+		else if(ct == TypeSpecifier.Type.INT)
 			return Int.getInstance();
-		else if (ct == TypeSpecifier.Type.CHAR)
+		else if(ct == TypeSpecifier.Type.CHAR)
 			return Char.getInstance();
-		else if (ct == TypeSpecifier.Type.STRUCT)
+		else if(ct == TypeSpecifier.Type.STRUCT)
 		{
-			if (x.comp == null)
+			if(x.comp == null)
 			{
-				if (flag == 0) // struct node;
+				if(flag == 0) // struct node;
 				{
 					Symbol ss = Symbol.getSymbol(x.tag);
 					Entry ce = (Entry) tag_env.get(ss);
 
-					if (ce != null)
+					if(ce != null)
 					{
-						if (ce.type instanceof Struct)
+						if(ce.type instanceof Struct)
 							return ce.type;
 						else
 							throw new Exception(x.tag + " is not defined as struct!");
@@ -84,14 +84,14 @@ public class Semantic
 						return ret;
 					}
 				}
-				else if (flag == 1) // struct node a;
+				else if(flag == 1) // struct node a;
 				{
 					Symbol ss = Symbol.getSymbol(x.tag);
 					Entry ce = (Entry) tag_env.get(ss);
 
-					if (ce != null)
+					if(ce != null)
 					{
-						if (ce.type instanceof Struct)
+						if(ce.type instanceof Struct)
 							return ce.type;
 						else
 							throw new Exception(x.tag + " is not defined as struct!");
@@ -99,14 +99,14 @@ public class Semantic
 					else
 						throw new Exception("struct " + x.tag + " is undefined!");
 				}
-				else if (flag == 2) // struct node *a;
+				else if(flag == 2) // struct node *a;
 				{
 					Symbol ss = Symbol.getSymbol(x.tag);
 					Entry ce = (Entry) tag_env.get(ss);
 
-					if (ce != null)
+					if(ce != null)
 					{
-						if (ce.type instanceof Struct)
+						if(ce.type instanceof Struct)
 							return ce.type;
 						else
 							throw new Exception(x.tag + " is not defined as struct!");
@@ -122,7 +122,7 @@ public class Semantic
 			}
 			else
 			{
-				if (x.tag == null) // struct { ... }
+				if(x.tag == null) // struct { ... }
 				{
 					Table ccomp = new Table();
 					check(x.comp, ccomp);
@@ -134,12 +134,12 @@ public class Semantic
 					Entry ce = (Entry) tag_env.get(csym);
 					Table ccomp = null;
 
-					if (ce != null) // may be declared before
+					if(ce != null) // may be declared before
 					{
-						if (ce.type instanceof Struct)
+						if(ce.type instanceof Struct)
 						{
 							Struct cst = (Struct) ce.type;
-							if (cst.comp != null)
+							if(cst.comp != null)
 								throw new Exception("struct " + x.tag + " has already been defined!");
 							else
 							{
@@ -162,7 +162,7 @@ public class Semantic
 				}
 			}
 		}
-		else if (ct == TypeSpecifier.Type.UNION)
+		else if(ct == TypeSpecifier.Type.UNION)
 		{
 			// TODO
 			return null;
@@ -181,14 +181,14 @@ public class Semantic
 			DeclaratorList w = z.declarator_list;
 			while (w != null)
 			{
-				if (w.head instanceof VarDeclarator)
+				if(w.head instanceof VarDeclarator)
 				{
 					VarDeclarator vdr = (VarDeclarator) w.head;
 
 					String vdrr = vdr.plain_declarator.identifier;
 					int sc = vdr.plain_declarator.star_list.cnt;
 					Symbol csym = Symbol.getSymbol(vdrr);
-					if (ccomp.get(csym) != null)
+					if(ccomp.get(csym) != null)
 						throw new Exception(vdrr + " has already been defined in this scope!");
 
 					Type def_type = sc == 0 ? check(cts, 1) : check(cts, 2);
@@ -217,7 +217,7 @@ public class Semantic
 		for (int i = 0; i < sc; i++)
 			ret = new Pointer(ret);
 
-		if (flag == 0 && ret instanceof Void)
+		if(flag == 0 && ret instanceof Void)
 			throw new Exception("Variable: " + x.identifier + " can not be declared as void");
 
 		return ret;
@@ -227,7 +227,7 @@ public class Semantic
 	{
 		InitDeclaratorList y = x.init_declarator_list;
 
-		if (y == null) // TypeSpecifier;
+		if(y == null) // TypeSpecifier;
 		{
 			switch (x.type_specifier.type)
 			{
@@ -251,28 +251,28 @@ public class Semantic
 				Declarator p = z.declarator;
 				Initializer q = z.initializer;
 
-				if (p instanceof VarDeclarator)
+				if(p instanceof VarDeclarator)
 				{
 					VarDeclarator vp = (VarDeclarator) p;
 					Type real_type = check(vp, x.type_specifier);
 
-					if (q != null)
+					if(q != null)
 					{
 						Type init_type = check(q);
-						if (!real_type.isAssignableWith(init_type))
+						if(!real_type.isAssignableWith(init_type))
 							throw new Exception("Failed to initialize variable: " + vp.plain_declarator.identifier);
 					}
 
 					String cvn = vp.plain_declarator.identifier;
 					Symbol csym = Symbol.getSymbol(cvn);
-					if (env.get(csym) != null)
+					if(env.get(csym) != null)
 						throw new Exception("Variable: " + cvn + " has been defined before!");
 
 					env.put(csym, new VarEntry(real_type, q != null));
 				}
-				else if (p instanceof FuncDeclarator)
+				else if(p instanceof FuncDeclarator)
 				{
-					if (q != null)
+					if(q != null)
 						throw new Exception("Can not initialize a function!");
 
 					FuncDeclarator fp = (FuncDeclarator) p;
@@ -283,7 +283,7 @@ public class Semantic
 					// TODO
 					// check params
 
-					if (env.get(csym) == null)
+					if(env.get(csym) == null)
 					{
 
 					}
@@ -319,17 +319,17 @@ public class Semantic
 			Expr e = eit.next();
 			check(e);
 
-			if (e.isConst)
+			if(e.isConst)
 			{
 				int curdim = 0;
-				if (e.value instanceof Integer)
+				if(e.value instanceof Integer)
 					curdim = ((Integer) e.value).intValue();
-				else if (e.value instanceof Character)
+				else if(e.value instanceof Character)
 					curdim = (int) ((Character) e.value).charValue();
 				else
 					throw new Exception("The constant for a dimension must be an integer or a character!");
 
-				if (curdim < 0)
+				if(curdim < 0)
 					throw new Exception("Dimension must be Non-negative!");
 				else
 					real_type = new Array(curdim, real_type);
@@ -343,15 +343,15 @@ public class Semantic
 
 	private Type check(Initializer x) throws Exception
 	{
-		if (x.expr != null && x.initializer_list == null)
+		if(x.expr != null && x.initializer_list == null)
 		{
 			Type ct = check(x.expr);
-			if (!x.expr.hasInitialized)
+			if(!x.expr.hasInitialized)
 				throw new Exception("Unintialized expr can not be used as an intializer!");
 			else
 				return ct;
 		}
-		else if (x.expr == null && x.initializer_list != null)
+		else if(x.expr == null && x.initializer_list != null)
 		{
 			ArrayInitializer ret = new ArrayInitializer();
 
@@ -364,7 +364,7 @@ public class Semantic
 				y = y.next;
 
 				Type ct = check(y.head);
-				if (ct.equals(et) != true)
+				if(ct.equals(et) != true)
 					throw new Exception("Types in an initializer list must be identical to each other!");
 
 				ret.add(ct);
@@ -397,18 +397,18 @@ public class Semantic
 		Function z = f;
 		while (z != null)
 		{
-			if (z.arg_type != null)
+			if(z.arg_type != null)
 				++cnt;
 
-			if (z.ret_type instanceof Function)
+			if(z.ret_type instanceof Function)
 				z = (Function) z.ret_type;
 			else
 				break;
 		}
 
-		if (cnt < ats.size())
+		if(cnt < ats.size())
 			throw new Exception("Too many arguments in function call!");
-		if (ats.size() == 0 && cnt > 0)
+		if(ats.size() == 0 && cnt > 0)
 			throw new Exception("Should provide at least 1 argument!");
 
 		Type ret = f.ret_type;
@@ -419,7 +419,7 @@ public class Semantic
 			Type cat = it.next();
 			ret = z.ret_type;
 
-			if (cat.equals(z.arg_type))
+			if(cat.equals(z.arg_type))
 				z = (Function) z.ret_type;
 			else
 				throw new Exception("Argument type does not match!");
@@ -430,19 +430,19 @@ public class Semantic
 
 	private Type check(Expr x) throws Exception
 	{
-		if (x instanceof PrimaryExpr)
+		if(x instanceof PrimaryExpr)
 			return checkPrimaryExpr((PrimaryExpr) x);
-		else if (x instanceof PostfixExpr)
+		else if(x instanceof PostfixExpr)
 			return checkPostfixExpr((PostfixExpr) x);
-		else if (x instanceof UnaryExpr)
+		else if(x instanceof UnaryExpr)
 			return checkUnaryExpr((UnaryExpr) x);
-		else if (x instanceof CastExpr)
+		else if(x instanceof CastExpr)
 			return checkCastExpr((CastExpr) x);
-		else if (x instanceof BinaryExpr)
+		else if(x instanceof BinaryExpr)
 			return checkBinaryExpr((BinaryExpr) x);
-		else if (x instanceof AssignmentExpr)
+		else if(x instanceof AssignmentExpr)
 			return checkAssignmentExpr((AssignmentExpr) x);
-		else if (x instanceof Expression)
+		else if(x instanceof Expression)
 			return checkExpression((Expression) x);
 		else
 			throw new Exception("Internal Error!");
@@ -450,20 +450,20 @@ public class Semantic
 
 	private Type checkPrimaryExpr(PrimaryExpr x) throws Exception
 	{
-		if (x.elem_type == PrimaryExpr.ElemType.ID)
+		if(x.elem_type == PrimaryExpr.ElemType.ID)
 		{
 			String vn = (String) x.elem;
 			Entry ve = (Entry) env.get(Symbol.getSymbol(vn));
-			if (ve != null)
+			if(ve != null)
 			{
-				if (ve instanceof VarEntry)
+				if(ve instanceof VarEntry)
 				{
 					x.isConst = false;
 					x.hasInitialized = ((VarEntry) ve).hasInitialized;
 					x.type = ve.type;
 					x.isLvalue = ve.isLvalue;
 				}
-				else if (ve instanceof FuncEntry)
+				else if(ve instanceof FuncEntry)
 				{
 					x.isConst = true;
 					x.hasInitialized = true;
@@ -478,7 +478,7 @@ public class Semantic
 			else
 				throw new Exception("Can not use identifier: " + vn + " before declaration!");
 		}
-		else if (x.elem_type == PrimaryExpr.ElemType.STRING)
+		else if(x.elem_type == PrimaryExpr.ElemType.STRING)
 		{
 			x.isConst = true;
 			x.value = (String) x.elem;
@@ -488,7 +488,7 @@ public class Semantic
 
 			return x.type;
 		}
-		else if (x.elem_type == PrimaryExpr.ElemType.CHAR)
+		else if(x.elem_type == PrimaryExpr.ElemType.CHAR)
 		{
 			x.isConst = true;
 			x.value = (Character) x.elem;
@@ -498,7 +498,7 @@ public class Semantic
 
 			return x.type;
 		}
-		else if (x.elem_type == PrimaryExpr.ElemType.INT)
+		else if(x.elem_type == PrimaryExpr.ElemType.INT)
 		{
 			x.isConst = true;
 			x.value = (Integer) x.elem;
@@ -514,15 +514,15 @@ public class Semantic
 
 	private Type checkPostfixExpr(PostfixExpr x) throws Exception
 	{
-		if (x.op == PostfixExpr.Operator.MPAREN)
+		if(x.op == PostfixExpr.Operator.MPAREN)
 		{
 			Expression pe = (Expression) x.param;
 			Type pt = checkExpression(pe);
-			if (pt instanceof Int || pt instanceof Char)
+			if(pt instanceof Int || pt instanceof Char)
 			{
 				// a[-2] is acceptable, no need to check subscript
 				Type et = check(x.expr);
-				if (et instanceof Pointer)
+				if(et instanceof Pointer)
 				{
 					x.isConst = false;
 					x.isLvalue = true;
@@ -530,7 +530,7 @@ public class Semantic
 					x.hasInitialized = x.expr.hasInitialized;
 					return x.type;
 				}
-				else if (et instanceof Array)
+				else if(et instanceof Array)
 				{
 					x.isConst = false;
 					x.isLvalue = true;
@@ -544,11 +544,11 @@ public class Semantic
 			else
 				throw new Exception("Invalid index type!");
 		}
-		else if (x.op == PostfixExpr.Operator.PAREN)
+		else if(x.op == PostfixExpr.Operator.PAREN)
 		{
 			// currently, function overloading is not supported
 			Type ft = check(x);
-			if (ft instanceof Function)
+			if(ft instanceof Function)
 			{
 				Function cft = (Function) ft;
 				x.isConst = false;
@@ -560,17 +560,17 @@ public class Semantic
 			else
 				throw new Exception("Only function can be called!");
 		}
-		else if (x.op == PostfixExpr.Operator.DOT)
+		else if(x.op == PostfixExpr.Operator.DOT)
 		{
 			String p = (String) x.param;
 			Symbol csym = Symbol.getSymbol(p);
 			Type rt = check(x.expr);
-			if (rt instanceof Record)
+			if(rt instanceof Record)
 			{
 				Record crt = (Record) rt;
 				TypeEntry te = (TypeEntry) crt.comp.get(csym);
 
-				if (te == null)
+				if(te == null)
 					throw new Exception("No item named: " + p + " in record!");
 
 				x.type = te.type;
@@ -582,20 +582,20 @@ public class Semantic
 			else
 				throw new Exception("Not a record!");
 		}
-		else if (x.op == PostfixExpr.Operator.PTR)
+		else if(x.op == PostfixExpr.Operator.PTR)
 		{
 			Type rt = check(x.expr);
-			if (rt instanceof Pointer)
+			if(rt instanceof Pointer)
 			{
 				Pointer ptr = (Pointer) rt;
-				if (ptr.elem_type instanceof Record)
+				if(ptr.elem_type instanceof Record)
 				{
 					String p = (String) x.param;
 					Symbol csym = Symbol.getSymbol(p);
 					Record crt = (Record) ptr.elem_type;
 					TypeEntry te = (TypeEntry) crt.comp.get(csym);
 
-					if (crt.comp.get(csym) == null)
+					if(crt.comp.get(csym) == null)
 						throw new Exception("No item named: " + p + " in record!");
 
 					x.type = te.type;
@@ -610,10 +610,10 @@ public class Semantic
 			else
 				throw new Exception("Not a pointer!");
 		}
-		else if (x.op == PostfixExpr.Operator.INC)
+		else if(x.op == PostfixExpr.Operator.INC)
 		{
 			Type pet = check(x.expr);
-			if (!(pet instanceof Pointer || pet instanceof Int || pet instanceof Char))
+			if(!(pet instanceof Pointer || pet instanceof Int || pet instanceof Char))
 				throw new Exception("Can not be post increased!");
 
 			x.isConst = false;
@@ -622,10 +622,10 @@ public class Semantic
 			x.type = pet;
 			return x.type;
 		}
-		else if (x.op == PostfixExpr.Operator.DEC)
+		else if(x.op == PostfixExpr.Operator.DEC)
 		{
 			Type pet = check(x.expr);
-			if (!(pet instanceof Pointer || pet instanceof Int || pet instanceof Char))
+			if(!(pet instanceof Pointer || pet instanceof Int || pet instanceof Char))
 				throw new Exception("Can not be post increased!");
 
 			x.isConst = false;
@@ -640,10 +640,10 @@ public class Semantic
 
 	private Type checkUnaryExpr(UnaryExpr x) throws Exception
 	{
-		if (x.op == UnaryExpr.Operator.INC) // ++a
+		if(x.op == UnaryExpr.Operator.INC) // ++a
 		{
 			Type xt = check(x.expr);
-			if (!(xt instanceof Int || xt instanceof Char || xt instanceof Pointer))
+			if(!(xt instanceof Int || xt instanceof Char || xt instanceof Pointer))
 				throw new Exception("Can not be increased!");
 
 			x.type = xt;
@@ -652,10 +652,10 @@ public class Semantic
 			x.isLvalue = false;
 			return x.type;
 		}
-		else if (x.op == UnaryExpr.Operator.DEC) // --a
+		else if(x.op == UnaryExpr.Operator.DEC) // --a
 		{
 			Type xt = check(x.expr);
-			if (!(xt instanceof Int || xt instanceof Char || xt instanceof Pointer))
+			if(!(xt instanceof Int || xt instanceof Char || xt instanceof Pointer))
 				throw new Exception("Can not be increased!");
 
 			x.type = xt;
@@ -664,7 +664,7 @@ public class Semantic
 			x.isLvalue = false;
 			return x.type;
 		}
-		else if (x.op == UnaryExpr.Operator.BIT_AND) // &a
+		else if(x.op == UnaryExpr.Operator.BIT_AND) // &a
 		{
 			Type xt = check(x.expr);
 			x.hasInitialized = true;
@@ -673,10 +673,10 @@ public class Semantic
 			x.type = new Pointer(xt);
 			return x.type;
 		}
-		else if (x.op == UnaryExpr.Operator.STAR) // *a
+		else if(x.op == UnaryExpr.Operator.STAR) // *a
 		{
 			Type xt = check(x.expr);
-			if (xt instanceof Array)
+			if(xt instanceof Array)
 			{
 				x.type = ((Array) xt).elem_type;
 				x.hasInitialized = x.expr.hasInitialized;
@@ -684,7 +684,7 @@ public class Semantic
 				x.isLvalue = !x.isConst;
 				return x.type;
 			}
-			else if (xt instanceof Pointer)
+			else if(xt instanceof Pointer)
 			{
 				x.type = ((Pointer) xt).elem_type;
 				x.hasInitialized = x.expr.hasInitialized;
@@ -695,10 +695,10 @@ public class Semantic
 			else
 				throw new Exception("Only array or pointer can be dereferenced!");
 		}
-		else if (x.op == UnaryExpr.Operator.POSITIVE) // +a
+		else if(x.op == UnaryExpr.Operator.POSITIVE) // +a
 		{
 			Type xt = check(x.expr);
-			if (xt instanceof Int || xt instanceof Char)
+			if(xt instanceof Int || xt instanceof Char)
 			{
 				x.type = xt;
 				x.hasInitialized = x.expr.hasInitialized;
@@ -710,10 +710,10 @@ public class Semantic
 				throw new Exception("Can not be converted to be positive!");
 
 		}
-		else if (x.op == UnaryExpr.Operator.NEGATIVE) // -a
+		else if(x.op == UnaryExpr.Operator.NEGATIVE) // -a
 		{
 			Type xt = check(x.expr);
-			if (xt instanceof Int || xt instanceof Char)
+			if(xt instanceof Int || xt instanceof Char)
 			{
 				x.type = xt;
 				x.hasInitialized = x.expr.hasInitialized;
@@ -724,10 +724,10 @@ public class Semantic
 			else
 				throw new Exception("Can not be converted to be negative!");
 		}
-		else if (x.op == UnaryExpr.Operator.BIT_NOT) // ~a
+		else if(x.op == UnaryExpr.Operator.BIT_NOT) // ~a
 		{
 			Type xt = check(x.expr);
-			if (xt instanceof Int || xt instanceof Char)
+			if(xt instanceof Int || xt instanceof Char)
 			{
 				x.type = xt;
 				x.hasInitialized = x.expr.hasInitialized;
@@ -738,10 +738,10 @@ public class Semantic
 			else
 				throw new Exception("Can not be negated!");
 		}
-		else if (x.op == UnaryExpr.Operator.NOT) // !a
+		else if(x.op == UnaryExpr.Operator.NOT) // !a
 		{
 			Type xt = check(x.expr);
-			if (xt instanceof Int || xt instanceof Char)
+			if(xt instanceof Int || xt instanceof Char)
 			{
 				x.type = xt;
 				x.hasInitialized = x.expr.hasInitialized;
@@ -752,9 +752,9 @@ public class Semantic
 			else
 				throw new Exception("Can not be logically reversed!");
 		}
-		else if (x.op == UnaryExpr.Operator.SIZEOF) // sizeof(int) sizeof(a)
+		else if(x.op == UnaryExpr.Operator.SIZEOF) // sizeof(int) sizeof(a)
 		{
-			if (x.expr != null && x.type_name == null)
+			if(x.expr != null && x.type_name == null)
 			{
 				x.type = Int.getInstance();
 				x.isConst = true;
@@ -764,7 +764,7 @@ public class Semantic
 
 				return x.type;
 			}
-			else if (x.expr == null && x.type_name != null)
+			else if(x.expr == null && x.type_name != null)
 			{
 				Type ct = check(x.expr);
 				x.type = Int.getInstance();
@@ -773,7 +773,7 @@ public class Semantic
 				x.hasInitialized = true;
 				x.value = ct.size;
 
-				if (x.type_name.star_list.cnt > 0)
+				if(x.type_name.star_list.cnt > 0)
 					x.value = 4;
 				else
 				{
@@ -798,7 +798,7 @@ public class Semantic
 			tt = new Pointer(tt);
 
 		Type ot = check(x.expr);
-		if (!ot.canBeCastTo(tt))
+		if(!ot.canBeCastTo(tt))
 			throw new Exception("Invalid Conversion");
 
 		x.hasInitialized = x.expr.hasInitialized;
@@ -814,7 +814,7 @@ public class Semantic
 		Type lt = check(x.left);
 		Type rt = check(x.right);
 
-		if (!lt.canOperateWith(x.op, rt))
+		if(!lt.canOperateWith(x.op, rt))
 			throw new Exception("Incompatible types in BinaryExpr!");
 
 		x.hasInitialized = (x.left.hasInitialized && x.right.hasInitialized);
@@ -829,12 +829,12 @@ public class Semantic
 		Type lt = check(x.left);
 		Type rt = check(x.right);
 
-		if (!lt.isAssignableWith(rt))
+		if(!lt.isAssignableWith(rt))
 			throw new Exception("Incompatible assignment!");
-		if (!x.left.isLvalue)
+		if(!x.left.isLvalue)
 			throw new Exception("Left Expr can not be assigned!");
 
-		if (x.op == AssignmentExpr.Operator.ASSIGN)
+		if(x.op == AssignmentExpr.Operator.ASSIGN)
 		{
 			x.type = rt;
 			x.hasInitialized = x.right.hasInitialized;
@@ -845,12 +845,12 @@ public class Semantic
 		else
 		{
 			boolean ok = true;
-			if (!(lt instanceof Int) && !(lt instanceof Char))
+			if(!(lt instanceof Int) && !(lt instanceof Char))
 				ok = false;
-			if (!(rt instanceof Int) && !(rt instanceof Char))
+			if(!(rt instanceof Int) && !(rt instanceof Char))
 				ok = false;
 
-			if (!ok)
+			if(!ok)
 				throw new Exception("Invalid Assignment!");
 
 			x.type = rt;
