@@ -11,92 +11,333 @@ public class PrettyPrinter implements ASTNodeVisitor
 	@Override
 	public void visit(Expression x) throws Exception
 	{
-		// TODO Auto-generated method stub
+		Expression y = x;
+		while (y != null)
+		{
+			y.head.accept(this);
+			y = y.next;
+		}
 
+		x.code_rep = new String[1];
+
+		y = x;
+		x.code_rep[0] += y.head.code_rep[0];
+		y = y.next;
+
+		while (y != null)
+		{
+			x.code_rep[0] += ", ";
+			x.code_rep[0] += y.head.code_rep[0];
+			y = y.next;
+		}
 	}
 
 	@Override
 	public void visit(AssignmentExpr x) throws Exception
 	{
-		// TODO Auto-generated method stub
+		x.left.accept(this);
+		x.right.accept(this);
 
+		x.code_rep = new String[1];
+		x.code_rep[0] += x.left.code_rep[0];
+		x.code_rep[0] += (" " + x.getOperator() + " ");
+		x.code_rep[0] += x.right.code_rep[0];
 	}
 
 	@Override
 	public void visit(BinaryExpr x) throws Exception
 	{
-		// TODO Auto-generated method stub
+		x.left.accept(this);
+		x.right.accept(this);
 
+		x.code_rep = new String[1];
+		x.code_rep[0] += x.left.code_rep[0];
+		x.code_rep[0] += (" " + x.getOperator() + " ");
+		x.code_rep[0] += x.right.code_rep[0];
 	}
 
 	@Override
 	public void visit(CastExpr x) throws Exception
 	{
-		// TODO Auto-generated method stub
+		x.target_type.accept(this);
+		x.expr.accept(this);
 
+		x.code_rep = new String[0];
+		x.code_rep[0] += "(";
+		x.code_rep[0] += x.target_type.code_rep[0];
+		x.code_rep[0] += ") ";
+		x.code_rep[0] += x.expr.code_rep[0];
 	}
 
 	@Override
 	public void visit(UnaryExpr x) throws Exception
 	{
-		// TODO Auto-generated method stub
+		if (x.expr != null)
+			x.expr.accept(this);
+		if (x.type_name != null)
+			x.type_name.accept(this);
 
+		x.code_rep = new String[1];
+		x.code_rep[0] += x.getOperator();
+		if (x.type_name != null)
+		{
+			x.code_rep[0] += "(";
+			x.code_rep[0] += x.type_name.code_rep[0];
+			x.code_rep[0] += ")";
+		}
+		else
+		{
+			x.code_rep[0] += " ";
+			x.code_rep[0] += x.expr.code_rep[0];
+		}
 	}
 
 	@Override
 	public void visit(PostfixExpr x) throws Exception
 	{
-		// TODO Auto-generated method stub
+		x.expr.accept(this);
+		x.code_rep = new String[1];
+		x.code_rep[0] += x.expr.code_rep[0];
 
+		switch (x.op)
+		{
+		case INC:
+		case DEC:
+			x.code_rep[0] += x.getOperator();
+			break;
+		case DOT:
+		case PTR:
+			x.code_rep[0] += x.getOperator();
+			x.code_rep[0] += (String) x.param;
+			break;
+		case MPAREN:
+			Expression e = (Expression) x.param;
+			e.accept(this);
+			x.code_rep[0] += "[";
+			x.code_rep[0] += e.code_rep[0];
+			x.code_rep[0] += "]";
+			break;
+		case PAREN:
+			ArgumentList args = (ArgumentList) x.param;
+			args.accept(this);
+			x.code_rep[0] += "(";
+			x.code_rep[0] += args.code_rep[0];
+			x.code_rep[0] += ")";
+			break;
+		default:
+			break;
+		}
 	}
 
 	@Override
 	public void visit(PrimaryExpr x) throws Exception
 	{
-		// TODO Auto-generated method stub
-
+		x.code_rep = new String[1];
+		switch (x.elem_type)
+		{
+		case ID:
+		case STRING:
+			x.code_rep[0] += (String) x.elem;
+			break;
+		case CHAR:
+			x.code_rep[0] += (Character) x.elem;
+			break;
+		case INT:
+			x.code_rep[0] += ((Integer) x.elem).toString();
+			break;
+		case PAREN:
+			Expression e = (Expression) x.elem;
+			e.accept(this);
+			x.code_rep[0] += "(";
+			x.code_rep[0] += e.code_rep[0];
+			x.code_rep[0] += ")";
+			break;
+		default:
+			break;
+		}
 	}
 
 	@Override
 	public void visit(StmtList x) throws Exception
 	{
-		// TODO Auto-generated method stub
+		int lc = 0;
+		StmtList y = x;
+		while (y != null)
+		{
+			y.head.accept(this);
+			lc += y.head.code_rep.length;
+			y = y.next;
+		}
 
+		x.code_rep = new String[lc];
+		int cl = 0;
+		y = x;
+		while (y != null)
+		{
+			for (String str : y.head.code_rep)
+				x.code_rep[cl++] += str;
+			y = y.next;
+		}
 	}
 
 	@Override
 	public void visit(ExpressionStmt x) throws Exception
 	{
-		// TODO Auto-generated method stub
+		x.code_rep = new String[1];
+		if (x.e != null)
+		{
+			x.e.accept(this);
+			x.code_rep[0] += x.e.code_rep[0];
+		}
 
+		x.code_rep[0] += ";";
 	}
 
 	@Override
 	public void visit(CompoundStmt x) throws Exception
 	{
-		// TODO Auto-generated method stub
+		int lc = 0;
+		if (x.declaration_list != null)
+		{
+			x.declaration_list.accept(this);
+			lc += x.declaration_list.code_rep.length;
+		}
+		if (x.stmt_list != null)
+		{
+			x.stmt_list.accept(this);
+			lc += x.stmt_list.code_rep.length;
+		}
 
+		x.code_rep = new String[lc + 2];
+		int cl = 0;
+		x.code_rep[cl++] += "{";
+
+		if (x.declaration_list != null)
+			for (String str : x.declaration_list.code_rep)
+				x.code_rep[cl++] += ("\t" + str);
+
+		if (x.stmt_list != null)
+			for (String str : x.stmt_list.code_rep)
+				x.code_rep[cl++] += ("\t" + str);
+
+		x.code_rep[cl] += "}";
 	}
 
 	@Override
 	public void visit(SelectionStmt x) throws Exception
 	{
-		// TODO Auto-generated method stub
+		int lc = 0;
+		x.cond.accept(this);
+		lc += x.cond.code_rep.length;
 
+		x.if_clause.accept(this);
+		lc += 2;
+		lc += x.if_clause.code_rep.length;
+
+		if (x.else_clause != null)
+		{
+			lc += 3;
+			x.else_clause.accept(this);
+			lc += x.else_clause.code_rep.length;
+		}
+
+		x.code_rep = new String[lc];
+		int cl = 0;
+		x.code_rep[cl] += "if(";
+		x.code_rep[cl] += x.cond.code_rep[0];
+		x.code_rep[cl++] += ")";
+		x.code_rep[cl++] += "{";
+		for (String str : x.if_clause.code_rep)
+			x.code_rep[cl++] += ("\t" + str);
+		x.code_rep[cl++] += "}";
+		if (x.else_clause != null)
+		{
+			x.code_rep[cl++] += "else";
+			x.code_rep[cl++] += "{";
+			for (String str : x.else_clause.code_rep)
+				x.code_rep[cl++] += ("\t" + str);
+			x.code_rep[cl++] += "}";
+		}
 	}
 
 	@Override
 	public void visit(JumpStmt x) throws Exception
 	{
-		// TODO Auto-generated method stub
+		x.code_rep = new String[1];
 
+		switch (x.type)
+		{
+		case RETURN:
+			x.code_rep[0] += "return";
+			if (x.expr != null)
+			{
+				x.expr.accept(this);
+				x.code_rep[0] += " ";
+				x.code_rep[0] += x.expr.code_rep[0];
+			}
+			x.code_rep[0] += ";";
+			break;
+		case CONTINUE:
+			x.code_rep[0] += "continue;";
+			break;
+		case BREAK:
+			x.code_rep[0] += "break;";
+			break;
+		default:
+			break;
+		}
 	}
 
 	@Override
 	public void visit(IterationStmt x) throws Exception
 	{
-		// TODO Auto-generated method stub
+		int lc = 0;
+		if (x.iteration_type == IterationStmt.Type.FOR)
+		{
+			if (x.init != null)
+				x.init.accept(this);
+			if (x.judge != null)
+				x.judge.accept(this);
+			if (x.next != null)
+				x.next.accept(this);
 
+			lc += 3;
+			x.stmt.accept(this);
+			lc += x.stmt.code_rep.length;
+
+			x.code_rep = new String[lc];
+			int cl = 0;
+			x.code_rep[cl] = "for(";
+			if (x.init != null)
+				x.code_rep[cl] += x.init.code_rep[0];
+			x.code_rep[cl] += ";";
+			if (x.judge != null)
+				x.code_rep[cl] += x.judge.code_rep[0];
+			x.code_rep[cl] += ";";
+			if (x.next != null)
+				x.code_rep[cl] += x.next.code_rep[0];
+			x.code_rep[cl++] += ")";
+			x.code_rep[cl++] += "{";
+			for (String str : x.stmt.code_rep)
+				x.code_rep[cl++] += ("\t" + str);
+			x.code_rep[cl++] += "}";
+		}
+		else
+		{
+			x.judge.accept(this);
+			x.stmt.accept(this);
+			lc = 3 + x.stmt.code_rep.length;
+			x.code_rep = new String[lc];
+
+			int cl = 0;
+			x.code_rep[cl] += "while(";
+			x.code_rep[cl] += x.judge.code_rep[0];
+			x.code_rep[cl++] += ")";
+			x.code_rep[cl++] += "{";
+			for (String str : x.stmt.code_rep)
+				x.code_rep[cl++] += ("\t" + str);
+			x.code_rep[cl++] += "}";
+		}
 	}
 
 	@Override
