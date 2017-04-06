@@ -8,6 +8,11 @@ public class Semantic
 {
 	private Table env, tag_env;
 	private Program prog_start;
+	
+	private static void panic(String msg) throws Exception
+	{
+		throw new Exception(msg);
+	}
 
 	public Semantic(Program prog)
 	{
@@ -22,9 +27,9 @@ public class Semantic
 		ConstExprEval cee = new ConstExprEval();
 		prog_start.accept(cee);
 
-		// type checking
+		// typing
 		// 1pass: put all record into tag_env
-		// 2pass: decorate all Struct/Union on AST
+		// 2pass: decorate all Types on AST
 		// 3pass: detect recursive definition
 		TypeCheck tckr = new TypeCheck(tag_env);
 		for (int i = 1; i <= 3; i++)
@@ -32,277 +37,13 @@ public class Semantic
 			tckr.phase = i;
 			prog_start.accept(tckr);
 		}
+		
+		//sizeof()
+		
 
-		// check expr & stmt
-		check(prog_start);
-	}
-
-	private void check(Program x) throws Exception
-	{
-		Program y = x;
-		while (y != null)
-		{
-			if(y.head instanceof Declaration)
-				check((Declaration) y.head);
-			else
-				check((FuncDef) y.head);
-
-			y = y.next;
-		}
-	}
-
-	private Type check(TypeSpecifier x, int flag) throws Exception
-	{
-		TypeSpecifier.Type ct = x.type;
-
-		if(ct == TypeSpecifier.Type.VOID)
-			return Void.getInstance();
-		else if(ct == TypeSpecifier.Type.INT)
-			return Int.getInstance();
-		else if(ct == TypeSpecifier.Type.CHAR)
-			return Char.getInstance();
-		else if(ct == TypeSpecifier.Type.STRUCT)
-		{
-			if(x.comp == null)
-			{
-				if(flag == 0) // struct node;
-				{
-					Symbol ss = Symbol.getSymbol(x.tag);
-					Entry ce = (Entry) tag_env.get(ss);
-
-					if(ce != null)
-					{
-						if(ce.type instanceof Struct)
-							return ce.type;
-						else
-							throw new Exception(x.tag + " is not defined as struct!");
-					}
-					else
-					{
-						Struct ret = new Struct(x.tag, null);
-						tag_env.put(ss, new TypeEntry(ret));
-						return ret;
-					}
-				}
-				else if(flag == 1) // struct node a;
-				{
-					Symbol ss = Symbol.getSymbol(x.tag);
-					Entry ce = (Entry) tag_env.get(ss);
-
-					if(ce != null)
-					{
-						if(ce.type instanceof Struct)
-							return ce.type;
-						else
-							throw new Exception(x.tag + " is not defined as struct!");
-					}
-					else
-						throw new Exception("struct " + x.tag + " is undefined!");
-				}
-				else if(flag == 2) // struct node *a;
-				{
-					Symbol ss = Symbol.getSymbol(x.tag);
-					Entry ce = (Entry) tag_env.get(ss);
-
-					if(ce != null)
-					{
-						if(ce.type instanceof Struct)
-							return ce.type;
-						else
-							throw new Exception(x.tag + " is not defined as struct!");
-					}
-					else
-					{
-						Name ret = new Name(true, x.tag);
-						return ret;
-					}
-				}
-				else
-					throw new Exception("Internal Error!");
-			}
-			else
-			{
-				if(x.tag == null) // struct { ... }
-				{
-					Table ccomp = new Table();
-					check(x.comp, ccomp);
-					return new Struct(x.tag, ccomp);
-				}
-				else// struct node { ... }
-				{
-					Symbol csym = Symbol.getSymbol(x.tag);
-					Entry ce = (Entry) tag_env.get(csym);
-					Table ccomp = null;
-
-					if(ce != null) // may be declared before
-					{
-						if(ce.type instanceof Struct)
-						{
-							Struct cst = (Struct) ce.type;
-							if(cst.comp != null)
-								throw new Exception("struct " + x.tag + " has already been defined!");
-							else
-							{
-								cst.comp = new Table();
-								check(x.comp, cst.comp);
-								return ce.type;
-							}
-						}
-						else
-							throw new Exception(x.tag + " has been declared differently!");
-					}
-					else// first time meet
-					{
-						ccomp = new Table();
-						check(x.comp, ccomp);
-						Struct ret = new Struct(x.tag, ccomp);
-						tag_env.put(csym, new TypeEntry(ret));
-						return ret;
-					}
-				}
-			}
-		}
-		else if(ct == TypeSpecifier.Type.UNION)
-		{
-			// TODO
-			return null;
-		}
-		else
-			throw new Exception("Internal Error!");
-	}
-
-	private void check(NonInitDeclarationList x, Table ccomp) throws Exception
-	{
-		NonInitDeclarationList y = x;
-		while (y != null)
-		{
-			NonInitDeclaration z = y.head;
-			TypeSpecifier cts = z.type_specifier;
-			DeclaratorList w = z.declarator_list;
-			while (w != null)
-			{
-				if(w.head instanceof VarDeclarator)
-				{
-					VarDeclarator vdr = (VarDeclarator) w.head;
-
-					String vdrr = vdr.plain_declarator.identifier;
-					int sc = vdr.plain_declarator.star_list.cnt;
-					Symbol csym = Symbol.getSymbol(vdrr);
-					if(ccomp.get(csym) != null)
-						throw new Exception(vdrr + " has already been defined in this scope!");
-
-					Type def_type = sc == 0 ? check(cts, 1) : check(cts, 2);
-					Type real_type = check(vdr.plain_declarator, def_type, 0);
-
-					ccomp.put(csym, new TypeEntry(real_type));
-				}
-				else
-				{
-					String fcn = ((FuncDeclarator) w.head).plain_declarator.identifier;
-					throw new Exception("Function: " + fcn + " can not be declared here!");
-				}
-
-				w = w.next;
-			}
-
-			y = y.next;
-		}
-	}
-
-	private Type check(PlainDeclarator x, Type dt, int flag) throws Exception
-	{
-		Type ret = dt;
-
-		int sc = x.star_list.cnt;
-		for (int i = 0; i < sc; i++)
-			ret = new Pointer(ret);
-
-		if(flag == 0 && ret instanceof Void)
-			throw new Exception("Variable: " + x.identifier + " can not be declared as void");
-
-		return ret;
-	}
-
-	private void check(Declaration x) throws Exception
-	{
-		InitDeclaratorList y = x.init_declarator_list;
-
-		if(y == null) // TypeSpecifier;
-		{
-			switch (x.type_specifier.type)
-			{
-			case STRUCT:
-			case UNION:
-				check(x.type_specifier, 0);
-				break;
-			case VOID:
-			case INT:
-			case CHAR:
-				throw new Exception("Meaningless declaration of intrinsic type!");
-			default:
-				break;
-			}
-		}
-		else// TypeSpecifier InitDeclaratorList
-		{
-			while (y != null)
-			{
-				InitDeclarator z = y.head;
-				Declarator p = z.declarator;
-				Initializer q = z.initializer;
-
-				if(p instanceof VarDeclarator)
-				{
-					VarDeclarator vp = (VarDeclarator) p;
-					Type real_type = check(vp, x.type_specifier);
-
-					if(q != null)
-					{
-						Type init_type = check(q);
-						if(!real_type.isAssignableWith(init_type))
-							throw new Exception("Failed to initialize variable: " + vp.plain_declarator.identifier);
-					}
-
-					String cvn = vp.plain_declarator.identifier;
-					Symbol csym = Symbol.getSymbol(cvn);
-					if(env.get(csym) != null)
-						throw new Exception("Variable: " + cvn + " has been defined before!");
-
-					env.put(csym, new VarEntry(real_type, q != null));
-				}
-				else if(p instanceof FuncDeclarator)
-				{
-					if(q != null)
-						throw new Exception("Can not initialize a function!");
-
-					FuncDeclarator fp = (FuncDeclarator) p;
-					String cfn = fp.plain_declarator.identifier;
-					Symbol csym = Symbol.getSymbol(cfn);
-					Type real_type = check(fp, x.type_specifier);
-
-					// TODO
-					// check params
-
-					if(env.get(csym) == null)
-					{
-
-					}
-					else
-					{
-
-					}
-				}
-				else
-					throw new Exception("Internal Error!");
-
-				y = y.next;
-			}
-		}
-	}
-
-	private void check(FuncDef x) throws Exception
-	{
-
+		// expr & stmt
+		//FinalShot fs = new FinalShot(env, tag_env);
+		//prog_start.accept(fs);
 	}
 
 	private Type check(VarDeclarator x, TypeSpecifier y) throws Exception
@@ -327,15 +68,15 @@ public class Semantic
 				else if(e.value instanceof Character)
 					curdim = (int) ((Character) e.value).charValue();
 				else
-					throw new Exception("The constant for a dimension must be an integer or a character!");
+					panic("The constant for a dimension must be an integer or a character!");
 
 				if(curdim < 0)
-					throw new Exception("Dimension must be Non-negative!");
+					panic("Dimension must be Non-negative!");
 				else
 					real_type = new Array(curdim, real_type);
 			}
 			else
-				throw new Exception("The dimension of an array must be constant!");
+				panic("The dimension of an array must be constant!");
 		}
 
 		return real_type;
@@ -347,7 +88,7 @@ public class Semantic
 		{
 			Type ct = check(x.expr);
 			if(!x.expr.hasInitialized)
-				throw new Exception("Unintialized expr can not be used as an intializer!");
+				panic("Unintialized expr can not be used as an intializer!");
 			else
 				return ct;
 		}
@@ -365,7 +106,7 @@ public class Semantic
 
 				Type ct = check(y.head);
 				if(ct.equals(et) != true)
-					throw new Exception("Types in an initializer list must be identical to each other!");
+					panic("");
 
 				ret.add(ct);
 			}
@@ -373,14 +114,7 @@ public class Semantic
 			return ret;
 		}
 		else
-			throw new Exception("Internal Error!");
-	}
-
-	private Type check(FuncDeclarator x, TypeSpecifier y) throws Exception
-	{
-
-		// TODO
-		return null;
+			panic("Internal Error!");
 	}
 
 	private Type check(ArgumentList x, Function f) throws Exception
@@ -407,9 +141,9 @@ public class Semantic
 		}
 
 		if(cnt < ats.size())
-			throw new Exception("Too many arguments in function call!");
+			panic("Too many arguments in function call!");
 		if(ats.size() == 0 && cnt > 0)
-			throw new Exception("Should provide at least 1 argument!");
+			panic("Should provide at least 1 argument!");
 
 		Type ret = f.ret_type;
 		z = f;
@@ -422,7 +156,7 @@ public class Semantic
 			if(cat.equals(z.arg_type))
 				z = (Function) z.ret_type;
 			else
-				throw new Exception("Argument type does not match!");
+				panic("Argument type does not match!");
 		}
 
 		return ret;
@@ -445,7 +179,7 @@ public class Semantic
 		else if(x instanceof Expression)
 			return checkExpression((Expression) x);
 		else
-			throw new Exception("Internal Error!");
+			panic("Internal Error!");
 	}
 
 	private Type checkPrimaryExpr(PrimaryExpr x) throws Exception
@@ -471,12 +205,12 @@ public class Semantic
 					x.isLvalue = ve.isLvalue;
 				}
 				else
-					throw new Exception("Can not use a type as identifier!");
+					panic("Can not use a type as identifier!");
 
 				return x.type;
 			}
 			else
-				throw new Exception("Can not use identifier: " + vn + " before declaration!");
+				panic("Can not use identifier: " + vn + " before declaration!");
 		}
 		else if(x.elem_type == PrimaryExpr.ElemType.STRING)
 		{
@@ -509,7 +243,7 @@ public class Semantic
 			return x.type;
 		}
 		else
-			throw new Exception("Internal Error!");
+			panic("Internal Error!");
 	}
 
 	private Type checkPostfixExpr(PostfixExpr x) throws Exception
@@ -539,10 +273,10 @@ public class Semantic
 					return x.type;
 				}
 				else
-					throw new Exception("Only pointer or array can be indexed!");
+					panic("Only pointer or array can be indexed!");
 			}
 			else
-				throw new Exception("Invalid index type!");
+				panic("Invalid index type!");
 		}
 		else if(x.op == PostfixExpr.Operator.PAREN)
 		{
@@ -558,7 +292,7 @@ public class Semantic
 				return x.type;
 			}
 			else
-				throw new Exception("Only function can be called!");
+				panic("Only function can be called!");
 		}
 		else if(x.op == PostfixExpr.Operator.DOT)
 		{
@@ -571,7 +305,7 @@ public class Semantic
 				TypeEntry te = (TypeEntry) crt.comp.get(csym);
 
 				if(te == null)
-					throw new Exception("No item named: " + p + " in record!");
+					panic("No item named: " + p + " in record!");
 
 				x.type = te.type;
 				x.isConst = false;
@@ -580,7 +314,7 @@ public class Semantic
 				return x.type;
 			}
 			else
-				throw new Exception("Not a record!");
+				panic("Not a record!");
 		}
 		else if(x.op == PostfixExpr.Operator.PTR)
 		{
@@ -596,7 +330,7 @@ public class Semantic
 					TypeEntry te = (TypeEntry) crt.comp.get(csym);
 
 					if(crt.comp.get(csym) == null)
-						throw new Exception("No item named: " + p + " in record!");
+						panic("No item named: " + p + " in record!");
 
 					x.type = te.type;
 					x.isConst = false;
@@ -605,16 +339,16 @@ public class Semantic
 					return x.type;
 				}
 				else
-					throw new Exception("Not a pointer to record!");
+					panic("Not a pointer to record!");
 			}
 			else
-				throw new Exception("Not a pointer!");
+				panic("Not a pointer!");
 		}
 		else if(x.op == PostfixExpr.Operator.INC)
 		{
 			Type pet = check(x.expr);
 			if(!(pet instanceof Pointer || pet instanceof Int || pet instanceof Char))
-				throw new Exception("Can not be post increased!");
+				panic("Can not be post increased!");
 
 			x.isConst = false;
 			x.isLvalue = false;
@@ -626,7 +360,7 @@ public class Semantic
 		{
 			Type pet = check(x.expr);
 			if(!(pet instanceof Pointer || pet instanceof Int || pet instanceof Char))
-				throw new Exception("Can not be post increased!");
+				panic("Can not be post increased!");
 
 			x.isConst = false;
 			x.isLvalue = false;
@@ -635,7 +369,7 @@ public class Semantic
 			return x.type;
 		}
 		else
-			throw new Exception("Internal Error!");
+			panic("Internal Error!");
 	}
 
 	private Type checkUnaryExpr(UnaryExpr x) throws Exception
@@ -644,7 +378,7 @@ public class Semantic
 		{
 			Type xt = check(x.expr);
 			if(!(xt instanceof Int || xt instanceof Char || xt instanceof Pointer))
-				throw new Exception("Can not be increased!");
+				panic("Can not be increased!");
 
 			x.type = xt;
 			x.hasInitialized = x.expr.hasInitialized;
@@ -656,7 +390,7 @@ public class Semantic
 		{
 			Type xt = check(x.expr);
 			if(!(xt instanceof Int || xt instanceof Char || xt instanceof Pointer))
-				throw new Exception("Can not be increased!");
+				panic("Can not be increased!");
 
 			x.type = xt;
 			x.hasInitialized = x.expr.hasInitialized;
@@ -693,7 +427,7 @@ public class Semantic
 				return x.type;
 			}
 			else
-				throw new Exception("Only array or pointer can be dereferenced!");
+				panic("Only array or pointer can be dereferenced!");
 		}
 		else if(x.op == UnaryExpr.Operator.POSITIVE) // +a
 		{
@@ -707,7 +441,7 @@ public class Semantic
 				return x.type;
 			}
 			else
-				throw new Exception("Can not be converted to be positive!");
+				panic("Can not be converted to be positive!");
 
 		}
 		else if(x.op == UnaryExpr.Operator.NEGATIVE) // -a
@@ -722,7 +456,7 @@ public class Semantic
 				return x.type;
 			}
 			else
-				throw new Exception("Can not be converted to be negative!");
+				panic("Can not be converted to be negative!");
 		}
 		else if(x.op == UnaryExpr.Operator.BIT_NOT) // ~a
 		{
@@ -736,7 +470,7 @@ public class Semantic
 				return x.type;
 			}
 			else
-				throw new Exception("Can not be negated!");
+				panic("Can not be negated!");
 		}
 		else if(x.op == UnaryExpr.Operator.NOT) // !a
 		{
@@ -750,7 +484,7 @@ public class Semantic
 				return x.type;
 			}
 			else
-				throw new Exception("Can not be logically reversed!");
+				panic("Can not be logically reversed!");
 		}
 		else if(x.op == UnaryExpr.Operator.SIZEOF) // sizeof(int) sizeof(a)
 		{
@@ -784,10 +518,10 @@ public class Semantic
 				return x.type;
 			}
 			else
-				throw new Exception("Internal Error!");
+				panic("Internal Error!");
 		}
 		else
-			throw new Exception("Internal Error!");
+			panic("Internal Error!");
 	}
 
 	private Type checkCastExpr(CastExpr x) throws Exception
@@ -799,7 +533,7 @@ public class Semantic
 
 		Type ot = check(x.expr);
 		if(!ot.canBeCastTo(tt))
-			throw new Exception("Invalid Conversion");
+			panic("Invalid Conversion");
 
 		x.hasInitialized = x.expr.hasInitialized;
 		x.isConst = x.expr.isConst;
@@ -815,7 +549,7 @@ public class Semantic
 		Type rt = check(x.right);
 
 		if(!lt.canOperateWith(x.op, rt))
-			throw new Exception("Incompatible types in BinaryExpr!");
+			panic("Incompatible types in BinaryExpr!");
 
 		x.hasInitialized = (x.left.hasInitialized && x.right.hasInitialized);
 		x.isConst = (x.left.isConst && x.right.isConst);
@@ -830,9 +564,9 @@ public class Semantic
 		Type rt = check(x.right);
 
 		if(!lt.isAssignableWith(rt))
-			throw new Exception("Incompatible assignment!");
+			panic("Incompatible assignment!");
 		if(!x.left.isLvalue)
-			throw new Exception("Left Expr can not be assigned!");
+			panic("Left Expr can not be assigned!");
 
 		if(x.op == AssignmentExpr.Operator.ASSIGN)
 		{
@@ -851,7 +585,7 @@ public class Semantic
 				ok = false;
 
 			if(!ok)
-				throw new Exception("Invalid Assignment!");
+				panic("Invalid Assignment!");
 
 			x.type = rt;
 			x.hasInitialized = x.right.hasInitialized;
