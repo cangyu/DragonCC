@@ -8,6 +8,12 @@ public class PrettyPrinter implements ASTNodeVisitor
 	// or sizeof or ParameterList or any other inconvenient
 	// places, just convert it into one line
 
+	private static void str_init(String[] s, int num)
+	{
+		for (int i = 0; i < num; i++)
+			s[i] = "";
+	}
+
 	@Override
 	public void visit(Expression x) throws Exception
 	{
@@ -19,6 +25,7 @@ public class PrettyPrinter implements ASTNodeVisitor
 		}
 
 		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
 
 		y = x;
 		x.code_rep[0] += y.head.code_rep[0];
@@ -39,6 +46,8 @@ public class PrettyPrinter implements ASTNodeVisitor
 		x.right.accept(this);
 
 		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
 		x.code_rep[0] += x.left.code_rep[0];
 		x.code_rep[0] += (" " + x.getOperator() + " ");
 		x.code_rep[0] += x.right.code_rep[0];
@@ -51,6 +60,8 @@ public class PrettyPrinter implements ASTNodeVisitor
 		x.right.accept(this);
 
 		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
 		x.code_rep[0] += x.left.code_rep[0];
 		x.code_rep[0] += (" " + x.getOperator() + " ");
 		x.code_rep[0] += x.right.code_rep[0];
@@ -62,10 +73,12 @@ public class PrettyPrinter implements ASTNodeVisitor
 		x.target_type.accept(this);
 		x.expr.accept(this);
 
-		x.code_rep = new String[0];
+		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
 		x.code_rep[0] += "(";
 		x.code_rep[0] += x.target_type.code_rep[0];
-		x.code_rep[0] += ") ";
+		x.code_rep[0] += ")";
 		x.code_rep[0] += x.expr.code_rep[0];
 	}
 
@@ -78,6 +91,8 @@ public class PrettyPrinter implements ASTNodeVisitor
 			x.type_name.accept(this);
 
 		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
 		x.code_rep[0] += x.getOperator();
 		if (x.type_name != null)
 		{
@@ -87,7 +102,9 @@ public class PrettyPrinter implements ASTNodeVisitor
 		}
 		else
 		{
-			x.code_rep[0] += " ";
+			if (x.op == UnaryExpr.Operator.SIZEOF)
+				x.code_rep[0] += " ";
+
 			x.code_rep[0] += x.expr.code_rep[0];
 		}
 	}
@@ -96,7 +113,10 @@ public class PrettyPrinter implements ASTNodeVisitor
 	public void visit(PostfixExpr x) throws Exception
 	{
 		x.expr.accept(this);
+
 		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
 		x.code_rep[0] += x.expr.code_rep[0];
 
 		switch (x.op)
@@ -133,6 +153,8 @@ public class PrettyPrinter implements ASTNodeVisitor
 	public void visit(PrimaryExpr x) throws Exception
 	{
 		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
 		switch (x.elem_type)
 		{
 		case ID:
@@ -170,6 +192,8 @@ public class PrettyPrinter implements ASTNodeVisitor
 		}
 
 		x.code_rep = new String[lc];
+		str_init(x.code_rep, lc);
+
 		int cl = 0;
 		y = x;
 		while (y != null)
@@ -184,6 +208,8 @@ public class PrettyPrinter implements ASTNodeVisitor
 	public void visit(ExpressionStmt x) throws Exception
 	{
 		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
 		if (x.e != null)
 		{
 			x.e.accept(this);
@@ -196,7 +222,7 @@ public class PrettyPrinter implements ASTNodeVisitor
 	@Override
 	public void visit(CompoundStmt x) throws Exception
 	{
-		int lc = 0;
+		int lc = 2;
 		if (x.declaration_list != null)
 		{
 			x.declaration_list.accept(this);
@@ -208,13 +234,21 @@ public class PrettyPrinter implements ASTNodeVisitor
 			lc += x.stmt_list.code_rep.length;
 		}
 
-		x.code_rep = new String[lc + 2];
+		if (x.declaration_list != null && x.stmt_list != null)
+			++lc;
+
+		x.code_rep = new String[lc];
+		str_init(x.code_rep, lc);
+
 		int cl = 0;
 		x.code_rep[cl++] += "{";
 
 		if (x.declaration_list != null)
 			for (String str : x.declaration_list.code_rep)
 				x.code_rep[cl++] += ("\t" + str);
+
+		if (x.declaration_list != null && x.stmt_list != null)
+			x.code_rep[cl++] += "\t";
 
 		if (x.stmt_list != null)
 			for (String str : x.stmt_list.code_rep)
@@ -242,6 +276,8 @@ public class PrettyPrinter implements ASTNodeVisitor
 		}
 
 		x.code_rep = new String[lc];
+		str_init(x.code_rep, lc);
+
 		int cl = 0;
 		x.code_rep[cl] += "if(";
 		x.code_rep[cl] += x.cond.code_rep[0];
@@ -264,6 +300,7 @@ public class PrettyPrinter implements ASTNodeVisitor
 	public void visit(JumpStmt x) throws Exception
 	{
 		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
 
 		switch (x.type)
 		{
@@ -306,6 +343,8 @@ public class PrettyPrinter implements ASTNodeVisitor
 			lc += x.stmt.code_rep.length;
 
 			x.code_rep = new String[lc];
+			str_init(x.code_rep, lc);
+
 			int cl = 0;
 			x.code_rep[cl] = "for(";
 			if (x.init != null)
@@ -344,6 +383,8 @@ public class PrettyPrinter implements ASTNodeVisitor
 	public void visit(StarList x) throws Exception
 	{
 		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
 		x.code_rep[0] = "";
 		for (int i = 0; i < x.cnt; i++)
 			x.code_rep[0] += "*";
@@ -357,14 +398,16 @@ public class PrettyPrinter implements ASTNodeVisitor
 			x.init_declarator_list.accept(this);
 
 		int lc = x.type_specifier.code_rep.length, cl = 0;
+
 		x.code_rep = new String[lc];
+		str_init(x.code_rep, lc);
 
 		for (String str : x.type_specifier.code_rep)
 			x.code_rep[cl++] += str;
 
 		--cl;
 		if (x.init_declarator_list != null)
-			x.code_rep[cl] += x.init_declarator_list.code_rep[0];
+			x.code_rep[cl] += (" " + x.init_declarator_list.code_rep[0]);
 		x.code_rep[cl] += ";";
 	}
 
@@ -372,6 +415,7 @@ public class PrettyPrinter implements ASTNodeVisitor
 	public void visit(FuncDeclarator x) throws Exception
 	{
 		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
 
 		x.plain_declarator.accept(this);
 		x.code_rep[0] += x.plain_declarator.code_rep[0];
@@ -379,15 +423,17 @@ public class PrettyPrinter implements ASTNodeVisitor
 		if (x.param != null)
 		{
 			x.param.accept(this);
-			x.code_rep[0] += x.param.code_rep[0];
+			x.code_rep[0] += ("(" + x.param.code_rep[0] + ")");
 		}
 	}
 
 	@Override
 	public void visit(VarDeclarator x) throws Exception
 	{
-		x.plain_declarator.accept(this);
 		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
+		x.plain_declarator.accept(this);
 		x.code_rep[0] += x.plain_declarator.code_rep[0];
 		Iterator<Expr> it = x.dimension.iterator();
 		while (it.hasNext())
@@ -413,6 +459,8 @@ public class PrettyPrinter implements ASTNodeVisitor
 		}
 
 		x.code_rep = new String[lc];
+		str_init(x.code_rep, lc);
+
 		int cl = 0;
 		y = x;
 		while (y != null)
@@ -426,6 +474,9 @@ public class PrettyPrinter implements ASTNodeVisitor
 	@Override
 	public void visit(DeclaratorList x) throws Exception
 	{
+		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
 		DeclaratorList y = x;
 		while (y != null)
 		{
@@ -433,7 +484,6 @@ public class PrettyPrinter implements ASTNodeVisitor
 			y = y.next;
 		}
 
-		x.code_rep = new String[1];
 		y = x;
 		x.code_rep[0] += y.head.code_rep[0];
 		y = y.next;
@@ -448,18 +498,26 @@ public class PrettyPrinter implements ASTNodeVisitor
 	@Override
 	public void visit(InitDeclarator x) throws Exception
 	{
-		x.declarator.accept(this);
-		x.initializer.accept(this);
-
 		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
+		x.declarator.accept(this);
 		x.code_rep[0] += x.declarator.code_rep[0];
-		x.code_rep[0] += " = ";
-		x.code_rep[0] += x.initializer.code_rep[0];
+
+		if (x.initializer != null)
+		{
+			x.initializer.accept(this);
+			x.code_rep[0] += " = ";
+			x.code_rep[0] += x.initializer.code_rep[0];
+		}
 	}
 
 	@Override
 	public void visit(InitDeclaratorList x) throws Exception
 	{
+		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
 		InitDeclaratorList y = x;
 		while (y != null)
 		{
@@ -467,7 +525,6 @@ public class PrettyPrinter implements ASTNodeVisitor
 			y = y.next;
 		}
 
-		x.code_rep = new String[1];
 		y = x;
 		x.code_rep[0] += y.head.code_rep[0];
 		y = y.next;
@@ -483,18 +540,19 @@ public class PrettyPrinter implements ASTNodeVisitor
 	@Override
 	public void visit(Initializer x) throws Exception
 	{
+		// all in one line for simplicity
+
+		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
 		if (x.expr != null)
 		{
 			x.expr.accept(this);
-			int lc = x.expr.code_rep.length, cl = 0;
-			x.code_rep = new String[lc];
-			for (String str : x.expr.code_rep)
-				x.code_rep[cl++] += str;
+			x.code_rep[0] += x.expr.code_rep[0];
 		}
 		else
 		{
 			x.initializer_list.accept(this);
-			x.code_rep = new String[1];
 			x.code_rep[0] += x.initializer_list.code_rep[0];
 		}
 	}
@@ -503,6 +561,8 @@ public class PrettyPrinter implements ASTNodeVisitor
 	public void visit(InitializerList x) throws Exception
 	{
 		// put all in one line for simplicity
+		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
 
 		InitializerList y = x;
 		while (y != null)
@@ -511,7 +571,6 @@ public class PrettyPrinter implements ASTNodeVisitor
 			y = y.next;
 		}
 
-		x.code_rep = new String[1];
 		x.code_rep[0] += "{";
 
 		y = x;
@@ -534,13 +593,14 @@ public class PrettyPrinter implements ASTNodeVisitor
 
 		int lc = x.type_specifier.code_rep.length;
 		x.code_rep = new String[lc];
+		str_init(x.code_rep, lc);
 
 		int cl = 0;
 		for (String str : x.type_specifier.code_rep)
 			x.code_rep[cl++] += str;
 
 		--cl;
-		x.code_rep[cl] += (x.declarator_list.code_rep[0] + ";");
+		x.code_rep[cl] += (" " + x.declarator_list.code_rep[0] + ";");
 	}
 
 	@Override
@@ -556,6 +616,7 @@ public class PrettyPrinter implements ASTNodeVisitor
 		}
 
 		x.code_rep = new String[lc];
+		str_init(x.code_rep, lc);
 		int cl = 0;
 		y = x;
 		while (y != null)
@@ -570,219 +631,23 @@ public class PrettyPrinter implements ASTNodeVisitor
 	@Override
 	public void visit(PlainDeclaration x) throws Exception
 	{
-		x.type_specifier.accept(this);
+		// put all in one line for simplicity
+		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
+		plain_visit(x.type_specifier);
 		x.declarator.accept(this);
 
-		int lc = x.type_specifier.code_rep.length + x.declarator.code_rep.length - 1;
-		x.code_rep = new String[lc];
-
-		int cl = 0;
-		for (String str : x.type_specifier.code_rep)
-			x.code_rep[cl++] += str;
-
-		--cl;
-		x.code_rep[cl] += " ";
-		int sc = x.code_rep[cl].length();
-		String space = "";
-		for (int i = 0; i < sc; i++)
-			space += " ";
-
-		String[] tmp = new String[x.declarator.code_rep.length];
-		tmp[0] += x.declarator.code_rep[0];
-		for (int i = 1; i < x.declarator.code_rep.length; i++)
-			tmp[i] += (space + x.declarator.code_rep[i]);
-
-		for (String str : tmp)
-			x.code_rep[cl++] += str;
+		x.code_rep[0] += x.type_specifier.code_rep[0];
+		x.code_rep[0] += " ";
+		x.code_rep[0] += x.declarator.code_rep[0];
 	}
 
-	@Override
-	public void visit(PlainDeclarator x) throws Exception
+	private void plain_visit(TypeSpecifier x) throws Exception
 	{
-		x.star_list.accept(this);
 		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
 
-		x.code_rep[0] += x.star_list.code_rep[0];
-		x.code_rep[0] += x.identifier;
-	}
-
-	@Override
-	public void visit(FuncDef x) throws Exception
-	{
-		int lc = 0;
-		x.type_specifier.accept(this);
-		lc += x.type_specifier.code_rep.length;
-		x.func_name.accept(this);
-		lc += x.func_name.code_rep.length;
-		if (x.params != null)
-		{
-			x.params.accept(this);
-			lc += x.params.code_rep.length;
-		}
-		x.comp_stmt.accept(this);
-		lc += x.comp_stmt.code_rep.length;
-
-		lc -= 2;
-		x.code_rep = new String[lc];
-
-		int cl = 0;
-		for (String str : x.type_specifier.code_rep)
-			x.code_rep[cl++] += str;
-
-		--cl;
-		x.code_rep[cl] += (" " + x.func_name.code_rep[0]);
-		if (x.params == null)
-			x.code_rep[cl++] += "()";
-		else if (x.params.code_rep.length == 1)
-		{
-			x.code_rep[cl] += "(";
-			x.code_rep[cl] += x.params.code_rep[0];
-			x.code_rep[cl++] += ")";
-		}
-		else
-		{
-			int sc = x.code_rep[cl].length();
-			String space = "";
-			for (int i = 0; i < sc; i++)
-				space += " ";
-
-			String[] tmp = new String[x.params.code_rep.length];
-			tmp[0] += x.params.code_rep[0];
-			for (int i = 1; i < x.params.code_rep.length; i++)
-				tmp[i] += (space + x.params.code_rep[i]);
-
-			x.code_rep[cl] += "(";
-			for (int i = 0; i < tmp.length; i++)
-				x.code_rep[cl++] += tmp[i];
-			x.code_rep[cl - 1] += ")";
-		}
-
-		for (String str : x.comp_stmt.code_rep)
-			x.code_rep[cl++] += str;
-	}
-
-	@Override
-	public void visit(ArgumentList x) throws Exception
-	{
-		boolean multi = false;
-		ArgumentList y = x;
-		while (y != null)
-		{
-			y.head.accept(this);
-			if (y.head.code_rep.length > 1 && !multi)
-				multi = true;
-			y = y.next;
-		}
-
-		if (!multi)
-		{
-			x.code_rep = new String[1];
-			y = x;
-			x.code_rep[0] += y.head.code_rep[0];
-			y = y.next;
-			while (y != null)
-			{
-				x.code_rep[0] += (", " + y.head.code_rep[0]);
-				y = y.next;
-			}
-		}
-		else
-		{
-			int lc = 0;
-			y = x;
-			while (y != null)
-			{
-				lc += y.head.code_rep.length;
-				y = y.next;
-			}
-
-			x.code_rep = new String[lc];
-			int cl = 0;
-			y = x;
-			for (String str : y.head.code_rep)
-				x.code_rep[cl++] += str;
-			y = y.next;
-			while (y != null)
-			{
-				x.code_rep[cl - 1] += ",";
-				for (String str : y.head.code_rep)
-					x.code_rep[cl++] += str;
-				y = y.next;
-			}
-		}
-	}
-
-	@Override
-	public void visit(ParameterList x) throws Exception
-	{
-		boolean multi = false;
-		ParameterList y = x;
-		while (y != null)
-		{
-			y.head.accept(this);
-			if (y.head.code_rep.length > 1 && !multi)
-				multi = true;
-			y = y.next;
-		}
-
-		if (!multi)
-		{
-			x.code_rep = new String[1];
-			y = x;
-			x.code_rep[0] += y.head.code_rep[0];
-			y = y.next;
-			while (y != null)
-			{
-				x.code_rep[0] += (", " + y.head.code_rep[0]);
-				y = y.next;
-			}
-		}
-		else
-		{
-			int lc = 0;
-			y = x;
-			while (y != null)
-			{
-				lc += y.head.code_rep.length;
-				y = y.next;
-			}
-
-			x.code_rep = new String[lc];
-			int cl = 0;
-			y = x;
-			for (String str : y.head.code_rep)
-				x.code_rep[cl++] += str;
-			y = y.next;
-			while (y != null)
-			{
-				x.code_rep[cl - 1] += ",";
-				for (String str : y.head.code_rep)
-					x.code_rep[cl++] += str;
-				y = y.next;
-			}
-		}
-	}
-
-	@Override
-	public void visit(TypeName x) throws Exception
-	{
-		int lc = 0;
-		x.type_specifier.accept(this);
-		x.star_list.accept(this);
-
-		lc += x.type_specifier.code_rep.length;
-		x.code_rep = new String[lc];
-		int cl = 0;
-		for (String str : x.type_specifier.code_rep)
-			x.code_rep[cl++] += str;
-
-		if (x.star_list.cnt > 0)
-			x.code_rep[cl] += (" " + x.star_list.code_rep[0]);
-	}
-
-	@Override
-	public void visit(TypeSpecifier x) throws Exception
-	{
 		switch (x.type)
 		{
 		case VOID:
@@ -803,10 +668,205 @@ public class PrettyPrinter implements ASTNodeVisitor
 
 		if (x.comp == null)
 		{
-			x.code_rep = new String[1];
+			x.code_rep[0] += (x.type == TypeSpecifier.Type.STRUCT ? "struct" : "union");
+			x.code_rep[0] += (" " + x.tag);
+		}
+		else
+		{
+			plain_visit(x.comp);
+
 			x.code_rep[0] = (x.type == TypeSpecifier.Type.STRUCT ? "struct" : "union");
 			if (x.tag != null)
 				x.code_rep[0] += (" " + x.tag);
+
+			x.code_rep[0] += "{ ";
+			x.code_rep[0] += x.comp.code_rep[0];
+			x.code_rep[0] += "}";
+		}
+	}
+
+	private void plain_visit(NonInitDeclarationList x) throws Exception
+	{
+		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
+		NonInitDeclarationList y = x;
+		while (y != null)
+		{
+			plain_visit(y.head);
+			y = y.next;
+		}
+
+		y = x;
+		x.code_rep[0] += y.head.code_rep[0];
+		y = y.next;
+
+		if (y == null)
+			x.code_rep[0] += " ";
+
+		while (y != null)
+		{
+			x.code_rep[0] += " ";
+			x.code_rep[0] += y.head.code_rep[0];
+			y = y.next;
+		}
+	}
+
+	private void plain_visit(NonInitDeclaration x) throws Exception
+	{
+		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
+		plain_visit(x.type_specifier);
+		x.declarator_list.accept(this);
+
+		x.code_rep[0] += x.type_specifier.code_rep[0];
+		x.code_rep[0] += " ";
+		x.code_rep[0] += x.declarator_list.code_rep[0];
+		x.code_rep[0] += ";";
+	}
+
+	@Override
+	public void visit(PlainDeclarator x) throws Exception
+	{
+		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
+		x.star_list.accept(this);
+		x.code_rep[0] += x.star_list.code_rep[0];
+		x.code_rep[0] += x.identifier;
+	}
+
+	@Override
+	public void visit(FuncDef x) throws Exception
+	{
+		int lc = 0;
+
+		x.type_specifier.accept(this);
+		lc += x.type_specifier.code_rep.length;
+
+		x.func_name.accept(this);
+
+		if (x.params != null)
+			x.params.accept(this);
+
+		x.comp_stmt.accept(this);
+		lc += x.comp_stmt.code_rep.length;
+
+		x.code_rep = new String[lc];
+		str_init(x.code_rep, lc);
+
+		int cl = 0;
+		for (String str : x.type_specifier.code_rep)
+			x.code_rep[cl++] += str;
+
+		--cl;
+		x.code_rep[cl] += (" " + x.func_name.code_rep[0]);
+		if (x.params == null)
+			x.code_rep[cl++] += "()";
+		else
+		{
+			x.code_rep[cl] += "(";
+			x.code_rep[cl] += x.params.code_rep[0];
+			x.code_rep[cl++] += ")";
+		}
+
+		for (String str : x.comp_stmt.code_rep)
+			x.code_rep[cl++] += str;
+	}
+
+	@Override
+	public void visit(ArgumentList x) throws Exception
+	{
+		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
+		ArgumentList y = x;
+		while (y != null)
+		{
+			y.head.accept(this);
+			y = y.next;
+		}
+
+		y = x;
+		x.code_rep[0] += y.head.code_rep[0];
+		y = y.next;
+		while (y != null)
+		{
+			x.code_rep[0] += (", " + y.head.code_rep[0]);
+			y = y.next;
+		}
+	}
+
+	@Override
+	public void visit(ParameterList x) throws Exception
+	{
+		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
+		ParameterList y = x;
+		while (y != null)
+		{
+			y.head.accept(this);
+			y = y.next;
+		}
+
+		y = x;
+		x.code_rep[0] += y.head.code_rep[0];
+		y = y.next;
+		while (y != null)
+		{
+			x.code_rep[0] += (", " + y.head.code_rep[0]);
+			y = y.next;
+		}
+	}
+
+	@Override
+	public void visit(TypeName x) throws Exception
+	{
+		// put all in one line for simplicity
+		x.code_rep = new String[1];
+		str_init(x.code_rep, 1);
+
+		plain_visit(x.type_specifier);
+		x.star_list.accept(this);
+
+		x.code_rep[0] += x.type_specifier.code_rep[0];
+
+		if (x.star_list.cnt > 0)
+			x.code_rep[0] += (" " + x.star_list.code_rep[0]);
+	}
+
+	@Override
+	public void visit(TypeSpecifier x) throws Exception
+	{
+		switch (x.type)
+		{
+		case VOID:
+			x.code_rep = new String[1];
+			str_init(x.code_rep, 1);
+			x.code_rep[0] = "void";
+			return;
+		case INT:
+			x.code_rep = new String[1];
+			str_init(x.code_rep, 1);
+			x.code_rep[0] = "int";
+			return;
+		case CHAR:
+			x.code_rep = new String[1];
+			str_init(x.code_rep, 1);
+			x.code_rep[0] = "char";
+			return;
+		default:
+			break;
+		}
+
+		if (x.comp == null)
+		{
+			x.code_rep = new String[1];
+			str_init(x.code_rep, 1);
+			x.code_rep[0] += (x.type == TypeSpecifier.Type.STRUCT ? "struct" : "union");
+			x.code_rep[0] += (" " + x.tag);
 		}
 		else
 		{
@@ -814,6 +874,7 @@ public class PrettyPrinter implements ASTNodeVisitor
 			x.comp.accept(this);
 			lc += x.comp.code_rep.length;
 			x.code_rep = new String[lc];
+			str_init(x.code_rep, lc);
 
 			x.code_rep[0] = (x.type == TypeSpecifier.Type.STRUCT ? "struct" : "union");
 			if (x.tag != null)
@@ -841,6 +902,8 @@ public class PrettyPrinter implements ASTNodeVisitor
 		}
 
 		x.code_rep = new String[lc];
+		str_init(x.code_rep, lc);
+
 		int cl = 0;
 		y = x;
 		while (y != null)
@@ -848,6 +911,7 @@ public class PrettyPrinter implements ASTNodeVisitor
 			for (String str : y.head.code_rep)
 				x.code_rep[cl++] += str;
 			cl++;
+			y = y.next;
 		}
 	}
 }

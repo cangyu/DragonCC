@@ -34,7 +34,6 @@ public class Main
 		System.out.println("\tOutput at: " + ast_filename);
 		System.out.println("\tBuilding AST Done!");
 		
-		/*
 		System.out.println("\tReformating Source Code...");
 		BufferedWriter ppc_out = new BufferedWriter(new FileWriter(prettier_filename));
 		PrettyPrinter pp = new PrettyPrinter();
@@ -44,7 +43,6 @@ public class Main
 		ppc_out.close();
 		System.out.println("\tOutput at: " + prettier_filename);
 		System.out.println("\tReformat Done!");
-		*/
 		
 		System.out.println("\tSemantic Checking...");
 		Semantic sc = new Semantic(prog);
