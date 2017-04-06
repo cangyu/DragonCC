@@ -1,9 +1,12 @@
 package compiler.ast;
 
+import compiler.IR.*;
+
 public abstract class ASTNode
 {
 	public String [] ast_rep;
 	public String [] code_rep;
+	public Stm ir_rep;
 	
     public abstract void accept(ASTNodeVisitor v) throws Exception;
     
