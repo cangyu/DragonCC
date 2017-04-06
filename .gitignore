@@ -1,4 +1,6 @@
 /bin
-/result/*.txt
-/test/*.c
+*.class
 *.exe
+/result/*.txt
+/result/*.c
+/test/*.c
