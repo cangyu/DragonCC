@@ -1,15 +1,16 @@
 package compiler.semantic;
 
 import compiler.ast.BinaryExpr.Operator;
+import java.util.*;
 
 public final class Function extends Type 
 {
-	Type arg_type;
+	LinkedList<Type> args;
 	Type ret_type;
 	
 	public Function(Type arg_t, Type ret_t)
 	{
-		arg_type = arg_t;
+		args = new LinkedList<Type>();
 		ret_type = ret_t;
 	}
 
