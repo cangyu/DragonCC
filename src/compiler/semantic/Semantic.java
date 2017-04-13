@@ -30,7 +30,7 @@ public class Semantic
 		// typing
 		// 1pass: put all record into tag_env
 		// 2pass: decorate all Types on AST
-		// 3pass: detect recursive definition
+		// 3pass: check dependencies
 		TypeCheck tckr = new TypeCheck(tag_env);
 		for (int i = 1; i <= 3; i++)
 		{
@@ -38,7 +38,8 @@ public class Semantic
 			prog_start.accept(tckr);
 		}
 		
-		//sizeof()
+		//sizeof() and specify size for each variable
+		
 		
 
 		// expr & stmt

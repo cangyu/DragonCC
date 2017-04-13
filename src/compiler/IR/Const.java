@@ -2,8 +2,10 @@ package compiler.IR;
 
 public class Const extends Exp
 {
-	public Const()
+	int val;
+	
+	public Const(int _val)
 	{
-		//TODO
+		val = _val;
 	}
 }

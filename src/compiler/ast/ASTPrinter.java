@@ -236,7 +236,7 @@ public class ASTPrinter implements ASTNodeVisitor
 			ue.ast_rep[i] = seperator;
 
 		// add sub-nodes' content
-		ue.ast_rep[1] += "--Operator: ";
+		ue.ast_rep[1] += (leading + "Operator: ");
 		switch (ue.op)
 		{
 		case BIT_AND:
@@ -370,24 +370,35 @@ public class ASTPrinter implements ASTNodeVisitor
 
 	public void visit(PrimaryExpr pe) throws Exception
 	{
-		pe.ast_rep = new String[1];
-		pe.ast_rep[0] = "--";
-
 		switch (pe.elem_type)
 		{
 		case ID:
+			pe.ast_rep = new String[1];
+			pe.ast_rep[0] = leading;
 			pe.ast_rep[0] += "Identifier: " + (String) pe.elem;
 			break;
 		case STRING:
+			pe.ast_rep = new String[1];
+			pe.ast_rep[0] = leading;
 			pe.ast_rep[0] += "String: " + '\"' + (String) pe.elem + '\"';
 			break;
 		case INT:
+			pe.ast_rep = new String[1];
+			pe.ast_rep[0] = leading;
 			pe.ast_rep[0] += "Integer-Constant: " + ((Integer) pe.elem).toString();
 			break;
 		case CHAR:
+			pe.ast_rep = new String[1];
+			pe.ast_rep[0] = leading;
 			pe.ast_rep[0] += "Character-Constant: " + '\'' + (Character) pe.elem + '\'';
 			break;
-		default:
+		case PAREN:
+			Expression e = (Expression) pe.elem;
+			e.accept(this);
+			pe.ast_rep = new String[e.ast_rep.length];
+			int cl = 0;
+			for (String str : e.ast_rep)
+				pe.ast_rep[cl++] = str;
 			break;
 		}
 	}
