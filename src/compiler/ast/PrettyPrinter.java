@@ -412,23 +412,7 @@ public class PrettyPrinter implements ASTNodeVisitor
 	}
 
 	@Override
-	public void visit(FuncDeclarator x) throws Exception
-	{
-		x.code_rep = new String[1];
-		str_init(x.code_rep, 1);
-
-		x.plain_declarator.accept(this);
-		x.code_rep[0] += x.plain_declarator.code_rep[0];
-
-		if (x.param != null)
-		{
-			x.param.accept(this);
-			x.code_rep[0] += ("(" + x.param.code_rep[0] + ")");
-		}
-	}
-
-	@Override
-	public void visit(VarDeclarator x) throws Exception
+	public void visit(Declarator x) throws Exception
 	{
 		x.code_rep = new String[1];
 		str_init(x.code_rep, 1);

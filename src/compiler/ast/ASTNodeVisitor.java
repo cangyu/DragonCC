@@ -22,8 +22,7 @@ public interface ASTNodeVisitor
     /* Decl */
     public abstract void visit(StarList x) throws Exception;
     public abstract void visit(Declaration x) throws Exception;
-    public abstract void visit(FuncDeclarator x) throws Exception;
-    public abstract void visit(VarDeclarator x) throws Exception;
+    public abstract void visit(Declarator x) throws Exception;
     public abstract void visit(DeclarationList x) throws Exception;
     public abstract void visit(DeclaratorList x) throws Exception;
     public abstract void visit(InitDeclarator x) throws Exception;

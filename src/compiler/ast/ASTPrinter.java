@@ -691,37 +691,7 @@ public class ASTPrinter implements ASTNodeVisitor
 				decl.ast_rep[cl++] += str;
 	}
 
-	public void visit(FuncDeclarator fd) throws Exception
-	{
-		// construct components and count lines
-		int lc = 1;
-
-		fd.plain_declarator.accept(this);
-		lc += fd.plain_declarator.ast_rep.length;
-
-		if (fd.param != null)
-		{
-			fd.param.accept(this);
-			lc += fd.param.ast_rep.length;
-		}
-
-		// initialize format
-		fd.ast_rep = new String[lc];
-		fd.ast_rep[0] = "--FuncDecl";
-		for (int i = 1; i < lc; i++)
-			fd.ast_rep[i] = seperator;
-
-		// add contents
-		int cl = 1;
-		for (String str : fd.plain_declarator.ast_rep)
-			fd.ast_rep[cl++] += str;
-
-		if (fd.param != null)
-			for (String str : fd.param.ast_rep)
-				fd.ast_rep[cl++] += str;
-	}
-
-	public void visit(VarDeclarator vd) throws Exception
+	public void visit(Declarator vd) throws Exception
 	{
 		// construct components and count lines
 		vd.plain_declarator.accept(this);

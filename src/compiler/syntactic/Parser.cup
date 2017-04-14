@@ -59,8 +59,6 @@ non terminal ProgramComp prog_comp;
 non terminal StarList star_list;
 non terminal PlainDeclarator plain_declarator;
 non terminal Declarator declarator;
-non terminal FuncDeclarator func_declarator;
-non terminal VarDeclarator var_declarator;
 non terminal InitDeclarator init_declarator;
 
 non terminal PlainDeclaration plain_declaration;
@@ -208,14 +206,8 @@ star_list ::= /* Empty */ {: RESULT = new StarList(0); :}
 
 plain_declarator ::= star_list:ss ID:id {: RESULT = new PlainDeclarator(ss, id); :};
 
-declarator ::= var_declarator:vd {: RESULT = vd; :}
-             | func_declarator:fd {: RESULT = fd; :};
-
-var_declarator ::= plain_declarator:pd {: RESULT = new VarDeclarator(pd); :}
-                 | var_declarator:vd LMPAREN constant_expression:ce RMPAREN {: vd.dimension.add(ce); RESULT = vd; :};
-
-func_declarator ::= plain_declarator:pd LPAREN RPAREN {: RESULT = new FuncDeclarator(pd, null); :}
-                  | plain_declarator:pd LPAREN parameter_list:para RPAREN {: RESULT = new FuncDeclarator(pd, para); :};
+declarator ::= plain_declarator:pd {: RESULT = new Declarator(pd); :}
+             | declarator:d LMPAREN constant_expression:ce RMPAREN {: d.dimension.add(ce); RESULT = d; :};
 
 declarator_list ::= declarator:d {: RESULT = new DeclaratorList(d, null); :}
                   | declarator:d COMMA declarator_list:ds {: RESULT = new DeclaratorList(d, ds); :};
