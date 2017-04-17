@@ -50,8 +50,23 @@ public class Semantic
 	private void checkDeclaration(Declaration x) throws Exception
 	{
 		Type def_type = checkTypeSpecifier(x.type_specifier);
+		InitDeclaratorList y = x.init_declarator_list;
 
-		checkInitDeclaratorList(x.init_declarator_list, def_type);
+		if (y == null)
+		{
+			switch (x.type_specifier.type)
+			{
+			case VOID:
+			case INT:
+			case CHAR:
+				panic("Meaningless declaration of intrinsic type!");
+				break;
+			default:
+				break;
+			}
+		}
+		else
+			checkInitDeclaratorList(y, def_type);
 	}
 
 	private Type checkPlainDeclarator(PlainDeclarator x, Type def_type)
@@ -172,17 +187,17 @@ public class Semantic
 
 	private void checkJumpStmt(JumpStmt x) throws Exception
 	{
-		switch(x.type)
+		switch (x.type)
 		{
 		case RETURN:
 			checkExpr(x.expr);
 			break;
 		case BREAK:
-			if(--loop_cnt < 0)
+			if (--loop_cnt < 0)
 				panic("Break statement not within a loop!");
 			break;
 		case CONTINUE:
-			if(--loop_cnt < 0)
+			if (--loop_cnt < 0)
 				panic("Continue statement not within a loop!");
 			break;
 		default:
@@ -193,22 +208,22 @@ public class Semantic
 	private void checkIterationStmt(IterationStmt x) throws Exception
 	{
 		++loop_cnt;
-		
-		if(x.iteration_type == IterationStmt.Type.FOR)
+
+		if (x.iteration_type == IterationStmt.Type.FOR)
 		{
-			if(x.init!=null)
+			if (x.init != null)
 				checkExpr(x.init);
-			if(x.judge!=null)
+			if (x.judge != null)
 				checkExpr(x.judge);
-			if(x.next!=null)
+			if (x.next != null)
 				checkExpr(x.next);
 		}
 		else
 		{
-			if(x.judge!=null)
+			if (x.judge != null)
 				checkExpr(x.judge);
 		}
-		
+
 		checkStmt(x.stmt);
 	}
 
@@ -1029,11 +1044,23 @@ public class Semantic
 
 	private void checkInitDeclarator(InitDeclarator x, Type def_type) throws Exception
 	{
-		Type real_type = checkDeclarator(x.declarator, def_type);
-		Type init_type = checkInitializer(x.initializer);
+		String vn = x.declarator.plain_declarator.identifier;
+		Symbol csym = Symbol.getSymbol(vn);
+		if (env.get(csym) != null)
+			panic("Variable: " + vn + " has been declared in this scope!");
 
-		if (!real_type.isAssignableWith(init_type))
-			panic("Invalid assignment when initializing variable: " + x.declarator.plain_declarator.identifier);
+		Type real_type = checkDeclarator(x.declarator, def_type);
+		boolean has_initialized = x.initializer != null;
+		
+		if (has_initialized)
+		{
+			Type init_type = checkInitializer(x.initializer);
+
+			if (!real_type.isAssignableWith(init_type))
+				panic("Invalid assignment when initializing variable: " + x.declarator.plain_declarator.identifier);
+		}
+
+		env.put(csym, new VarEntry(real_type, has_initialized));
 	}
 
 	private Type checkDeclarator(Declarator x, Type def_type) throws Exception
