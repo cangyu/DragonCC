@@ -35,11 +35,4 @@ public final class Union extends Record
 	{
 		return false;
 	}
-
-	@Override
-	public int getSize()
-	{
-		// TODO Auto-generated method stub
-		return 0;
-	}
 }

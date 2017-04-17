@@ -2,8 +2,8 @@ package compiler.semantic;
 
 public final class FuncEntry extends Entry 
 {
-	public FuncEntry(Type _t)
+	public FuncEntry(Function x)
 	{
-		super(_t, false);
+		super(x, false);
 	}
 }

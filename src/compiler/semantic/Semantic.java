@@ -2,12 +2,12 @@ package compiler.semantic;
 
 import java.util.*;
 import compiler.ast.*;
-import compiler.syntactic.*;
 
 public class Semantic
 {
 	Table tag_env, env;
 	Program prog;
+	int loop_cnt;
 
 	private static void panic(String msg) throws Exception
 	{
@@ -19,6 +19,7 @@ public class Semantic
 		tag_env = new Table();
 		env = new Table();
 		prog = x;
+		loop_cnt = 0;
 	}
 
 	public void check() throws Exception
@@ -53,9 +54,162 @@ public class Semantic
 		checkInitDeclaratorList(x.init_declarator_list, def_type);
 	}
 
+	private Type checkPlainDeclarator(PlainDeclarator x, Type def_type)
+	{
+		Type real_type = def_type;
+		int n = x.star_list.cnt;
+		for (int i = 0; i < n; i++)
+			real_type = new Pointer(real_type);
+
+		return real_type;
+	}
+
 	private void checkFuncDef(FuncDef x) throws Exception
 	{
-		// TODO
+		Type def_type = checkTypeSpecifier(x.type_specifier);
+		Type real_type = checkPlainDeclarator(x.func_name, def_type);
+		String fn = x.func_name.identifier;
+		Symbol csym = Symbol.getSymbol(fn);
+		Entry ce = (Entry) env.get(csym);
+
+		if (ce != null)
+			panic(fn + " has already been defined!");
+
+		if (!real_type.complete)
+			panic("Return type of function: " + fn + " is incomplete!");
+
+		Function ft = new Function(real_type);
+		env.put(csym, new FuncEntry(ft));
+
+		env.beginScope();
+		checkParameterList(x, ft);
+		checkCompoundStmt(x.comp_stmt);
+		env.endScope();
+	}
+
+	private void checkParameterList(FuncDef x, Function ft) throws Exception
+	{
+		ParameterList y = x.params;
+
+		while (y != null)
+		{
+			PlainDeclaration z = y.head;
+			Type def_type = checkTypeSpecifier(z.type_specifier);
+			Type real_type = checkDeclarator(z.declarator, def_type);
+			String vn = z.declarator.plain_declarator.identifier;
+			Symbol csym = Symbol.getSymbol(vn);
+
+			if (env.get(csym) != null)
+				panic("Variable: " + vn + " has already been declared in this scope!");
+
+			env.put(csym, new VarEntry(real_type, false));
+			ft.args.add(real_type);
+
+			y = y.next;
+		}
+	}
+
+	private void checkStmt(Stmt x) throws Exception
+	{
+		if (x instanceof ExpressionStmt)
+			checkExpressionStmt((ExpressionStmt) x);
+		else if (x instanceof CompoundStmt)
+		{
+			env.beginScope();
+			checkCompoundStmt((CompoundStmt) x);
+			env.endScope();
+		}
+		else if (x instanceof SelectionStmt)
+			checkSelectionStmt((SelectionStmt) x);
+		else if (x instanceof JumpStmt)
+			checkJumpStmt((JumpStmt) x);
+		else if (x instanceof IterationStmt)
+			checkIterationStmt((IterationStmt) x);
+		else
+			panic("Internal Error!");
+	}
+
+	private void checkExpressionStmt(ExpressionStmt x) throws Exception
+	{
+		checkExpression(x.e);
+	}
+
+	private void checkCompoundStmt(CompoundStmt x) throws Exception
+	{
+		checkDeclarationList(x.declaration_list);
+		checkStmtList(x.stmt_list);
+	}
+
+	private void checkDeclarationList(DeclarationList x) throws Exception
+	{
+		while (x != null)
+		{
+			checkDeclaration(x.head);
+			x = x.next;
+		}
+	}
+
+	private void checkStmtList(StmtList x) throws Exception
+	{
+		while (x != null)
+		{
+			checkStmt(x.head);
+			x = x.next;
+		}
+	}
+
+	private void checkSelectionStmt(SelectionStmt x) throws Exception
+	{
+		Type cond_type = checkExpr(x.cond);
+		boolean ok = cond_type instanceof Int || cond_type instanceof Char || cond_type instanceof Pointer;
+		if (!ok)
+			panic("Invalid condition expr!");
+
+		checkStmt(x.if_clause);
+		if (x.else_clause != null)
+			checkStmt(x.else_clause);
+	}
+
+	private void checkJumpStmt(JumpStmt x) throws Exception
+	{
+		switch(x.type)
+		{
+		case RETURN:
+			checkExpr(x.expr);
+			break;
+		case BREAK:
+			if(--loop_cnt < 0)
+				panic("Break statement not within a loop!");
+			break;
+		case CONTINUE:
+			if(--loop_cnt < 0)
+				panic("Continue statement not within a loop!");
+			break;
+		default:
+			panic("Internal Error!");
+		}
+	}
+
+	private void checkIterationStmt(IterationStmt x) throws Exception
+	{
+		++loop_cnt;
+		
+		if(x.iteration_type == IterationStmt.Type.FOR)
+		{
+			if(x.init!=null)
+				checkExpr(x.init);
+			if(x.judge!=null)
+				checkExpr(x.judge);
+			if(x.next!=null)
+				checkExpr(x.next);
+		}
+		else
+		{
+			if(x.judge!=null)
+				checkExpr(x.judge);
+		}
+		
+		checkStmt(x.stmt);
 	}
 
 	private Type checkTypeSpecifier(TypeSpecifier x) throws Exception
@@ -147,7 +301,62 @@ public class Semantic
 
 	private void check_union(TypeSpecifier x) throws Exception
 	{
-		// TODO
+		if (x.comp == null)// union node
+		{
+			Symbol ss = Symbol.getSymbol(x.tag);
+			TypeEntry ce = (TypeEntry) tag_env.get(ss);
+
+			if (ce != null)
+			{
+				if (!(ce.type instanceof Union))
+					panic(x.tag + " is not declared as union!");
+
+				x.detail = ce.type;
+			}
+			else
+			{
+				x.detail = new Union(x.tag, null);
+				tag_env.put(ss, new TypeEntry(x.detail));
+			}
+		}
+		else
+		{
+			if (x.tag == null)// union { ... }
+			{
+				Table cc = new Table();
+				x.detail = new Union(null, cc);
+				x.detail.size = check_record_comp(x);
+				x.detail.complete = true;
+			}
+			else// union node { ... }
+			{
+				Symbol csym = Symbol.getSymbol(x.tag);
+				TypeEntry ce = (TypeEntry) tag_env.get(csym);
+
+				if (ce != null)// may be declared before
+				{
+					if (!(ce.type instanceof Union))
+						panic(x.tag + " is not declared as union!");
+
+					Union cst = (Union) ce.type;
+					if (cst.comp != null)
+						panic("union " + x.tag + " has been declared before!");
+
+					cst.comp = new Table();
+					x.detail = cst;
+					x.detail.size = check_record_comp(x);
+					x.detail.complete = true;
+				}
+				else// first time meet
+				{
+					Table cc = new Table();
+					x.detail = new Union(x.tag, cc);
+					tag_env.put(csym, new TypeEntry(x.detail));
+					x.detail.size = check_record_comp(x);
+					x.detail.complete = true;
+				}
+			}
+		}
 	}
 
 	private int check_record_comp(TypeSpecifier x) throws Exception
@@ -430,11 +639,35 @@ public class Semantic
 			panic("Internal Error!");
 	}
 
-	private Type check_func_args(ArgumentList x, Function y) throws Exception
+	private Type check_func_args(ArgumentList x, Function f) throws Exception
 	{
-		// TODO
+		ArgumentList y = x;
+		LinkedList<Type> ats = new LinkedList<Type>();
+		while (y != null)
+		{
+			ats.add(checkExpr(y.head));
+			y = y.next;
+		}
 
-		return y.ret_type;
+		if (ats.size() > f.args.size())
+			panic("Too many arguments in function call!");
+		else if (ats.size() < f.args.size())
+			panic("Too few arguments in function call!");
+		else
+		{
+			Iterator<Type> ait = ats.iterator();
+			Iterator<Type> fit = f.args.iterator();
+			while (ait.hasNext())
+			{
+				Type cat = ait.next();
+				Type fat = fit.next();
+
+				if (!cat.equals(fat))
+					panic("Argument type does not match!");
+			}
+		}
+
+		return f.ret_type;
 	}
 
 	private void checkUnaryExpr(UnaryExpr x) throws Exception
@@ -858,7 +1091,7 @@ public class Semantic
 			{
 				Type ct = checkInitializer(y.head);
 				if (ct.equals(et) != true)
-					panic("Inconsistant types in a initializer list!");
+					panic("Types in an initializer list must be identical to each other!");
 
 				ret.add(ct);
 				y = y.next;

@@ -14,6 +14,4 @@ public abstract class Record extends Type
 		complete = false;
 		visited = false;
 	}
-	
-	public abstract int getSize();
 }

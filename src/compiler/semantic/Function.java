@@ -8,7 +8,7 @@ public final class Function extends Type
 	LinkedList<Type> args;
 	Type ret_type;
 	
-	public Function(Type arg_t, Type ret_t)
+	public Function(Type ret_t)
 	{
 		args = new LinkedList<Type>();
 		ret_type = ret_t;
