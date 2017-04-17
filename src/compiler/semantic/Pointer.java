@@ -15,9 +15,9 @@ public class Pointer extends Type
 	@Override
 	public boolean equals(Type rhs)
 	{
-		if(this == rhs)
+		if (this == rhs)
 			return true;
-		else if(rhs instanceof Pointer)
+		else if (rhs instanceof Pointer)
 			return ((Pointer) this).elem_type.equals(((Pointer) rhs).elem_type);
 		else
 			return false;
@@ -26,45 +26,28 @@ public class Pointer extends Type
 	@Override
 	public boolean isAssignableWith(Type rhs)
 	{
-		if(rhs instanceof Array || rhs instanceof Pointer)
-			return true;
-		else
-			return false;
+		return rhs instanceof Array || rhs instanceof Pointer;
 	}
 
 	@Override
 	public boolean canOperateWith(Operator _op, Type _t)
 	{
-		if(_op == Operator.PLUS)
+		switch (_op)
 		{
-			if(_t instanceof Int)
-				return true;
-			else
-				return false;
-		}
-		else if(_op == Operator.MINUS)
-		{
-			if(_t instanceof Pointer)
-				return true;
-			else if(_t instanceof Int)
-				return true;
-			else
-				return false;
-		}
-		else if(_op == Operator.EQ 
-				|| _op == Operator.NE 
-				|| _op == Operator.LE
-				|| _op == Operator.LT 
-				|| _op == Operator.GE 
-				|| _op == Operator.GT)
-		{
-			if(_t instanceof Array || _t instanceof Pointer)
-				return true;
-			else
-				return false;
-		}
-		else
+		case PLUS:
+			return (_t instanceof Int);
+		case MINUS:
+			return (_t instanceof Pointer) || (_t instanceof Int);
+		case EQ:
+		case NE:
+		case LE:
+		case LT:
+		case GE:
+		case GT:
+			return (_t instanceof Array) || (_t instanceof Pointer);
+		default:
 			return false;
+		}
 	}
 
 	@Override

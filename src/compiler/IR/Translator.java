@@ -127,14 +127,7 @@ public class Translator implements ASTNodeVisitor
 	}
 
 	@Override
-	public void visit(FuncDeclarator x) throws Exception
-	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visit(VarDeclarator x) throws Exception
+	public void visit(Declarator x) throws Exception
 	{
 		// TODO Auto-generated method stub
 
