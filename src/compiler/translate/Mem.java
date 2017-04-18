@@ -1,4 +1,4 @@
-package compiler.IR;
+package compiler.translate;
 
 public class Mem extends Exp
 {
