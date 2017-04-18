@@ -114,9 +114,6 @@ public class Semantic
 			String vn = z.declarator.plain_declarator.identifier;
 			Symbol csym = Symbol.getSymbol(vn);
 
-			if (env.get(csym) != null)
-				panic("Variable: " + vn + " has already been declared in this scope!");
-
 			env.put(csym, new VarEntry(real_type, false));
 			ft.args.add(real_type);
 
@@ -401,8 +398,14 @@ public class Semantic
 				Type real_type = cts.detail;
 
 				// TypeSpecifier a
-				if (sc == 0 && !cts.detail.complete)
-					panic("Incomplete type detected!");
+				if (sc == 0)
+				{
+					if(!cts.detail.complete)
+						panic("Incomplete type detected!");
+					
+					if(real_type instanceof Void)
+						panic("Variable can not be declared as void!");
+				}
 
 				// TypeSpecifier **a
 				for (int i = 0; i < sc; i++)
@@ -1046,9 +1049,10 @@ public class Semantic
 	{
 		String vn = x.declarator.plain_declarator.identifier;
 		Symbol csym = Symbol.getSymbol(vn);
+		/*
 		if (env.get(csym) != null)
 			panic("Variable: " + vn + " has been declared in this scope!");
-
+		*/
 		Type real_type = checkDeclarator(x.declarator, def_type);
 		boolean has_initialized = x.initializer != null;
 		

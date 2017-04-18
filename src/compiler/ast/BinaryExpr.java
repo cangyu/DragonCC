@@ -1,7 +1,5 @@
 package compiler.ast;
 
-import compiler.ast.AssignmentExpr.Operator;
-
 public class BinaryExpr extends Expr
 {
 	public static enum Operator
