@@ -1,10 +1,37 @@
 package compiler.translate;
 
 import compiler.ast.*;
+import java.util.Stack;
+import compiler.semantic.Table;
+import compiler.translate.temp.Label;
 
 public class Translator implements ASTNodeVisitor
 {
-
+	private Program prog;
+	private Table vscope;
+	private int offset;
+	private Stack<Integer> offsets;
+	private Label exit;
+	
+	private static void panic(String msg) throws Exception
+	{
+		throw new Exception(msg);
+	}
+	
+	public Translator(Program x)
+	{
+		prog = x;
+		vscope = new Table();
+		offset = 0;
+		offsets = new Stack<Integer>();
+		exit = new Label();
+	}
+	
+	public void translate() throws Exception
+	{
+		prog.accept(this);
+	}
+	
 	@Override
 	public void visit(Expression x) throws Exception
 	{
@@ -100,11 +127,13 @@ public class Translator implements ASTNodeVisitor
 			x.judge.accept(this);
 			x.stmt.accept(this);
 			
+			/*
 			x.ir_rep = new Seq(new Branch(x.judge.ir_rep, begin, end), 
 							   new Seq(begin, 
 									   new Seq(x.stmt.ir_rep, 
 											   new Seq(new Jump(begin),
 													   end))));
+		   */
 		}
 		else
 		{
@@ -241,8 +270,11 @@ public class Translator implements ASTNodeVisitor
 	@Override
 	public void visit(Program x) throws Exception
 	{
-		// TODO Auto-generated method stub
-
+		while(x!=null)
+		{
+			x.head.accept(this);
+			x = x.next;
+		}
 	}
 
 }

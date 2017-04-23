@@ -1,4 +1,4 @@
-package compiler.translate;
+package compiler.translate.ir;
 
 import compiler.ast.BinaryExpr.Operator;
 

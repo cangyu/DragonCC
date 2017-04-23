@@ -1,6 +1,7 @@
 package compiler.ast;
 
 import compiler.translate.*;
+import compiler.translate.ir.Stm;
 
 public abstract class ASTNode
 {

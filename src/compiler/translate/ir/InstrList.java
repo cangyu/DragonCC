@@ -1,4 +1,4 @@
-package compiler.translate;
+package compiler.translate.ir;
 
 public class InstrList
 {

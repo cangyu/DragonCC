@@ -1,11 +1,19 @@
-package compiler.translate;
+package compiler.translate.frame;
+
+import compiler.translate.ir.Exp;
+import compiler.translate.ir.ExpList;
+import compiler.translate.ir.InstrList;
+import compiler.translate.ir.Stm;
+import compiler.translate.temp.Label;
+import compiler.translate.temp.Temp;
+import compiler.translate.temp.TempList;
 
 public abstract class Frame
 {
 	public Label name;
 	public AccessList formals = null;
 
-	public abstract Frame newFrame(Label name, boolean[] formals);
+	public abstract Frame newFrame(Label name, BoolList formals);
 	public abstract Access allocLocal(boolean escape);
 	public abstract Exp externalCall(String func, ExpList args);
 	public abstract Temp FP();

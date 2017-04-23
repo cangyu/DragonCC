@@ -1,8 +1,8 @@
-package compiler.translate;
+package compiler.translate.ir;
 
 public class Const extends Exp
 {
-	int val;
+	public int val;
 	
 	public Const(int _val)
 	{

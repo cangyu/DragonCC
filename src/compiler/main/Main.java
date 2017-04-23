@@ -4,6 +4,7 @@ import java.io.*;
 import compiler.syntactic.*;
 import compiler.ast.*;
 import compiler.semantic.*;
+import compiler.translate.*;
 
 public class Main
 {
@@ -48,6 +49,11 @@ public class Main
 		Semantic sc = new Semantic(prog);
 		sc.check();
 		System.out.println("\tSemantic Check Done!");
+		
+		System.out.println("\tTranslating...");
+		Translator irt = new Translator(prog);
+		irt.translate();
+		System.out.println("\tTranslation Done!");
 	}
 
 	public static Program Parse(String _filename) throws Exception

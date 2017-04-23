@@ -1,4 +1,6 @@
-package compiler.translate;
+package compiler.translate.ir;
+
+import compiler.translate.temp.Label;
 
 public class Branch extends Stm
 {
