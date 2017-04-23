@@ -1,10 +1,10 @@
 package compiler.translate.ir;
 
-public class Const extends Exp
+public class CONST extends Exp
 {
 	public int val;
 	
-	public Const(int _val)
+	public CONST(int _val)
 	{
 		val = _val;
 	}

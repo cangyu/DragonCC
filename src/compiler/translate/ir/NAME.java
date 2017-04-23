@@ -2,11 +2,11 @@ package compiler.translate.ir;
 
 import compiler.translate.temp.Label;
 
-public class Name
+public class NAME
 {
 	public Label label;
 	
-	public Name(Label n)
+	public NAME(Label n)
 	{
 		label = n;
 	}

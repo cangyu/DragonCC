@@ -1,6 +1,6 @@
 package compiler.translate.frame;
 
-public abstract class AccessList
+public class AccessList
 {
 	public Access head;
 	public AccessList next;
