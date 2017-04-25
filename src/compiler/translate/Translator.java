@@ -3,7 +3,6 @@ package compiler.translate;
 import compiler.ast.*;
 import java.util.Stack;
 import compiler.semantic.Table;
-import compiler.translate.temp.Label;
 
 public class Translator implements ASTNodeVisitor
 {
@@ -11,7 +10,9 @@ public class Translator implements ASTNodeVisitor
 	private Table vscope;
 	private int offset;
 	private Stack<Integer> offsets;
+	private Stack<Label> breakLabels, continueLabels;
 	private Label exit;
+	private Temp fp, sp, zero, a0, v0, ra;
 	
 	private static void panic(String msg) throws Exception
 	{
@@ -105,8 +106,7 @@ public class Translator implements ASTNodeVisitor
 	@Override
 	public void visit(SelectionStmt x) throws Exception
 	{
-		// TODO Auto-generated method stub
-
+	    
 	}
 
 	@Override
@@ -126,14 +126,6 @@ public class Translator implements ASTNodeVisitor
 			
 			x.judge.accept(this);
 			x.stmt.accept(this);
-			
-			/*
-			x.ir_rep = new Seq(new Branch(x.judge.ir_rep, begin, end), 
-							   new Seq(begin, 
-									   new Seq(x.stmt.ir_rep, 
-											   new Seq(new Jump(begin),
-													   end))));
-		   */
 		}
 		else
 		{
@@ -151,7 +143,12 @@ public class Translator implements ASTNodeVisitor
 	@Override
 	public void visit(Declaration x) throws Exception
 	{
-		// TODO Auto-generated method stub
+	    if(x.init_declarator_list == null)
+	        return;
+	    
+	    Label label;
+	    
+	    
 
 	}
 
@@ -249,22 +246,21 @@ public class Translator implements ASTNodeVisitor
 	@Override
 	public void visit(ParameterList x) throws Exception
 	{
-		// TODO Auto-generated method stub
-
+	    
 	}
 
 	@Override
 	public void visit(TypeName x) throws Exception
 	{
-		// TODO Auto-generated method stub
-
+	    x.type_specifier.accept(this);
+	    x.star_list.accept(this);
 	}
 
 	@Override
 	public void visit(TypeSpecifier x) throws Exception
 	{
-		// TODO Auto-generated method stub
-
+	    if(x.comp!=null)
+	        x.comp.accept(this);
 	}
 
 	@Override
