@@ -1,276 +1,289 @@
 package compiler.translate;
 
 import compiler.ast.*;
-import java.util.Stack;
-import compiler.semantic.Table;
+import compiler.ast.BinaryExpr.Operator;
+import java.util.*;
+import compiler.semantic.*;
 
-public class Translator implements ASTNodeVisitor
+public class Translator
 {
-	private Program prog;
-	private Table vscope;
-	private int offset;
-	private Stack<Integer> offsets;
-	private Stack<Label> breakLabels, continueLabels;
-	private Label exit;
-	private Temp fp, sp, zero, a0, v0, ra;
-	
-	private static void panic(String msg) throws Exception
-	{
-		throw new Exception(msg);
-	}
-	
-	public Translator(Program x)
-	{
-		prog = x;
-		vscope = new Table();
-		offset = 0;
-		offsets = new Stack<Integer>();
-		exit = new Label();
-	}
-	
-	public void translate() throws Exception
-	{
-		prog.accept(this);
-	}
-	
-	@Override
-	public void visit(Expression x) throws Exception
-	{
-		// TODO Auto-generated method stub
+    private Program prog;
+    private Table vscope, env, tag_env;
+    private int offset;
+    private Stack<Integer> offsets;
+    private Stack<Label> begin_label, end_label;
+    private Label exit;
+    private Temp fp, sp, zero, a0, v0, ra;
+    private LinkedList<Quad> code;
 
-	}
+    private static void panic(String msg) throws Exception
+    {
+        throw new Exception(msg);
+    }
 
-	@Override
-	public void visit(AssignmentExpr x) throws Exception
-	{
-		// TODO Auto-generated method stub
+    public Translator(Program x)
+    {
+        prog = x;
+        vscope = new Table();
+        offset = 0;
+        offsets = new Stack<Integer>();
+        exit = new Label();
+    }
 
-	}
+    public void translate() throws Exception
+    {
+        translate(prog);
+    }
 
-	@Override
-	public void visit(BinaryExpr x) throws Exception
-	{
-		// TODO Auto-generated method stub
+    private void translate(Program x) throws Exception
+    {
+        while (x != null)
+        {
+            if (x.head instanceof Declaration)
+                translate((Declaration) x.head);
+            else
+                translate((FuncDef) x.head);
 
-	}
+            x = x.next;
+        }
+    }
 
-	@Override
-	public void visit(CastExpr x) throws Exception
-	{
-		// TODO Auto-generated method stub
+    private void translate(Declaration x) throws Exception
+    {
+        if (x.init_declarator_list == null)
+            return;
 
-	}
+        InitDeclaratorList y = x.init_declarator_list;
+        while (y != null)
+        {
+            InitDeclarator z = y.head;
 
-	@Override
-	public void visit(UnaryExpr x) throws Exception
-	{
-		// TODO Auto-generated method stub
+            String vn = z.declarator.plain_declarator.identifier;
+            Symbol csym = Symbol.getSymbol(vn);
+            VarEntry ve = (VarEntry) env.get(csym);
+            ve.offset = offset;
+            offset += ve.size;
 
-	}
+            Initializer ir = z.initializer;
+            if (ir != null)
+            {
+                Expr e = ir.expr;
+                if (e != null)
+                {
+                    Const val = new Const((int) e.value);
+                    Const dst = new Const(ve.offset);
+                    return new Move(val, new Mem(dst));
+                }
+            }
 
-	@Override
-	public void visit(PostfixExpr x) throws Exception
-	{
-		// TODO Auto-generated method stub
+            y = y.next;
+        }
+    }
 
-	}
+    private void translate(FuncDef x) throws Exception
+    {
+        translate(x.params);
+        translate(x.comp_stmt);
+    }
 
-	@Override
-	public void visit(PrimaryExpr x) throws Exception
-	{
-		// TODO Auto-generated method stub
+    private void translate(CompoundStmt x) throws Exception
+    {
+        translate_local_decl(x.declaration_list);
+        translate(x.stmt_list);
+    }
 
-	}
+    private void translate(StmtList x) throws Exception
+    {
+        while (x != null)
+        {
+            translate(x.head);
+            x = x.next;
+        }
+    }
 
-	@Override
-	public void visit(StmtList x) throws Exception
-	{
-		// TODO Auto-generated method stub
+    private void translate(Stmt x) throws Exception
+    {
+        if (x instanceof ExpressionStmt)
+            translate((ExpressionStmt) x);
+        else if (x instanceof CompoundStmt)
+        {
+            vscope.beginScope();
+            translate((CompoundStmt) x);
+            vscope.endScope();
+        }
+        else if (x instanceof SelectionStmt)
+            translate((SelectionStmt) x);
+        else if (x instanceof JumpStmt)
+            translate((JumpStmt) x);
+        else if (x instanceof IterationStmt)
+            translate((IterationStmt) x);
+        else
+            panic("Internal Error!");
+    }
 
-	}
+    private void translate(ExpressionStmt x) throws Exception
+    {
+        if (x.e != null)
+            translate(x.e);
+    }
 
-	@Override
-	public void visit(ExpressionStmt x) throws Exception
-	{
-		// TODO Auto-generated method stub
+    private void translate(SelectionStmt x) throws Exception
+    {
+        QuadList ret = null;
 
-	}
+        Label l1 = new Label();
+        Label l2 = new Label();
+        Oprand e = translate(x.cond);
 
-	@Override
-	public void visit(CompoundStmt x) throws Exception
-	{
-		// TODO Auto-generated method stub
+        Branch b = new Branch(Operator.EQ, e, new Const(0), l2);
+        QuadList ife = translate(x.if_clause);
+        Jump j = new Jump(l1);
+        QuadList ese = translate(x.else_clause);
 
-	}
+        code.add(b);
+        QuadList tmp = ife;
+        while (tmp != null)
+        {
+            code.add(tmp.head);
+            tmp = tmp.next;
+        }
 
-	@Override
-	public void visit(SelectionStmt x) throws Exception
-	{
-	    
-	}
+        code.add(j);
+        code.add(new LabelQuad(l2));
+        tmp = ese;
+        while (ese != null)
+        {
+            code.add(tmp.head);
+            tmp = tmp.next;
+        }
+        code.add(new LabelQuad(l1));
+    }
 
-	@Override
-	public void visit(JumpStmt x) throws Exception
-	{
-		// TODO Auto-generated method stub
+    private void translate(JumpStmt x) throws Exception
+    {
+        switch (x.type)
+        {
+        case CONTINUE:
+            code.add(new Jump(begin_label.peek()));
+            begin_label.pop();
+            break;
+        case BREAK:
+            code.add(new Jump(end_label.peek()));
+            end_label.pop();
+            break;
+        case RETURN:
+            Temp ret_val = translate(x.expr);
+            code.add(new Return(new TempOprand(ret_val)));
+            break;
+        default:
+            panic("Internal Error!");
+        }
+    }
 
-	}
+    private void translate(IterationStmt x) throws Exception
+    {
+        switch (x.iteration_type)
+        {
+        case WHILE:
+            translate_while_stmt(x);
+            break;
+        case FOR:
+            translate_for_stmt(x);
+            break;
+        default:
+            panic("Internal Error!");
+        }
+    }
 
-	@Override
-	public void visit(IterationStmt x) throws Exception
-	{
-		if(x.iteration_type == IterationStmt.Type.WHILE)
-		{
-			Label begin = new Label();
-			Label end = new Label();
-			
-			x.judge.accept(this);
-			x.stmt.accept(this);
-		}
-		else
-		{
-			
-		}
-	}
+    private void translate_while_stmt(IterationStmt x) throws Exception
+    {
+        Label beginwhile = new Label();
+        Label endwhile = new Label();
 
-	@Override
-	public void visit(StarList x) throws Exception
-	{
-		// TODO Auto-generated method stub
+        Temp judge = translate(x.judge);
+        TempOprand judge_oprand = new TempOprand(judge);
+        QuadList ql = translate(x.stmt);
 
-	}
+        code.add(new LabelQuad(beginwhile));
+        code.add(new Branch(Operator.EQ, judge_oprand, new Const(0), endwhile));
+        while (ql != null)
+        {
+            code.add(ql.head);
+            ql = ql.next;
+        }
+        code.add(new LabelQuad(endwhile));
+    }
 
-	@Override
-	public void visit(Declaration x) throws Exception
-	{
-	    if(x.init_declarator_list == null)
-	        return;
-	    
-	    Label label;
-	    
-	    
+    private void translate_for_stmt(IterationStmt x) throws Exception
+    {
+        
+    }
 
-	}
+    private void translate(Expr x) throws Exception
+    {
+        if (x instanceof PrimaryExpr)
+            translate((PrimaryExpr) x);
+        else if (x instanceof PostfixExpr)
+            translate((PostfixExpr) x);
+        else if (x instanceof UnaryExpr)
+            translate((UnaryExpr) x);
+        else if (x instanceof CastExpr)
+            translate((CastExpr) x);
+        else if (x instanceof BinaryExpr)
+            translate((BinaryExpr) x);
+        else if (x instanceof AssignmentExpr)
+            translate((AssignmentExpr) x);
+        else if (x instanceof Expression)
+            translate((Expression) x);
+        else
+            panic("Internal Error!");
+    }
 
-	@Override
-	public void visit(Declarator x) throws Exception
-	{
-		// TODO Auto-generated method stub
+    private Quad translate(PrimaryExpr x) throws Exception
+    {
+        switch (x.elem_type)
+        {
+        case INT:
+            return new Const((int) x.elem);
+        case CHAR:
+            return new Const((int) x.elem);
+        case STRING:
+            return new Label((String) x.elem);
+        case ID:
+            return new Label((String) x.elem);
+        case PAREN:
+            translate((Expression) x.elem);
+            break;
+        default:
+            panic("Internal Error!");
+        }
+    }
 
-	}
+    private Quad translate(PostfixExpr x) throws Exception
+    {
+        switch (x.op)
+        {
+        case MPAREN:
+            Temp index = new Temp();
+            break;
+        }
+    }
 
-	@Override
-	public void visit(DeclarationList x) throws Exception
-	{
-		// TODO Auto-generated method stub
+    private Quad translate(BinaryExpr x) throws Exception
+    {
+        Oprand left = translate(x.left);
+        Oprand right = translate(x.right);
+        TempOprand ans = new TempOprand(new Temp());
 
-	}
+        return new BinOp(x.op, left, right, ans);
+    }
 
-	@Override
-	public void visit(DeclaratorList x) throws Exception
-	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visit(InitDeclarator x) throws Exception
-	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visit(InitDeclaratorList x) throws Exception
-	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visit(Initializer x) throws Exception
-	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visit(InitializerList x) throws Exception
-	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visit(NonInitDeclaration x) throws Exception
-	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visit(NonInitDeclarationList x) throws Exception
-	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visit(PlainDeclaration x) throws Exception
-	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visit(PlainDeclarator x) throws Exception
-	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visit(FuncDef x) throws Exception
-	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visit(ArgumentList x) throws Exception
-	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visit(ParameterList x) throws Exception
-	{
-	    
-	}
-
-	@Override
-	public void visit(TypeName x) throws Exception
-	{
-	    x.type_specifier.accept(this);
-	    x.star_list.accept(this);
-	}
-
-	@Override
-	public void visit(TypeSpecifier x) throws Exception
-	{
-	    if(x.comp!=null)
-	        x.comp.accept(this);
-	}
-
-	@Override
-	public void visit(Program x) throws Exception
-	{
-		while(x!=null)
-		{
-			x.head.accept(this);
-			x = x.next;
-		}
-	}
-
+    private void translate(Expression x) throws Exception
+    {
+        while (x != null)
+        {
+            translate(x.head);
+            x = x.next;
+        }
+    }
 }
