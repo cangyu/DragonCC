@@ -1,10 +1,10 @@
 package compiler.translate;
 
-public class Const extends Oprand
+public class CONST extends Oprand
 {
     public int value;
 
-    public Const(int v)
+    public CONST(int v)
     {
         value = v;
     }

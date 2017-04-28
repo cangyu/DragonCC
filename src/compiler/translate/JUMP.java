@@ -1,10 +1,10 @@
 package compiler.translate;
 
-public class Jump extends Quad 
+public class JUMP extends Quad 
 {
 	public Label label;
 
-	public Jump(Label l) 
+	public JUMP(Label l) 
 	{
 		label = l;
 	}

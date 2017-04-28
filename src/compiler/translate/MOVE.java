@@ -1,11 +1,11 @@
 package compiler.translate;
 
-public class Move extends Quad 
+public class MOVE extends Quad 
 {	
 	public Oprand src;
 	public Oprand dst;
 
-	public Move(Oprand _src, Oprand _dst) 
+	public MOVE(Oprand _src, Oprand _dst) 
 	{
 	    src = _src;
 	    dst = _dst;

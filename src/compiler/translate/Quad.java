@@ -1,6 +1,5 @@
 package compiler.translate;
 
-public abstract class Quad 
+public abstract class Quad
 {
-    
 }

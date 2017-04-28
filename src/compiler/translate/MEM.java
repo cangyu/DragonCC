@@ -1,23 +1,23 @@
 package compiler.translate;
 
-public class Mem extends Oprand
+public class MEM extends Oprand
 {
     public int offset = 0;
     public int length = 4;
     public Temp base;
 
-    public Mem(Temp t)
+    public MEM(Temp t)
     {
         base = t;
     }
 
-    public Mem(Temp t, int o)
+    public MEM(Temp t, int o)
     {
         base = t;
         offset = o;
     }
 
-    public Mem(int o)
+    public MEM(int o)
     {
         this(null, o);
     }

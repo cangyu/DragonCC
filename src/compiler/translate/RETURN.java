@@ -1,10 +1,10 @@
 package compiler.translate;
 
-public class Return extends Quad 
+public class RETURN extends Quad 
 {
 	public Oprand value;
 	
-	public Return(Oprand v)
+	public RETURN(Oprand v)
 	{
 		value = v;
 	}

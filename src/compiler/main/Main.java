@@ -51,8 +51,8 @@ public class Main
 		System.out.println("\tSemantic Check Done!");
 		
 		System.out.println("\tTranslating...");
-		Translator irt = new Translator(prog);
-		irt.translate();
+		//Translator irt = new Translator(prog);
+		//irt.translate();
 		System.out.println("\tTranslation Done!");
 	}
 

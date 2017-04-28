@@ -10,23 +10,24 @@ public class Translator
     private Program prog;
     private Table vscope, env, tag_env;
     private int offset;
-    private Stack<Integer> offsets;
+    private Stack<Integer> offset_info;
     private Stack<Label> begin_label, end_label;
     private Label exit;
     private Temp fp, sp, zero, a0, v0, ra;
-    private LinkedList<Quad> code;
 
     private static void panic(String msg) throws Exception
     {
         throw new Exception(msg);
     }
 
-    public Translator(Program x)
+    public Translator(Program x, Table var_info, Table record_info)
     {
         prog = x;
         vscope = new Table();
+        env = var_info;
+        tag_env = record_info;
         offset = 0;
-        offsets = new Stack<Integer>();
+        offset_info = new Stack<Integer>();
         exit = new Label();
     }
 
@@ -48,6 +49,9 @@ public class Translator
         }
     }
 
+    // Global declaration
+    // Just calculate their offsets
+    // At present we ignore initializations
     private void translate(Declaration x) throws Exception
     {
         if (x.init_declarator_list == null)
@@ -63,18 +67,7 @@ public class Translator
             VarEntry ve = (VarEntry) env.get(csym);
             ve.offset = offset;
             offset += ve.size;
-
-            Initializer ir = z.initializer;
-            if (ir != null)
-            {
-                Expr e = ir.expr;
-                if (e != null)
-                {
-                    Const val = new Const((int) e.value);
-                    Const dst = new Const(ve.offset);
-                    return new Move(val, new Mem(dst));
-                }
-            }
+            offset_info.push(ve.offset);
 
             y = y.next;
         }
@@ -82,13 +75,55 @@ public class Translator
 
     private void translate(FuncDef x) throws Exception
     {
-        translate(x.params);
+        String fn = x.func_name.identifier;
+        Symbol csym = Symbol.getSymbol(fn);
+        FuncEntry fe = (FuncEntry) env.get(csym);
+
+        // denote the each function with a label
+        Label fl = new Label(fn);
+        fe.code = new LinkedList<Quad>();
+        fe.code.add(new LabelQuad(fl));
+
+        // At present, ignore parameters
+        // translate(x.params);
+
+        // handle local declarations
+        DeclarationList dl = x.comp_stmt.declaration_list;
+        while (dl != null)
+        {
+            Declaration cvd = dl.head;
+            if (cvd.init_declarator_list != null)
+            {
+                Type ct = cvd.type_specifier.detail;
+                InitDeclaratorList vidl = cvd.init_declarator_list;
+                while (vidl != null)
+                {
+                    //At present, ignore initializer
+                    fe.offset.add(getVarSize(ct, vidl.head.declarator));
+                    vidl = vidl.next;
+                }
+            }
+            dl = dl.next;
+        }
+
         translate(x.comp_stmt);
+    }
+
+    private int getVarSize(Type t, Declarator x)
+    {        
+        int ret = x.plain_declarator.star_list.cnt != 0 ? 4 : t.size;
+        Iterator<Expr> it = x.dimension.iterator();
+        while(it.hasNext())
+        {
+            Expr e = it.next();
+            ret *= (int)e.value;
+        }
+
+        return ret;
     }
 
     private void translate(CompoundStmt x) throws Exception
     {
-        translate_local_decl(x.declaration_list);
         translate(x.stmt_list);
     }
 
@@ -216,7 +251,7 @@ public class Translator
 
     private void translate_for_stmt(IterationStmt x) throws Exception
     {
-        
+
     }
 
     private void translate(Expr x) throws Exception

@@ -1,12 +1,12 @@
 package compiler.translate;
 
-public class Call extends Quad 
+public class CALL extends Quad 
 {
     public Label func_name;
     public Temp[] params;
     public Temp result;
     
-	public Call(Label name, Temp[] p, Temp r) 
+	public CALL(Label name, Temp[] p, Temp r) 
 	{
 	    func_name = name;
 		params = p;
