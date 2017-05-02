@@ -14,6 +14,7 @@ public class Translator
     private Stack<Label> begin_label, end_label;
     private Label exit;
     private Temp fp, sp, zero, a0, v0, ra;
+    private LinkedList<Quad> global_var_init;
 
     private static void panic(String msg) throws Exception
     {
@@ -29,6 +30,7 @@ public class Translator
         offset = 0;
         offset_info = new Stack<Integer>();
         exit = new Label();
+        global_var_init = new LinkedList<Quad>();
     }
 
     public void translate() throws Exception
@@ -50,8 +52,6 @@ public class Translator
     }
 
     // Global declaration
-    // Just calculate their offsets
-    // At present we ignore initializations
     private void translate(Declaration x) throws Exception
     {
         if (x.init_declarator_list == null)
@@ -62,13 +62,34 @@ public class Translator
         {
             InitDeclarator z = y.head;
 
+            //Allocate space
             String vn = z.declarator.plain_declarator.identifier;
             Symbol csym = Symbol.getSymbol(vn);
             VarEntry ve = (VarEntry) env.get(csym);
             ve.offset = offset;
             offset += ve.size;
             offset_info.push(ve.offset);
-
+            
+            //Handle initialization
+            //Note that global initializer must be constant, which helps a lot.
+            //I guess this is the reason why they set this rule.
+            if(z.initializer!=null)
+            {
+                Initializer w = z.initializer;
+                if(w.expr!=null)
+                {
+                    Oprand val = new CONST((int)w.expr.value);
+                    Oprand dst = new MEM(ve.offset);
+                    Quad iq = new MOVE(val, dst);
+                    global_var_init.add(iq);
+                }
+                else
+                {
+                    //TODO
+                    //Recursive check
+                }
+            }
+            
             y = y.next;
         }
     }
